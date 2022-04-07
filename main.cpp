@@ -7,6 +7,7 @@
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wconversion-null"
 #pragma GCC diagnostic ignored "-Wpointer-arith"
+#define RADIUS 25
 using namespace std;
 
 struct Point {
@@ -32,11 +33,19 @@ struct Button {
 	bool isClickLMButton();//Kiểm tra xem chuột trái có click vào ô hay không
 };
 
+Button menuBar, 
+		helpBar,
+		fileBar,
+		helpToolsHoverBar,
+		fileToolsHoverBar,
+		menuToolsHoverBar;
+
 void menu();
 int menuTools();
 int helpTools();
 int fileTools();
 void setFrame();//cài đặt khung hiển thị
+void createVertex(); //tạo đỉnh
 
 
 int main() {
@@ -45,7 +54,11 @@ int main() {
 	setfillstyle(10, GREEN);
 	bar(1, 1, 1279, 719);
 	setFrame();
-	menu();
+	while (true) {
+		delay(200);
+		menu();
+		createVertex();
+	}
 	//menuTools();
 	getch();
 	closegraph();
@@ -121,140 +134,136 @@ bool Button::isHoverButton() {
 }
 
 void menu() {
-	int option;
-	Button menuBar, helpBar, fileBar, bannerBarFrame;
+	int option,
+	x = mousex(), 
+	y = mousey();
+	Button bannerBarFrame;
 	//Khởi tạo khung
 	bannerBarFrame.initButton(15, 15, 275, 320, 0, 3, 1, "");
 	//Cài đặt thông số cho nút menu, nút help và nút file
 	menuBar.initButton(20, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "MENU");
 	helpBar.initButton(125, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "HELP");
 	fileBar.initButton(230, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "FILE");	
-	do {
-		bannerBarFrame.drawButton();
-		menuBar.drawButton();
-		helpBar.drawButton();
-		fileBar.drawButton();
-		delay(200);
-		if (menuBar.isHoverButton()) {
-			//nếu chuột di chuyển vào khu vực thuộc tọa độ trong diện tích của 
-			//thanh menu bar thì sẽ hiển thị ra danh sách các công cụ ở dưới
-			menuBar.highLight();
-			option = menuTools();
-			switch (option) {
-				case 1: {
-					outtextxy(340, 15, "Canh cau");
-					break;
-				}
-				case 2: {
-					outtextxy(340, 15, "Dinh tru");
-					break;
-				}
-				case 3: {
-					outtextxy(340, 15, "Thanh phan lien thong");
-					break;
-				}
-				case 4: {
-					outtextxy(340, 15, "DFS");
-					break;
-				}
-				case 5: {
-					outtextxy(340, 15, "Euler");
-					break;
-				}
-				case 6: {
-					outtextxy(340, 15, "Dinh that");
-					break;
-				}
-				case 7: {
-					outtextxy(340, 15, "Tim duong di ngan nhat");
-					break;
-				}
-				case 8: {
-					outtextxy(340, 15, "BFS");
-					break;
-				}
-				case 9: {
-					outtextxy(340, 15, "Topo sort");
-					break;
-				}
-				case 10: {
-					outtextxy(340, 15, "Hamliton");
-					break;
-				}
-				default:
-					break;
+	bannerBarFrame.drawButton();
+	menuBar.drawButton();
+	helpBar.drawButton();
+	fileBar.drawButton();
+	if (menuBar.isHoverButton()) {//thanh menu bar thì sẽ hiển thị ra danh sách các công cụ ở dưới
+		menuBar.highLight();
+		option = menuTools();
+		switch (option) {
+			case 1: {
+				outtextxy(340, 15, "Canh cau");
+				break;
+			}
+			case 2: {
+				outtextxy(340, 15, "Dinh tru");
+				break;
+			}
+			case 3: {
+				outtextxy(340, 15, "Thanh phan lien thong");
+				break;
+			}
+			case 4: {
+				outtextxy(340, 15, "DFS");
+				break;
+			}
+			case 5: {
+				outtextxy(340, 15, "Euler");
+				break;
+			}
+			case 6: {
+				outtextxy(340, 15, "Dinh that");
+				break;
+			}
+			case 7: {
+				outtextxy(340, 15, "Tim duong di ngan nhat");
+				break;
+			}
+			case 8: {
+				outtextxy(340, 15, "BFS");
+				break;
+			}
+			case 9: {
+				outtextxy(340, 15, "Topo sort");
+				break;
+			}
+			case 10: {
+				outtextxy(340, 15, "Hamliton");
+				break;
+			}
+			default:
+				break;
 			}
 		}
-		else if (helpBar.isHoverButton()) {
-			helpBar.highLight();
-			option = helpTools();
-			switch (option) {
-				case 1: {
-					outtextxy(340, 15, "Cach them dinh");				
-					break;
-				}
-				case 2: {
-					outtextxy(340, 15, "Cach them cung");
-					break;
-				}
-				case 3: {
-					outtextxy(340, 15, "Cach sua dinh");
-					break;
-				}
-				case 4: {
-					outtextxy(340, 15, "Cach sua cung");
-					break;
-				}
-				case 5: {
-					outtextxy(340, 15, "Cach xoa dinh");
-					break;
-				}
-				case 6: {
-					outtextxy(340, 15, "Cach xoa cung");
-					break;
-				}
-				case 7: {
-					outtextxy(340, 15, "Cach di chuyen dinh");
-					break;
-				}
-				case 8: {
-					outtextxy(340, 15, "Cach di chuyen cung");
-					break;
-				}
-				default: 
-					break;
+	else if (helpBar.isHoverButton()) {
+		helpBar.highLight();
+		option = helpTools();
+		switch (option) {
+			case 1: {
+				outtextxy(340, 15, "Cach them dinh");				
+				break;
+			}
+			case 2: {
+				outtextxy(340, 15, "Cach them cung");
+				break;
+			}
+			case 3: {
+				outtextxy(340, 15, "Cach sua dinh");
+				break;
+			}
+			case 4: {
+				outtextxy(340, 15, "Cach sua cung");
+				break;
+			}
+			case 5: {
+				outtextxy(340, 15, "Cach xoa dinh");
+				break;
+			}
+			case 6: {
+				outtextxy(340, 15, "Cach xoa cung");
+				break;
+			}
+			case 7: {
+				outtextxy(340, 15, "Cach di chuyen dinh");
+				break;
+					}
+			case 8: {
+				outtextxy(340, 15, "Cach di chuyen cung");
+				break;
+					}
+			default: 
+				break;
+		}
+	}
+	else if (fileBar.isHoverButton()) {
+		fileBar.highLight();
+		option = fileTools();
+		switch(option) {
+			case 1: {
+				outtextxy(340, 15, "Mo file");
+				break;
+			}
+			case 2: {
+				outtextxy(340, 15, "Luu file");
+				break;
+			}
+			case 3: {
+				outtextxy(340, 15, "Xoa do thi trong file");
+				break;
+			}
+			case 4: {
+				outtextxy(340, 15, "Xoa do thi tren man hinh");
+				break;
 			}
 		}
-		else if (fileBar.isHoverButton()) {
-			fileBar.highLight();
-			option = fileTools();
-			switch(option) {
-				case 1: {
-					outtextxy(340, 15, "Mo file");
-					break;
-				}
-				case 2: {
-					outtextxy(340, 15, "Luu file");
-					break;
-				}
-				case 3: {
-					outtextxy(340, 15, "Xoa do thi trong file");
-					break;
-				}
-				case 4: {
-					outtextxy(340, 15, "Xoa do thi tren man hinh");
-					break;
-				}
-			}
-		}
-	} while (true);
+	}
 }
 
 int helpTools() {
 	const short itemsAmount = 8;
-	Button helpTools[8], helpToolsHoverBar, helpBar;
+	Button helpTools[8];
 	helpToolsHoverBar.initButton(20, 60, 40 * 4 + 20, 320, BLACK, BLACK, 1, "");
-	helpBar.initButton(125, 20, 40, 100, BLACK, BLACK, 1, "");
 	helpTools[0].name = "Cach them dinh";
 	helpTools[1].name = "Cach them cung";
 	helpTools[2].name = "Cach sua dinh";
@@ -305,9 +314,8 @@ int helpTools() {
 
 int menuTools() {
 	const short itemsAmount = 10;
-	Button menuTools[10], menuToolsHoverBar, menuBar;
+	Button menuTools[10];
 	menuToolsHoverBar.initButton(20, 60, 225, 315, BLACK, BLACK, 1, "");//Nút giả để xử lý hover
-	menuBar.initButton(20, 20, 40, 100, BLACK, BLACK, 1, "");//tương tự như nút trên
 	menuTools[0].name = "Canh cau";
 	menuTools[1].name = "Dinh tru";
 	menuTools[2].name = "Thanh phan lien thong";
@@ -395,9 +403,8 @@ int menuTools() {
 
 int fileTools() {
 	const short itemsAmount = 4;
-	Button fileTools[4], fileToolsHoverBar, fileBar;
+	Button fileTools[4];
 	fileToolsHoverBar.initButton(20, 60, 40 * 4 + 5 * 4, 315, BLACK, BLACK, 1, "");
-	fileBar.initButton(230, 20, 40, 100, BLACK, BLACK, 1, "");
 	int y0 = 65;
 	fileTools[0].name = "Mo file";
 	fileTools[1].name = "Luu file";
@@ -437,14 +444,40 @@ int fileTools() {
 }
 
 void setFrame() {
-	Button bannerBarFrame, taskBarFrame, adjacencyMatrixFrame;//ma trận kề
+	Button bannerBarFrame, taskBarFrame, adjacencyMatrixFrame, pointBarFrame;
 	//Khởi tạo thanh tác vụ gồm có nút menu, nút help, nút file và một số thao tác khác
 	bannerBarFrame.initButton(15, 15, 275, 400, 0, 3, 1, "");// width cũ = 320
 	//Khởi tạo cửa sổ thao tác các tác vụ như tạo đỉnh, thêm đỉnh, xóa đỉnh, xóa cạnh,...
 	taskBarFrame.initButton(420, 15, 689, 844, 0, 3, 1, "");
 	//Khởi tại khung của ma trận kề
+	//Khởi tạo khung hiển thị đỉnh và cạnh
+	pointBarFrame.initButton(425, 20, 500, 834, 0, GREEN, 1, ""); 
+	
 	adjacencyMatrixFrame.initButton(15, 295, 409, 400, 0, 3, 1, "");
 	bannerBarFrame.drawButton();
 	taskBarFrame.drawButton();
 	adjacencyMatrixFrame.drawButton();
+	pointBarFrame.drawButton();
 }
+
+void createVertex() {
+
+	int x, y;
+	char *name = new char[3];
+	char c = getcolor();
+		if (ismouseclick(WM_LBUTTONDOWN)) {
+			getmouseclick(WM_LBUTTONDOWN, x, y);
+			if (x >= 425 + RADIUS && x <= 1259 - RADIUS
+			&& y >= 20 + RADIUS && y <= 520 - RADIUS) {
+				setfillstyle(1, 5);
+				setcolor(5);
+				pieslice(x, y, 0, 0, RADIUS);
+			}
+		}
+		setfillstyle(1, c);
+		setcolor(c);
+}
+
+
+
+
