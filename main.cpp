@@ -7,12 +7,19 @@
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wconversion-null"
 #pragma GCC diagnostic ignored "-Wpointer-arith"
-#define RADIUS 25
+#define RADIUS 20
 using namespace std;
 
-struct Point {
+struct Point/*cau truc diem*/ {
 	int x;
 	int y;
+};
+
+struct Vertex /*cau truc dinh*/{
+	Point coordinates;
+	char *name;
+	void createVertex();
+	void drawVertex();
 };
 
 struct Button {
@@ -22,30 +29,32 @@ struct Button {
 	short width;
 	short tColor;
 	short bColor;
-	short pattern;//các kiểu gạch chéo, chấm bi,.. trong nút
+	short pattern;//cac kieu gach cheo, cham bi,.. trong nut
 	
 	void initButton(short, short, short, short, short, short, short, char*);//x, y, height, width, content
-	void drawButton();//Vẽ nút
-	void highLight();//Tô sáng nút (đổi màu theo kiểu mặc định)
-	void normal();//Đưa nút trở về hình dạng ban đầu
-	void highLight(int, int);//Tô sáng nút với màu chữ và màu nền 
-	bool isHoverButton();//Kiểm tra xem ta có di chuyển chuột tới nút đó hay không
-	bool isClickLMButton();//Kiểm tra xem chuột trái có click vào ô hay không
+	void drawButton();//Ve nut
+	void highLight();//To sang nut (doi mau theo kieu mac dinh)
+	void normal();//Dua nut tro ve hinh dang ban dau
+	void highLight(int, int);//To sang nut voi mau chu va mau nen 
+	bool isHoverButton();//Kiem tra xem ta co di chuyen chuot toi nut do hay khong
+	bool isClickLMButton();//Kiem tra xem chuot trai co click vao o hay khong
 };
 
-Button menuBar, 
-		helpBar,
-		fileBar,
-		helpToolsHoverBar,
-		fileToolsHoverBar,
-		menuToolsHoverBar;
+Button menuBar/*thanh menu*/, 
+		helpBar/*thanh help*/,
+		fileBar/*thanh file*/,
+		adjacencyMatrixFrame/*khung hien thi ma tran ke*/, 
+		pointBarFrame/*khung hien thi dinh va canh*/,
+		taskBarFrame/*khung hien thi thanh tac vu gom menu, file va help*/,
+		vertexTaskBarFrame/*khung hien thi thanh tac vu */;
 
-void menu();
-int menuTools();
-int helpTools();
-int fileTools();
-void setFrame();//cài đặt khung hiển thị
-void createVertex(); //tạo đỉnh
+void taskBar();//ham thao tac thanh tac vu 
+int menuTools();//ham hien thi bang cong cu menu
+int helpTools();//ham hien thi bang cong cu huong dan
+int fileTools();//ham hien thi bang cong cu file
+void setFrame();//cai dat khung hien thi
+void drawFrame();//
+void createVertex(); //tao dinh
 
 
 int main() {
@@ -53,11 +62,13 @@ int main() {
 	initwindow(1280, 720);
 	setfillstyle(10, GREEN);
 	bar(1, 1, 1279, 719);
+	Vertex vtex;
 	setFrame();
+	drawFrame();
 	while (true) {
-		delay(200);
-		menu();
-		createVertex();
+		delay(250);
+		taskBar();
+		vtex.createVertex();
 	}
 	//menuTools();
 	getch();
@@ -74,24 +85,24 @@ bool Button::isClickLMButton() {
 }
 
 void Button::drawButton() {
-	//get màu của khung hình chung
+	//get mau cua khung hinh chung
 	int c = getcolor();
-	//tạo nút
-	//tạo màu cho nút
+	//tao nut
+	//tao mau cho nut
 	setfillstyle(this->pattern, this->bColor);
 	bar(this->coordinates.x, this->coordinates.y, this->coordinates.x + this->width, this->coordinates.y + this->height);
 	rectangle(this->coordinates.x, this->coordinates.y, this->coordinates.x + this->width, this->coordinates.y + this->height);
-	//tạo màu chữ
+	//tao mau chu
 	setcolor(this->tColor);
-	//in nội dung của nút ra nút
+	//in noi dung cua nut ra nut
 	outtextxy(this->coordinates.x + (this->width - textwidth(this->name)) / 2, this->coordinates.y + (this->height - textheight(this->name)) / 2, this->name);
-	//khôi phục lại màu ban đầu khi thoát tạo nút
+	//khoi phuc lai mau ban dau khi thoat tao nut
 	setcolor(c);
 	setfillstyle(0, c);
 }
 
 void Button::initButton(short x, short y, short height, short width, short tColor, short bColor, short pattern, char* content) {
-	// hàm này để khởi tạo những thông số của một nút
+	// ham nay de khoi tao nhung thong so cua mot nut
 	this->coordinates.x = x;
 	this->coordinates.y = y;
 	this->height = height;
@@ -103,7 +114,7 @@ void Button::initButton(short x, short y, short height, short width, short tColo
 }
 
 void Button::highLight() {
-	//Với hàm này chúng ta sẽ lấy màu vàng là màu chữ và màu xanh đậm là màu nền làm màu mặc định
+	//Voi ham nay chung ta se lay mau vang la mau chu va mau xanh dam la mau nen lam mau mac dinh
 	Button highLight;
 	highLight = *this;
 	highLight.tColor = YELLOW;
@@ -113,7 +124,7 @@ void Button::highLight() {
 }
 
 void Button::highLight(int tColor, int bColor) {
-	//Với hàm này màu do người lập trình chọn
+	//Voi ham nay mau do nguoi lap trinh chon
 	Button highLight;
 	highLight.initButton(this->coordinates.x, this->coordinates.y, this->height, this->width, tColor, bColor, this->pattern, this->name);
 	highLight.drawButton();
@@ -124,31 +135,27 @@ void Button::normal() {
 }
 
 bool Button::isHoverButton() {
-	//hàm mousex(), mousey() để lấy tọa độ chuột trong cửa sổ ta đang thao tác
+	//ham mousex(), mousey() de lay toa do chuot trong cua so ta dang thao tac
 	int x = mousex(), y = mousey();
-	//nếu con trỏ chuột nằm trong phạm vi hình chữ nhật của nút thì được tính là 1 hover
+	//neu con tro chuot nam trong pham vi hinh chu nhat cua nut thi duoc tinh la 1 hover
 	if (x >= this->coordinates.x && x <= this->coordinates.x + this->width &&
 		y >= this->coordinates.y && y <= this->coordinates.y + this->height)
 		return 1;
 	return 0;
 }
 
-void menu() {
+void taskBar() {
 	int option,
 	x = mousex(), 
 	y = mousey();
-	Button bannerBarFrame;
-	//Khởi tạo khung
-	bannerBarFrame.initButton(15, 15, 275, 320, 0, 3, 1, "");
-	//Cài đặt thông số cho nút menu, nút help và nút file
 	menuBar.initButton(20, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "MENU");
 	helpBar.initButton(125, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "HELP");
-	fileBar.initButton(230, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "FILE");	
-	bannerBarFrame.drawButton();
+	fileBar.initButton(230, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "FILE");
+	taskBarFrame.drawButton();	
 	menuBar.drawButton();
 	helpBar.drawButton();
 	fileBar.drawButton();
-	if (menuBar.isHoverButton()) {//thanh menu bar thì sẽ hiển thị ra danh sách các công cụ ở dưới
+	if (menuBar.isHoverButton()) {//thanh menu bar thi se hien thi ra danh sach cac cong cu o duoi
 		menuBar.highLight();
 		option = menuTools();
 		switch (option) {
@@ -262,7 +269,7 @@ void menu() {
 
 int helpTools() {
 	const short itemsAmount = 8;
-	Button helpTools[8];
+	Button helpTools[8], helpToolsHoverBar /*khung de xu ly hover*/;
 	helpToolsHoverBar.initButton(20, 60, 40 * 4 + 20, 320, BLACK, BLACK, 1, "");
 	helpTools[0].name = "Cach them dinh";
 	helpTools[1].name = "Cach them cung";
@@ -314,8 +321,8 @@ int helpTools() {
 
 int menuTools() {
 	const short itemsAmount = 10;
-	Button menuTools[10];
-	menuToolsHoverBar.initButton(20, 60, 225, 315, BLACK, BLACK, 1, "");//Nút giả để xử lý hover
+	Button menuTools[10], menuToolsHoverBar/*khung de xu ly hover*/;
+	menuToolsHoverBar.initButton(20, 60, 225, 315, BLACK, BLACK, 1, "");//Nut gia de xu ly hover
 	menuTools[0].name = "Canh cau";
 	menuTools[1].name = "Dinh tru";
 	menuTools[2].name = "Thanh phan lien thong";
@@ -327,69 +334,68 @@ int menuTools() {
 	menuTools[8].name = "Topo sort";
 	menuTools[9].name = "Hamliton";
 	int y0 = 65, i;
-	//Vòng for dưới đây sẽ tạo các nút sắp xếp xen kẽ
-	//Chỉ áp dụng với danh sách tools có số lượng chẵn (cụ thể ta cho là 10 items)
+	//Vong for duoi day se tao cac nut sap xep xen ke
+	//Chi ap dung voi danh sach tools co so luong chan (cu the ta cho la 10 items)
 	for (i = 0; i < itemsAmount; i++) {
-		//Cài màu nền cho các nút menu tool trong hộp thoại menu tools
+		//Cai mau nen cho cac nut menu tool trong hop thoai menu tools
 		menuTools[i].bColor = BLACK;
-		//Cài màu chữ
+		//Cai mau chu
 		menuTools[i].tColor = YELLOW;
 		menuTools[i].height = 40;
-		//Cài loại tô vào nút
 		menuTools[i].pattern = 1;
-		//Các cặp nút (0 1), (2 3), (4 5), (6 7), (8 9) sẽ có chung tọa độ y
-		//Các nút 0 2 4 6 8 sẽ có chung tọa độ x
-		//Các nút 0 1 4 5 8 9 sẽ có chung chiều rộng
-		//Các nút 2 6 sẽ có chung chiều rộng
-		//Các nút 3 7 sẽ có chung chiều rộng
+		//Cac cap nut (0 1), (2 3), (4 5), (6 7), (8 9) se co chung toa do y
+		//Cac nut 0 2 4 6 8 se co chung toa do x
+		//Cac nut 0 1 4 5 8 9 se co chung chieu rong 
+		//Cac nut 2 6 se co chung chieu rong
+		//Cac nut 3 7 se co chung chieu rong
 		if (i % 2 == 0) {
-			//Các nút 0 2 4 6 8 sẽ có chung tọa độ x
+			//Cac nut 0 2 4 6 8 se co chung toa do x
 			menuTools[i].coordinates.x = 20;
-			//Cặp nút đầu tiên sẽ có tọa độ nằm dưới nút menuBar (y0 = 65)
-			//Cặp nút tiếp theo có tọa độ bằng cặp nút trước cộng thêm 45 
+			//Cap nut dau tien se co toa do nam duoi nut menuBar (y0 = 65)
+			//Cap nut tiep theo co toa do bang cap nut truoc cong them 45 
 			menuTools[i].coordinates.y = y0;
 			menuTools[i + 1].coordinates.y = y0;
 			y0 += 45; 
 		}
 		if (i % 4 == 0 || i % 4 == 1) {
-			//Độ rộng của các nút 0 1 4 5 8 9 sẽ là 151
+			//Do rong cua cac nut 0 1 4 5 8 9 se la 151
 			menuTools[i].width = 151;
 		} 
 		if (i % 4 == 0) {
-			//Tọa độ x của các nút 0 4 8 là 179
+			//Toa do x cua cac nut 0 4 8 la 179
 			menuTools[i + 1].coordinates.x = 179;
 		}
-		if (i % 4 == 2) {
-			//Tọa độ x của các nút 3 7 là 227 
-			//Chiều rộng của nó là 103
+		if (i % 4 == 2) { 
+			//Toa do x cua cac nut 3 7 la 227
 			menuTools[i + 1].coordinates.x = 227;
+			//Chieu rong cua no la 103
 			menuTools[i + 1].width = 103;
-			//Chiều rộng của nút 2 6 là 200
+			//Chieu rong cua nut 2 6 la 200
 			menuTools[i].width = 200;
 			
 		}
 	}
 	for (i = 0; i < itemsAmount; i++)
-		//vẽ các nút ra màn hình
+		//ve cac nut ra man hinh
 		menuTools[i].drawButton();
 		
 	while (true) {
 		delay(200);
-		//Nếu con trỏ chuột đang nằm trong phạm vi của thanh menu 
-		//hoặc nó đang nằm trong phạm vi ô chứa các công cụ của thanh menu thì mới thao tác
-		//ngược lại thì thoát vòng lặp
+		//Neu con tro chuot dang nam trong pham vi cua thanh menu 
+		//hoac no dang nam trong pham vi o chua cac cong cu cua thanh menu thi moi thao tac
+		//nguoc lai thi thoat vong lap
 		if (menuToolsHoverBar.isHoverButton() || menuBar.isHoverButton()) {
 			int x, y;
-			//xử lý sự kiện chuột trái
+			//xu ly su kien chuot trai
 			getmouseclick(WM_LBUTTONDOWN, x, y);
 			for (i = 0; i < itemsAmount; i++) {
 				if (menuTools[i].isHoverButton())
-					//nếu di chuột vào một trong các menu tools thì sẽ high light dòng đó
+					//neu di chuot vao mot trong cac menu tools thi se high light dong do
 					menuTools[i].highLight();
 				else
 					menuTools[i].normal();
-				//nếu click chuột trái vào một trong số các công cụ của ô chứa menu tools 
-				//thì sẽ trả về giá trị để xử lý các hàm sau này (DFS, BFS,...)
+				//neu click chuot trai vao mot trong so cac cong cu cua o chua menu tools 
+				//thi se tra ve gia tri de xu ly cac ham sau nay (DFS, BFS,...)
 				if (x >= menuTools[i].coordinates.x && x <= menuTools[i].coordinates.x + menuTools[i].width
 				&& y >= menuTools[i].coordinates.y && y <= menuTools[i].coordinates.y + menuTools[i].height)
 					return i + 1;
@@ -403,7 +409,7 @@ int menuTools() {
 
 int fileTools() {
 	const short itemsAmount = 4;
-	Button fileTools[4];
+	Button fileTools[4], fileToolsHoverBar/*khung xử lý hover*/;
 	fileToolsHoverBar.initButton(20, 60, 40 * 4 + 5 * 4, 315, BLACK, BLACK, 1, "");
 	int y0 = 65;
 	fileTools[0].name = "Mo file";
@@ -429,6 +435,7 @@ int fileTools() {
 			getmouseclick(WM_LBUTTONDOWN, x, y);
 			for (int i = 0; i < itemsAmount; i++) {
 				if (fileTools[i].isHoverButton())
+				//neu thanh file tools nao duoc chuot do nguoi dung di chuyen toi thi se duoc to sang
 					fileTools[i].highLight();
 				else 
 					fileTools[i].normal();
@@ -444,38 +451,42 @@ int fileTools() {
 }
 
 void setFrame() {
-	Button bannerBarFrame, taskBarFrame, adjacencyMatrixFrame, pointBarFrame;
-	//Khởi tạo thanh tác vụ gồm có nút menu, nút help, nút file và một số thao tác khác
-	bannerBarFrame.initButton(15, 15, 275, 400, 0, 3, 1, "");// width cũ = 320
-	//Khởi tạo cửa sổ thao tác các tác vụ như tạo đỉnh, thêm đỉnh, xóa đỉnh, xóa cạnh,...
-	taskBarFrame.initButton(420, 15, 689, 844, 0, 3, 1, "");
-	//Khởi tại khung của ma trận kề
-	//Khởi tạo khung hiển thị đỉnh và cạnh
-	pointBarFrame.initButton(425, 20, 500, 834, 0, GREEN, 1, ""); 
-	
+	//Khoi tao thanh tac vu gom co nut menu, nut help, nut file va mot so thao tac khac
+	taskBarFrame.initButton(15, 15, 275, 400, 0, 3, 1, "");// width cu = 320
+	//Khoi tao cua so thao tac cac tac vu nhu tao dinh, them dinh, xoa dinh, xoa canh,...
+	vertexTaskBarFrame.initButton(420, 15, 689, 844, 0, 3, 1, "");
+	//Khoi tai khung cua ma tran ke
 	adjacencyMatrixFrame.initButton(15, 295, 409, 400, 0, 3, 1, "");
-	bannerBarFrame.drawButton();
+	//Khoi tao khung hien thi dinh va canh
+	pointBarFrame.initButton(425, 20, 500, 834, 0, GREEN, 1, ""); 
+}
+
+void drawFrame() {
+	taskBarFrame.drawButton();
+	vertexTaskBarFrame.drawButton();
 	taskBarFrame.drawButton();
 	adjacencyMatrixFrame.drawButton();
 	pointBarFrame.drawButton();
 }
 
-void createVertex() {
-
-	int x, y;
+void Vertex::createVertex() {
 	char *name = new char[3];
-	char c = getcolor();
-		if (ismouseclick(WM_LBUTTONDOWN)) {
-			getmouseclick(WM_LBUTTONDOWN, x, y);
-			if (x >= 425 + RADIUS && x <= 1259 - RADIUS
-			&& y >= 20 + RADIUS && y <= 520 - RADIUS) {
-				setfillstyle(1, 5);
-				setcolor(5);
-				pieslice(x, y, 0, 0, RADIUS);
-			}
+	if (ismouseclick(WM_LBUTTONDOWN)) {
+		getmouseclick(WM_LBUTTONDOWN, this->coordinates.x, this->coordinates.y);
+		if (this->coordinates.x >= 425 + RADIUS && this->coordinates.x <= 1259 - RADIUS
+		&& this->coordinates.y >= 20 + RADIUS && this->coordinates.y <= 520 - RADIUS) {
+			this->drawVertex();
 		}
-		setfillstyle(1, c);
-		setcolor(c);
+	}
+}
+
+void Vertex::drawVertex() {
+	char c = getcolor();
+	setfillstyle(1, BLACK);
+	setcolor(BLACK);
+	pieslice(this->coordinates.x, this->coordinates.y, 0, 0, RADIUS);
+	setfillstyle(1, c);
+	setcolor(c);
 }
 
 
