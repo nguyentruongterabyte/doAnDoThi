@@ -68,7 +68,7 @@ int main() {
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
-		delay(.001);
+		delay(10);
 		drawFrame();
 		taskBar();
 		vtex.createVertex();
@@ -150,9 +150,7 @@ bool Button::isHoverButton() {
 }
 
 void taskBar() {
-	int option,
-	x = mousex(), 
-	y = mousey();
+	int option;
 	menuBar.initButton(20, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "MENU");
 	helpBar.initButton(125, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "HELP");
 	fileBar.initButton(230, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "FILE");
@@ -160,8 +158,7 @@ void taskBar() {
 	menuBar.drawButton();
 	helpBar.drawButton();
 	fileBar.drawButton();
-	if (x >= menuBar.coordinates.x && x <= menuBar.coordinates.x + menuBar.width 
-		&& y >= menuBar.coordinates.y && y <= menuBar.coordinates.y + menuBar.height) {//thanh menu bar thi se hien thi ra danh sach cac cong cu o duoi
+	if (menuBar.isHoverButton()) {//thanh menu bar thi se hien thi ra danh sach cac cong cu o duoi
 		menuBar.highLight();
 		option = menuTools();
 		switch (option) {
@@ -304,8 +301,13 @@ int helpTools() {
 	for (int i = 0; i < itemsAmount; i++) {
 		helpTools[i].drawButton();
 	}
+	int page = 0;
 	while (true) {
-		delay(200);
+		delay(10);
+		setactivepage(page);
+		setvisualpage(1- page);
+		taskBarFrame.drawButton();
+		helpBar.drawButton();
 		if (helpBar.isHoverButton() || helpToolsHoverBar.isHoverButton()) {
 			int x, y;
 			getmouseclick(WM_LBUTTONDOWN, x, y);
@@ -321,6 +323,7 @@ int helpTools() {
 		}
 		else
 			break;
+		page = 1 - page;
 	}
 	return -1;
 }
@@ -384,9 +387,13 @@ int menuTools() {
 	for (i = 0; i < itemsAmount; i++)
 		//ve cac nut ra man hinh
 		menuTools[i].drawButton();
-		
+	int page = 0;
 	while (true) {
-		delay(200);
+		delay(10);
+		setactivepage(page);
+		setvisualpage(1 - page);
+		taskBarFrame.drawButton();
+		menuBar.drawButton();
 		//Neu con tro chuot dang nam trong pham vi cua thanh menu 
 		//hoac no dang nam trong pham vi o chua cac cong cu cua thanh menu thi moi thao tac
 		//nguoc lai thi thoat vong lap
@@ -409,6 +416,7 @@ int menuTools() {
 		}
 		else 
 			break;	
+		page = 1 - page;
 	}
 	return -1;
 }
@@ -434,8 +442,13 @@ int fileTools() {
 	}
 	for (int i = 0; i < itemsAmount; i++)
 		fileTools[i].drawButton();
+	int page = 0;
 	while (true) {
-		delay(200);
+		delay(10);
+		setactivepage(page);
+		setvisualpage(1 - page);
+		taskBarFrame.drawButton();
+		fileBar.drawButton();
 		if (fileToolsHoverBar.isHoverButton() || fileBar.isHoverButton()) {
 			int x, y;
 			getmouseclick(WM_LBUTTONDOWN, x, y);
@@ -452,6 +465,7 @@ int fileTools() {
 		}
 		else 
 			break;
+		page = 1 - page;
 	}
 	return -1;
 }
