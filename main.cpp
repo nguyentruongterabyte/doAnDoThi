@@ -32,11 +32,11 @@ struct Button {
 	short bColor;
 	short pattern;//cac kieu gach cheo, cham bi,.. trong nut
 	
-	void initButton(short, short, short, short, short, short, short, char*);//x, y, height, width, content
+	void initButton(short x, short y, short height, short width, short tColor, short bColor, short pattern, char* content);//x, y, height, width, content
 	void drawButton();//Ve nut
 	void highLight();//To sang nut (doi mau theo kieu mac dinh)
 	void normal();//Dua nut tro ve hinh dang ban dau
-	void highLight(int, int);//To sang nut voi mau chu va mau nen 
+	void highLight(int tColor, int bColor);//To sang nut voi mau chu va mau nen 
 	bool isHoverButton();//Kiem tra xem ta co di chuyen chuot toi nut do hay khong
 	bool isClickLMButton();//Kiem tra xem chuot trai co click vao o hay khong
 };
@@ -49,6 +49,8 @@ Button menuBar/*thanh menu*/,
 		taskBarFrame/*khung hien thi thanh tac vu gom menu, file va help*/,
 		vertexTaskBarFrame/*khung hien thi thanh tac vu */;
 
+void setTaskBarButtons();
+void drawTaskBarButtons();
 void taskBar();//ham thao tac thanh tac vu 
 int menuTools();//ham hien thi bang cong cu menu
 int helpTools();//ham hien thi bang cong cu huong dan
@@ -61,18 +63,18 @@ void createVertex(); //tao dinh
 int main() {
 	int count = 0, page = 0;
 	initwindow(1280, 720);
-	setfillstyle(10, GREEN);
-	bar(1, 1, 1279, 719);
-	Vertex vtex;
+	Vertex vtex[10];
+	setTaskBarButtons();
 	setFrame();
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
-		delay(10);
+		delay(1);
+		setfillstyle(10, GREEN);
+		bar(1, 1, 1279, 719);
 		drawFrame();
 		taskBar();
-		vtex.createVertex();
-		vtex.drawVertex();
+
 		page = 1 - page;
 	}
 	//menuTools();
@@ -100,6 +102,7 @@ void Button::drawButton() {
 	//tao mau chu
 	setcolor(this->tColor);
 	//in noi dung cua nut ra nut
+	//settextstyle(3, 0, 1);
 	outtextxy(this->coordinates.x + (this->width - textwidth(this->name)) / 2, this->coordinates.y + (this->height - textheight(this->name)) / 2, this->name);
 	//khoi phuc lai mau ban dau khi thoat tao nut
 	setcolor(c);
@@ -149,17 +152,23 @@ bool Button::isHoverButton() {
 	return 0;
 }
 
-void taskBar() {
-	int option;
+void setTaskBarButtons() {
 	menuBar.initButton(20, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "MENU");
 	helpBar.initButton(125, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "HELP");
 	fileBar.initButton(230, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "FILE");
-	taskBarFrame.drawButton();	
+}
+
+void drawTaskBarButtons() {
 	menuBar.drawButton();
 	helpBar.drawButton();
 	fileBar.drawButton();
+}
+
+void taskBar() {
+	int option;
+	drawTaskBarButtons();
 	if (menuBar.isHoverButton()) {//thanh menu bar thi se hien thi ra danh sach cac cong cu o duoi
-		menuBar.highLight();
+		//menuBar.highLight();
 		option = menuTools();
 		switch (option) {
 			case 1: {
@@ -307,7 +316,8 @@ int helpTools() {
 		setactivepage(page);
 		setvisualpage(1- page);
 		taskBarFrame.drawButton();
-		helpBar.drawButton();
+		drawTaskBarButtons();
+		helpBar.highLight();
 		if (helpBar.isHoverButton() || helpToolsHoverBar.isHoverButton()) {
 			int x, y;
 			getmouseclick(WM_LBUTTONDOWN, x, y);
@@ -389,11 +399,12 @@ int menuTools() {
 		menuTools[i].drawButton();
 	int page = 0;
 	while (true) {
-		delay(10);
 		setactivepage(page);
 		setvisualpage(1 - page);
+		delay(10);
 		taskBarFrame.drawButton();
-		menuBar.drawButton();
+		drawTaskBarButtons();
+		menuBar.highLight();
 		//Neu con tro chuot dang nam trong pham vi cua thanh menu 
 		//hoac no dang nam trong pham vi o chua cac cong cu cua thanh menu thi moi thao tac
 		//nguoc lai thi thoat vong lap
@@ -448,7 +459,8 @@ int fileTools() {
 		setactivepage(page);
 		setvisualpage(1 - page);
 		taskBarFrame.drawButton();
-		fileBar.drawButton();
+		drawTaskBarButtons();
+		fileBar.highLight();
 		if (fileToolsHoverBar.isHoverButton() || fileBar.isHoverButton()) {
 			int x, y;
 			getmouseclick(WM_LBUTTONDOWN, x, y);
@@ -478,7 +490,7 @@ void setFrame() {
 	//Khoi tai khung cua ma tran ke
 	adjacencyMatrixFrame.initButton(15, 295, 409, 400, 0, 3, 1, "");
 	//Khoi tao khung hien thi dinh va canh
-	pointBarFrame.initButton(425, 20, 500, 834, 0, GREEN, 1, ""); 
+	pointBarFrame.initButton(425, 20, 500, 834, 0, BLUE , 1, ""); 
 }
 
 void drawFrame() {
@@ -495,8 +507,8 @@ void Vertex::createVertex() {
 		getmouseclick(WM_LBUTTONDOWN, this->coordinates.x, this->coordinates.y);
 		if (this->coordinates.x >= 425 + RADIUS && this->coordinates.x <= 1259 - RADIUS
 		&& this->coordinates.y >= 20 + RADIUS && this->coordinates.y <= 520 - RADIUS) {
-			this->drawVertex();
 			this->createVertexName();
+			this->drawVertex();
 		}
 	}
 }
@@ -504,11 +516,6 @@ void Vertex::createVertex() {
 void Vertex::createVertexName() {
 	Button nameCreateBar;
 	char c = getcolor();
-	nameCreateBar.initButton(425 + 417 - 200 / 2, 20 + 500 / 2 - 200 / 2, 200, 200, BLACK, BLACK, 1, "");
-	setcolor(YELLOW);
-	nameCreateBar.drawButton();
-	outtextxy(425 + 417 - 200 / 2 + 10, 20 + 500 / 2 - 200 / 2 + 10, "Nhap ten dinh");
-	setcolor(c);
 	
 }
 
