@@ -78,6 +78,8 @@ void loadFileStartUp();//khi tat chuong trinh, file nay se co chuc nang luu lai 
 void saveFileStartUp();//khi tao hay xoa dinh, file nay se co tac dung cap nhat lai nhung gi chung ta thao tac
 void addVertexToList(Vertex vtex);//ham nay giup chung ta them mot dinh vua tao vao danh sach dinh
 void clearAllVertices();//ham nay cho phep xoa tat ca cac dinh va cung dang hien thi tren man hinh
+bool drawYesNoBar(char *question);//ham nay dung de xac nhan truoc khi lam gi do
+
 
 int main() {
 	
@@ -111,6 +113,8 @@ int main() {
 		//vtex.drawVertex();
 		drawVertices();
 		taskBar();
+		//drawYesNoBar();
+	
 		
 		page = 1 - page;
 	}
@@ -118,6 +122,7 @@ int main() {
 //	getch();
 //	closegraph();
 }
+
 
 bool Button::isClickLMButton() {
 	int x, y;
@@ -316,7 +321,9 @@ void taskBar() {
 				break;
 			}
 			case 4: {
-				clearAllVertices();
+				bool confirm = drawYesNoBar("Ban co muon \n xoa tat ca?");
+				if (confirm)
+					clearAllVertices();
 				break;
 			}
 		}
@@ -664,6 +671,40 @@ void clearAllVertices() {
 		vertices[i].defaultVtex();
 	}
 	saveFileStartUp();
+}
+
+bool drawYesNoBar(char *question) {
+	Button nameCreateBar, yesBar, NoBar;
+	int height = 100;
+	int width = 200;
+	int margin = 5;
+	nameCreateBar.initButton(425 + (834 - width) / 2 , 20 + (500 - height) / 2, height, width, YELLOW, BLACK, 1, "");
+	yesBar.initButton(425 + (834 - width) / 2 + margin, 20 + (500 - height) / 2 + (height - 40 - margin), 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "YES");
+	
+	int page = 0;
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		setfillstyle(10, GREEN);
+		bar(1, 1, 1279, 719);
+		delay(10);
+		drawFrame();
+		drawTaskBarButtons();
+		drawVertices();
+		nameCreateBar.drawButton();
+		yesBar.drawButton();
+		outtextxy(425 + (834 - 200) / 2 + 10, 20 + (500 - 100) / 2 + 10, question);
+		if (kbhit()) {
+			char key = getch();
+			if (key == 13) {
+				return 1;	
+			}
+			
+		}
+		
+		page = 1 - page;
+	}
+
 }
 
 
