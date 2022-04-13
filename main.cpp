@@ -26,15 +26,16 @@ char *helpStr[] = {
 struct Vertex /*cau truc dinh*/{
 	Point coordinates;
 	char *name;
-	void createVtex();
+	void create();
 	void drawVtex();
-	void createVtexName();
+	void createName();
 	void highLight();
 	void defaultVtex();
 	bool isDefaultVtex();
+	bool isHover();
 };
 
-struct Button {
+struct Button /*cau truc nut*/{
 	Point coordinates;
 	char* name;
 	short height;
@@ -43,12 +44,12 @@ struct Button {
 	short bColor;
 	short pattern;//cac kieu gach cheo, cham bi,.. trong nut
 	
-	void initButton(short x, short y, short height, short width, short tColor, short bColor, short pattern, char* content);//x, y, height, width, content
-	void drawButton();//Ve nut
+	void init(short x, short y, short height, short width, short tColor, short bColor, short pattern, char* content);//x, y, height, width, content
+	void draw();//Ve nut
 	void highLight();//To sang nut (doi mau theo kieu mac dinh)
 	void normal();//Dua nut tro ve hinh dang ban dau
 	void highLight(int tColor, int bColor);//To sang nut voi mau chu va mau nen 
-	bool isHoverButton();//Kiem tra xem ta co di chuyen chuot toi nut do hay khong
+	bool isHover();//Kiem tra xem ta co di chuyen chuot toi nut do hay khong
 	bool isClickLMButton();//Kiem tra xem chuot trai co click vao o hay khong
 };
 
@@ -79,25 +80,17 @@ void saveFileStartUp();//khi tao hay xoa dinh, file nay se co tac dung cap nhat 
 void addVertexToList(Vertex vtex);//ham nay giup chung ta them mot dinh vua tao vao danh sach dinh
 void clearAllVertices();//ham nay cho phep xoa tat ca cac dinh va cung dang hien thi tren man hinh
 bool drawYesNoBar(char *question);//ham nay dung de xac nhan truoc khi lam gi do
-
+bool isClickOtherVertex(Vertex vtexs);//kiem tra xem chuot trai co click vao dinh hay khong. Ham nay su dung de tranh tao dinh de len dinh khac
+bool isEmptyVertex();//Kiem tra dinh tren man hinh da co hay chua
 
 int main() {
-	
 	int page = 0;
 	initwindow(1280, 720);
 	Vertex vtex;
 	setTaskBarButtons();
 	setFrame();
-		
 	initDefaultVertices();
 	loadFileStartUp();
-	
-//	cout << n << endl;
-//	for (int i = 0; i < n; i++) {
-//		cout << vertices[i].coordinates.x << " " 
-//		<< vertices[i].coordinates.y << " "
-//		<< vertices[i].name << endl;
-//	}
 	while (true) {
 		
 		setactivepage(page);
@@ -107,20 +100,14 @@ int main() {
 		setfillstyle(10, GREEN);
 		bar(1, 1, 1279, 719);
 		drawFrame();
-		vtex.createVtex();
+
+		vtex.create();
+	
 		addVertexToList(vtex);
-		//vtex.createVertex();
-		//vtex.drawVertex();
 		drawVertices();
 		taskBar();
-		//drawYesNoBar();
-	
-		
 		page = 1 - page;
 	}
-//	//menuTools();
-//	getch();
-//	closegraph();
 }
 
 
@@ -133,7 +120,7 @@ bool Button::isClickLMButton() {
 	return 0;
 }
 
-void Button::drawButton() {
+void Button::draw() {
 	//get mau cua khung hinh chung
 	int c = getcolor();
 	//tao nut
@@ -151,7 +138,7 @@ void Button::drawButton() {
 	setfillstyle(0, c);
 }
 
-void Button::initButton(short x, short y, short height, short width, short tColor, short bColor, short pattern, char* content) {
+void Button::init(short x, short y, short height, short width, short tColor, short bColor, short pattern, char* content) {
 	// ham nay de khoi tao nhung thong so cua mot nut
 	this->coordinates.x = x;
 	this->coordinates.y = y;
@@ -169,22 +156,22 @@ void Button::highLight() {
 	highLight = *this;
 	highLight.tColor = YELLOW;
 	highLight.bColor = BLUE;
-	highLight.drawButton();
+	highLight.draw();
 	
 }
 
 void Button::highLight(int tColor, int bColor) {
 	//Voi ham nay mau do nguoi lap trinh chon
 	Button highLight;
-	highLight.initButton(this->coordinates.x, this->coordinates.y, this->height, this->width, tColor, bColor, this->pattern, this->name);
-	highLight.drawButton();
+	highLight.init(this->coordinates.x, this->coordinates.y, this->height, this->width, tColor, bColor, this->pattern, this->name);
+	highLight.draw();
 }
 
 void Button::normal() {
-	this->drawButton();
+	this->draw();
 }
 
-bool Button::isHoverButton() {
+bool Button::isHover() {
 	//ham mousex(), mousey() de lay toa do chuot trong cua so ta dang thao tac
 	int x = mousex(), y = mousey();
 	//neu con tro chuot nam trong pham vi hinh chu nhat cua nut thi duoc tinh la 1 hover
@@ -195,27 +182,27 @@ bool Button::isHoverButton() {
 }
 
 void setTaskBarButtons() {
-	menuBar.initButton(20, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "MENU");
-	helpBar.initButton(125, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "HELP");
-	fileBar.initButton(230, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "FILE");
+	menuBar.init(20, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "MENU");
+	helpBar.init(125, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "HELP");
+	fileBar.init(230, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "FILE");
 }
 
 void drawTaskBarButtons() {
-	menuBar.drawButton();
-	helpBar.drawButton();
-	fileBar.drawButton();
+	menuBar.draw();
+	helpBar.draw();
+	fileBar.draw();
 }
 
 void helpBox(char *helpStr) {
 	Button helpBoxFrame;
-	helpBoxFrame.initButton(20, 60, 225, 315, YELLOW, BLACK, 1, "");
+	helpBoxFrame.init(20, 60, 225, 315, YELLOW, BLACK, 1, "");
 		
 }
 
 void taskBar() {
 	int option;
 	drawTaskBarButtons();
-	if (menuBar.isHoverButton()) {//thanh menu bar thi se hien thi ra danh sach cac cong cu o duoi
+	if (menuBar.isHover()) {//thanh menu bar thi se hien thi ra danh sach cac cong cu o duoi
 		//menuBar.highLight();
 		option = menuTools();
 		switch (option) {
@@ -263,7 +250,7 @@ void taskBar() {
 				break;
 			}
 		}
-	else if (helpBar.isHoverButton()) {
+	else if (helpBar.isHover()) {
 		helpBar.highLight();
 		option = helpTools();
 		switch (option) {
@@ -304,7 +291,7 @@ void taskBar() {
 				break;
 		}
 	}
-	else if (fileBar.isHoverButton()) {
+	else if (fileBar.isHover()) {
 		fileBar.highLight();
 		option = fileTools();
 		switch(option) {
@@ -321,9 +308,9 @@ void taskBar() {
 				break;
 			}
 			case 4: {
-				bool confirm = drawYesNoBar("Ban co muon \n xoa tat ca?");
+				bool confirm = drawYesNoBar("Ban co chac muon xoa tat ca?");
 				if (confirm)
-					clearAllVertices();
+					clearAllVertices();					
 				break;
 			}
 		}
@@ -333,7 +320,7 @@ void taskBar() {
 int helpTools() {
 	const short itemsAmount = 8;
 	Button helpTools[8], helpToolsHoverBar /*khung de xu ly hover*/;
-	helpToolsHoverBar.initButton(20, 60, 40 * 4 + 20, 320, BLACK, BLACK, 1, "");
+	helpToolsHoverBar.init(20, 60, 40 * 4 + 20, 320, BLACK, BLACK, 1, "");
 	helpTools[0].name = "Cach them dinh";
 	helpTools[1].name = "Cach them cung";
 	helpTools[2].name = "Cach sua dinh";
@@ -359,24 +346,24 @@ int helpTools() {
 		}
 	}
 	for (int i = 0; i < itemsAmount; i++) {
-		helpTools[i].drawButton();
+		helpTools[i].draw();
 	}
 	int page = 0;
 	while (true) {
 		delay(10);
 		setactivepage(page);
 		setvisualpage(1- page);
-		taskBarFrame.drawButton();
+		taskBarFrame.draw();
 		drawTaskBarButtons();
 		helpBar.highLight();
-		if (helpBar.isHoverButton() || helpToolsHoverBar.isHoverButton()) {
+		if (helpBar.isHover() || helpToolsHoverBar.isHover()) {
 			int x, y;
 			getmouseclick(WM_LBUTTONDOWN, x, y);
 			for (int i = 0; i < itemsAmount; i++) {
 				if (x >= helpTools[i].coordinates.x && x <= helpTools[i].coordinates.x + helpTools[i].width 
 				&& y >= helpTools[i].coordinates.y && y <= helpTools[i].coordinates.y + helpTools[i].height)
 					return i + 1;
-				if (helpTools[i].isHoverButton())
+				if (helpTools[i].isHover())
 					helpTools[i].highLight();
 				else
 					helpTools[i].normal();
@@ -392,7 +379,7 @@ int helpTools() {
 int menuTools() {
 	const short itemsAmount = 10;
 	Button menuTools[10], menuToolsHoverBar/*khung de xu ly hover*/;
-	menuToolsHoverBar.initButton(20, 60, 225, 315, BLACK, BLACK, 1, "");//Nut gia de xu ly hover
+	menuToolsHoverBar.init(20, 60, 225, 315, BLACK, BLACK, 1, "");//Nut gia de xu ly hover
 	menuTools[0].name = "Canh cau";
 	menuTools[1].name = "Dinh tru";
 	menuTools[2].name = "Thanh phan lien thong";
@@ -447,24 +434,24 @@ int menuTools() {
 	}
 	for (i = 0; i < itemsAmount; i++)
 		//ve cac nut ra man hinh
-		menuTools[i].drawButton();
+		menuTools[i].draw();
 	int page = 0;
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
 		delay(10);
-		taskBarFrame.drawButton();
+		taskBarFrame.draw();
 		drawTaskBarButtons();
 		menuBar.highLight();
 		//Neu con tro chuot dang nam trong pham vi cua thanh menu 
 		//hoac no dang nam trong pham vi o chua cac cong cu cua thanh menu thi moi thao tac
 		//nguoc lai thi thoat vong lap
-		if (menuToolsHoverBar.isHoverButton() || menuBar.isHoverButton()) {
+		if (menuToolsHoverBar.isHover() || menuBar.isHover()) {
 			int x, y;
 			//xu ly su kien chuot trai
 			getmouseclick(WM_LBUTTONDOWN, x, y);
 			for (i = 0; i < itemsAmount; i++) {
-				if (menuTools[i].isHoverButton())
+				if (menuTools[i].isHover())
 					//neu di chuot vao mot trong cac menu tools thi se high light dong do
 					menuTools[i].highLight();
 				else
@@ -486,7 +473,7 @@ int menuTools() {
 int fileTools() {
 	const short itemsAmount = 4;
 	Button fileTools[4], fileToolsHoverBar/*khung xử lý hover*/;
-	fileToolsHoverBar.initButton(20, 60, 40 * 4 + 5 * 4, 315, BLACK, BLACK, 1, "");
+	fileToolsHoverBar.init(20, 60, 40 * 4 + 5 * 4, 315, BLACK, BLACK, 1, "");
 	int y0 = 65;
 	fileTools[0].name = "Mo file";
 	fileTools[1].name = "Luu file";
@@ -503,20 +490,20 @@ int fileTools() {
 		fileTools[i].height = 40;
 	}
 	for (int i = 0; i < itemsAmount; i++)
-		fileTools[i].drawButton();
+		fileTools[i].draw();
 	int page = 0;
 	while (true) {
 		delay(10);
 		setactivepage(page);
 		setvisualpage(1 - page);
-		taskBarFrame.drawButton();
+		taskBarFrame.draw();
 		drawTaskBarButtons();
 		fileBar.highLight();
-		if (fileToolsHoverBar.isHoverButton() || fileBar.isHoverButton()) {
+		if (fileToolsHoverBar.isHover() || fileBar.isHover()) {
 			int x, y;
 			getmouseclick(WM_LBUTTONDOWN, x, y);
 			for (int i = 0; i < itemsAmount; i++) {
-				if (fileTools[i].isHoverButton())
+				if (fileTools[i].isHover())
 				//neu thanh file tools nao duoc chuot do nguoi dung di chuyen toi thi se duoc to sang
 					fileTools[i].highLight();
 				else 
@@ -535,25 +522,25 @@ int fileTools() {
 
 void setFrame() {
 	//Khoi tao thanh tac vu gom co nut menu, nut help, nut file va mot so thao tac khac
-	taskBarFrame.initButton(15, 15, 275, 400, 0, 3, 1, "");// width cu = 320
+	taskBarFrame.init(15, 15, 275, 400, 0, 3, 1, "");// width cu = 320
 	//Khoi tao cua so thao tac cac tac vu nhu tao dinh, them dinh, xoa dinh, xoa canh,...
-	vertexTaskBarFrame.initButton(420, 15, 689, 844, 0, 3, 1, "");
+	vertexTaskBarFrame.init(420, 15, 689, 844, 0, 3, 1, "");
 	//Khoi tai khung cua ma tran ke
-	adjacencyMatrixFrame.initButton(15, 295, 409, 400, 0, 3, 1, "");
+	adjacencyMatrixFrame.init(15, 295, 409, 400, 0, 3, 1, "");
 	//Khoi tao khung hien thi dinh va canh
-	pointBarFrame.initButton(425, 20, 500, 834, 0, BLACK , 1, ""); 
+	pointBarFrame.init(425, 20, 500, 834, 0, BLACK , 1, ""); 
 }
 
 void drawFrame() {
 	//Ve khung hien thi
-	taskBarFrame.drawButton();
-	vertexTaskBarFrame.drawButton();
-	taskBarFrame.drawButton();
-	adjacencyMatrixFrame.drawButton();
-	pointBarFrame.drawButton();
+	taskBarFrame.draw();
+	vertexTaskBarFrame.draw();
+	taskBarFrame.draw();
+	adjacencyMatrixFrame.draw();
+	pointBarFrame.draw();
 }
 
-void Vertex::createVtex() {
+void Vertex::create() {
 	
 	if (ismouseclick(WM_LBUTTONDOWN)) {
 		//Neu co click chuot trai
@@ -561,23 +548,23 @@ void Vertex::createVtex() {
 		//Neu no nam trong pham vi cua bang hien thi dinh thi moi cho tao dinh
 		if (this->coordinates.x >= 425 + RADIUS && this->coordinates.x <= 1259 - RADIUS
 		&& this->coordinates.y >= 20 + RADIUS && this->coordinates.y <= 520 - RADIUS) {
-			this->createVtexName();
+			this->createName();
 		}
 	}
 }
 
-void Vertex::createVtexName() {
+void Vertex::createName() {
 	Button nameCreateBar;
 	int page = 0; 
-	nameCreateBar.initButton(425 + (834 - 200) / 2, 20 + (500 - 200) / 2, 200, 200, YELLOW, BLACK, 1, "Bang tao ten");
+	nameCreateBar.init(425 + (834 - 200) / 2, 20 + (500 - 200) / 2, 200, 200, YELLOW, BLACK, 1, "Bang tao ten");
 	this->name = new char[3];
 	this->name = "A";
 //	char c = getcolor();
 //	
 //		
-//		pointBarFrame.drawButton();
+//		pointBarFrame.draw();
 //		drawVertices();
-//		nameCreateBar.drawButton();
+//		nameCreateBar.draw();
 //		gets(name);
 //	
 
@@ -596,7 +583,7 @@ void Vertex::drawVtex() {
 	//pieslice(this->coordinates.x, this->coordinates.y, 0, 0, RADIUS);
 	setcolor(YELLOW);
 	outtextxy(this->coordinates.x - textwidth(this->name) / 2, this->coordinates.y - textheight(this->name) / 2, this->name);
-	if ((x - this->coordinates.x) * (x - this->coordinates.x) + (y - this->coordinates.y) * (y - this->coordinates.y) <= RADIUS * RADIUS)
+	if (this->isHover())
 		this->highLight();
 	setcolor(c);
 	setfillstyle(1, c);
@@ -619,6 +606,14 @@ bool Vertex::isDefaultVtex() {
 	return 0;
 }
 
+bool Vertex::isHover() {
+	int x = mousex(), y = mousey();
+	if ((x - this->coordinates.x) * (x - this->coordinates.x) + (y - this->coordinates.y) * (y - this->coordinates.y) <= RADIUS * RADIUS)
+		// tam I(a,b) phuong trinh (x - a)2 + (y - b)2 <= r2
+		return 1;
+	return 0;
+}
+
 void Vertex::defaultVtex() {
 	this->coordinates.x = -1;
 	this->coordinates.y = -1;
@@ -637,12 +632,19 @@ void initDefaultVertices() {
 
 void loadFileStartUp() {
 	ifstream input ("filesInProgram//startUpFile.txt");
- 	input >> n;
-	for (int i = 0; i < n; i++) {
-		input >> vertices[i].coordinates.x >> vertices[i].coordinates.y;
-		vertices[i].name = new char[3];
-		input >> vertices[i].name;
+	if (input.is_open()) {
+		input >> n;
+		for (int i = 0; i < n; i++) {
+			input >> vertices[i].coordinates.x >> vertices[i].coordinates.y;
+			vertices[i].name = new char[3];
+			input >> vertices[i].name;
+		}
+	} else {
+		FILE * newFile = fopen("filesInProgram//startUpFile.txt", "a");
+		fprintf(newFile, "%d", 0);
+		fclose(newFile);
 	}
+ 
 	input.close();
 }
 
@@ -674,13 +676,13 @@ void clearAllVertices() {
 }
 
 bool drawYesNoBar(char *question) {
-	Button nameCreateBar, yesBar, NoBar;
+	Button frame, yesButton, noButton;
 	int height = 100;
 	int width = 200;
 	int margin = 5;
-	nameCreateBar.initButton(425 + (834 - width) / 2 , 20 + (500 - height) / 2, height, width, YELLOW, BLACK, 1, "");
-	yesBar.initButton(425 + (834 - width) / 2 + margin, 20 + (500 - height) / 2 + (height - 40 - margin), 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "YES");
-	
+	frame.init(425 + (834 - width) / 2 , 20 + (500 - height) / 2, height, width, YELLOW, BLACK, 1, "");
+	yesButton.init(425 + (834 - width) / 2 + margin, 20 + (500 - height) / 2 + (height - 40 - margin), 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "CO");
+	noButton.init(425 + (834 - width) / 2 + margin * 2 + (width - 3 * margin) / 2, 20 + (500 - height) / 2 + (height - 40 - margin), 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "KHONG");
 	int page = 0;
 	while (true) {
 		setactivepage(page);
@@ -691,20 +693,40 @@ bool drawYesNoBar(char *question) {
 		drawFrame();
 		drawTaskBarButtons();
 		drawVertices();
-		nameCreateBar.drawButton();
-		yesBar.drawButton();
-		outtextxy(425 + (834 - 200) / 2 + 10, 20 + (500 - 100) / 2 + 10, question);
+		frame.draw();
+		yesButton.draw();
+		noButton.draw();
+		outtextxy(425 + (834 - width) / 2 + (width - textwidth(question)) / 2, 20 + (500 - height) / 2 + 10, question);
 		if (kbhit()) {
 			char key = getch();
 			if (key == 13) {
 				return 1;	
 			}
-			
 		}
-		
+		if (yesButton.isHover())//neu chuot di chuyen toi thanh yes thanh yes se sang
+			yesButton.highLight();
+		if (noButton.isHover())//neu chuot di chuyen toi thanh no thanh no se sang
+			noButton.highLight();
+		if (yesButton.isClickLMButton())//neu click chuot trai vao thanh yes thi tra ve gia tri true 
+			return 1;
+		if (noButton.isClickLMButton())//neu click chuot trai vao thanh no thi tra ve gia tri false
+			return 0;
 		page = 1 - page;
 	}
-
 }
 
+bool isClickOtherVertex(Vertex vtex) {
+	int x = vtex.coordinates.x, y = vtex.coordinates.y;
+	for (int i = 0; i < n; i++) {
+		if ((x - vertices[i].coordinates.x) * (x - vertices[i].coordinates.x) + (y - vertices[i].coordinates.y) * (y - vertices[i].coordinates.y) <= RADIUS * RADIUS)
+		// tam I(a,b) phuong trinh (x - a)2 + (y - b)2 <= r2)
+			return 1;
+	}
+	return 0;
+}
 
+bool isEmptyVertex() {
+	if (n == 0)
+		return 1;
+	return 0;
+}
