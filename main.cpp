@@ -88,6 +88,7 @@ bool isClickOtherVertex(Vertex vtexs);//kiem tra xem chuot trai co click vao din
 bool isEmptyVertex();//Kiem tra dinh tren man hinh da co hay chua
 void strnDel(char *s, int pos, int count);//ham xoa ki tu trong chuoi
 void upper(char *s);//Doi day s thanh chu in hoa
+bool isNamesake(char *s);//Ham de kiem tra xem ten cua dinh vua tao co cung ten voi cac dinh khac khong
 
 int main() {
 //
@@ -121,6 +122,14 @@ void process() {
 	}
 	getch();
 	closegraph();
+}
+
+bool isNamesake(char *s) {
+	for (int i = 0; i < n; i++) {
+		if(stricmp(s, vertices[i].name) == 0)
+			return 1;
+	}
+	return 0;
 }
 
 void upper(char *s) {
@@ -589,7 +598,7 @@ void Vertex::createName() {
 	int height = 200;
 	int width = 250;
 	int margin = 5;
-	int limitCharacter = 0;
+	int x, y;
 	this->name = new char[3];
 	char name[3] = ""; 
 	char request[] = "Nhap ten dinh";
@@ -603,6 +612,8 @@ void Vertex::createName() {
 		setactivepage(page);
 		setvisualpage(1 - page);
 		delay(50);
+		if (ismouseclick(WM_LBUTTONDOWN))
+			getmouseclick(WM_LBUTTONDOWN, x, y);
 		setfillstyle(10, GREEN);
 		bar (1, 1, 1279, 719);
 		drawFrame();
@@ -632,15 +643,22 @@ void Vertex::createName() {
 			}
 			if (i < 0)
 				i = 0;
-			if ((strcmp(name, "") != 0 && key == 13)) {
+			if (strcmp(name, "") != 0 && key == 13 && !isNamesake(name)) {
 				break;
 			}
-			if (strcmp(name, "") == 0 && key == 13) {
+			if ((strcmp(name, "") == 0 && key == 13)) {
 				frame.highLight(WHITE, RED);
 				enterNameBar.draw();
 				finishButton.draw();
 				cancelButton.draw();
 				delay(50);
+			}
+			if (isNamesake(name)) {
+				for (int i = 0; i < n; i++)
+					if (stricmp(name, vertices[i].name) == 0) {
+						vertices[i].highLight();
+						delay(50);
+					}
 			}
 			//cout << i << endl;
 		}
@@ -651,6 +669,15 @@ void Vertex::createName() {
 		if (cancelButton.isHover())
 			cancelButton.highLight();
 		page = 1 - page;
+		if (strcmp(name, "") != 0 && !isNamesake(name)
+		&& x >= finishButton.coordinates.x && x <= finishButton.coordinates.x + finishButton.width
+		&& y >= finishButton.coordinates.y && y <= finishButton.coordinates.y + finishButton.height)
+			break;
+		if (x >= cancelButton.coordinates.x && x <= cancelButton.coordinates.x + cancelButton.width
+		&& y >= cancelButton.coordinates.y && y <= cancelButton.coordinates.y + cancelButton.height) {
+			this->defaultVtex();
+			return;
+		}
 	}
 	
 //	this->name = name;
