@@ -5,6 +5,7 @@
 #include <conio.h>
 #include <stdlib.h>
 #include <fstream>
+#include <string.h>
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wconversion-null"
 #pragma GCC diagnostic ignored "-Wpointer-arith"
@@ -27,12 +28,14 @@ struct Vertex /*cau truc dinh*/{
 	Point coordinates;
 	char *name;
 	void create();
-	void drawVtex();
+	void draw();
 	void createName();
 	void highLight();
 	void defaultVtex();
 	bool isDefaultVtex();
 	bool isHover();
+	bool isClickLMButton();
+	void move();
 };
 
 struct Button /*cau truc nut*/{
@@ -64,6 +67,7 @@ Button menuBar/*thanh menu*/,
 		taskBarFrame/*khung hien thi thanh tac vu gom menu, file va help*/,
 		vertexTaskBarFrame/*khung hien thi thanh tac vu */;
 
+void process();
 void helpBox(char *helpStr);
 void setTaskBarButtons();
 void drawTaskBarButtons();
@@ -82,17 +86,24 @@ void clearAllVertices();//ham nay cho phep xoa tat ca cac dinh va cung dang hien
 bool drawYesNoBar(char *question);//ham nay dung de xac nhan truoc khi lam gi do
 bool isClickOtherVertex(Vertex vtexs);//kiem tra xem chuot trai co click vao dinh hay khong. Ham nay su dung de tranh tao dinh de len dinh khac
 bool isEmptyVertex();//Kiem tra dinh tren man hinh da co hay chua
+void strnDel(char *s, int pos, int count);//ham xoa ki tu trong chuoi
+void upper(char *s);//Doi day s thanh chu in hoa
 
 int main() {
+//
+	process();
+
+}
+
+void process() {
+	Vertex vtex;
 	int page = 0;
 	initwindow(1280, 720);
-	Vertex vtex;
 	setTaskBarButtons();
 	setFrame();
 	initDefaultVertices();
 	loadFileStartUp();
-	while (true) {
-		
+	while (true) {	
 		setactivepage(page);
 		setvisualpage(1 - page);
 		delay(1);
@@ -100,16 +111,34 @@ int main() {
 		setfillstyle(10, GREEN);
 		bar(1, 1, 1279, 719);
 		drawFrame();
-
-		vtex.create();
-	
-		addVertexToList(vtex);
+		if (n < MAX) {
+			vtex.create();
+			addVertexToList(vtex);
+		}
 		drawVertices();
 		taskBar();
 		page = 1 - page;
 	}
+	getch();
+	closegraph();
 }
 
+void upper(char *s) {
+	for (int i = 0; i < strlen(s); i++) {
+		if (s[i] >= 'a' && s[i] <= 'z')
+			s[i] -= 32;
+	}
+}
+
+void strnDel(char s[], int pos, int count) {
+	unsigned len = strlen(s);
+	if (pos >= len) 
+		return;
+	if (pos + count > len) 
+		count = len - pos;
+	for (unsigned i = 0; i <= len - pos - count; i++)
+		s[pos + i] = s[pos + count + i];
+}
 
 bool Button::isClickLMButton() {
 	int x, y;
@@ -200,7 +229,7 @@ void helpBox(char *helpStr) {
 }
 
 void taskBar() {
-	int option;
+	int option, ad;
 	drawTaskBarButtons();
 	if (menuBar.isHover()) {//thanh menu bar thi se hien thi ra danh sach cac cong cu o duoi
 		//menuBar.highLight();
@@ -309,8 +338,8 @@ void taskBar() {
 			}
 			case 4: {
 				bool confirm = drawYesNoBar("Ban co chac muon xoa tat ca?");
-				if (confirm)
-					clearAllVertices();					
+				if (confirm) 
+					clearAllVertices();			
 				break;
 			}
 		}
@@ -541,39 +570,94 @@ void drawFrame() {
 }
 
 void Vertex::create() {
-	
+	int x, y;
 	if (ismouseclick(WM_LBUTTONDOWN)) {
 		//Neu co click chuot trai
-		getmouseclick(WM_LBUTTONDOWN, this->coordinates.x, this->coordinates.y);
+		getmouseclick(WM_LBUTTONDOWN, x, y);
 		//Neu no nam trong pham vi cua bang hien thi dinh thi moi cho tao dinh
-		if (this->coordinates.x >= 425 + RADIUS && this->coordinates.x <= 1259 - RADIUS
-		&& this->coordinates.y >= 20 + RADIUS && this->coordinates.y <= 520 - RADIUS) {
+		if (x >= 425 + RADIUS && x <= 1259 - RADIUS
+		&& y >= 20 + RADIUS && y <= 520 - RADIUS) {
+			this->coordinates.x = x;
+			this->coordinates.y = y;
 			this->createName();
 		}
 	}
 }
 
 void Vertex::createName() {
-	Button nameCreateBar;
-	int page = 0; 
-	nameCreateBar.init(425 + (834 - 200) / 2, 20 + (500 - 200) / 2, 200, 200, YELLOW, BLACK, 1, "Bang tao ten");
+	Button frame, finishButton, cancelButton, enterNameBar;
+	int height = 200;
+	int width = 250;
+	int margin = 5;
+	int limitCharacter = 0;
 	this->name = new char[3];
-	this->name = "A";
-//	char c = getcolor();
-//	
-//		
-//		pointBarFrame.draw();
-//		drawVertices();
-//		nameCreateBar.draw();
-//		gets(name);
-//	
-
-
-
-		
+	char name[3] = ""; 
+	char request[] = "Nhap ten dinh";
+	frame.init(425 + (834 - width) / 2 , 20 + (500 - height) / 2, height, width, YELLOW, DARKGRAY, 1, "");
+	finishButton.init(425 + (834 - width) / 2 + margin, 20 + (500 - height) / 2 + (height - 40 - margin), 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HOAN THANH");
+	cancelButton.init(425 + (834 - width) / 2 + margin * 2 + (width - 3 * margin) / 2, 20 + (500 - height) / 2 + (height - 40 - margin), 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HUY");
+	enterNameBar.init(425 + (834 - width) / 2 + margin, 20 + (500 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50, 40, (width - 2 * margin), YELLOW, BLACK, 9, "");
+	int page = 0;
+	int i = 0; 
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		delay(50);
+		setfillstyle(10, GREEN);
+		bar (1, 1, 1279, 719);
+		drawFrame();
+		drawTaskBarButtons();
+		drawVertices();
+		frame.draw();
+		finishButton.draw();
+		cancelButton.draw();
+		enterNameBar.draw();
+		if (strcmp(name, "") == 0)
+			outtextxy(425 + (834 - width) / 2 + (width - textwidth(request)) / 2, 20 + (500 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+		if (kbhit()) {
+			char key = getch();
+			if ((key >= 'A' && key <= 'Z') || (key >= 'a' && key <= 'z')) {
+				//Neu phim ta nhap la chu cai thi moi them vao chuoi
+				if (i < 2) {
+					//Neu chieu dai cua chuoi da day thi khong cho them vao chuoi
+					name[i] = key;
+					i++;//vi tri se duoc nhay len mot don vi sau khi them mot ky tu vao chuoi
+				}
+			}
+			if (i > 2)
+				i = 2;
+			if (key == 8) {
+				strnDel(name, i - 1, 1);//xoa ki tu co vi tri sau cung cua chuoi
+				i--;//vi tri se duoc giam xuong 1 don vi
+			}
+			if (i < 0)
+				i = 0;
+			if ((strcmp(name, "") != 0 && key == 13)) {
+				break;
+			}
+			if (strcmp(name, "") == 0 && key == 13) {
+				frame.highLight(WHITE, RED);
+				enterNameBar.draw();
+				finishButton.draw();
+				cancelButton.draw();
+				delay(50);
+			}
+			//cout << i << endl;
+		}
+		upper(name);
+		outtextxy(425 + (834 - width) / 2 + (width - textwidth(name)) / 2, 20 + (500 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);
+		if (finishButton.isHover())
+			finishButton.highLight();
+		if (cancelButton.isHover())
+			cancelButton.highLight();
+		page = 1 - page;
+	}
+	
+//	this->name = name;
+	strcpy(this->name, name);
 }
 
-void Vertex::drawVtex() {
+void Vertex::draw() {
 	int x = mousex(), y = mousey();
 	if (this->coordinates.x == -1 && this->coordinates.y == -1)
 		return;
@@ -614,14 +698,55 @@ bool Vertex::isHover() {
 	return 0;
 }
 
+bool Vertex::isClickLMButton() {
+	int x, y;
+	getmouseclick(WM_LBUTTONDOWN, x, y);
+	if ((this->coordinates.x - x) * (this->coordinates.x - x) 
+	+ (this->coordinates.y - y) * (this->coordinates.y - y) <= RADIUS * RADIUS)
+		return 1;
+	return 0;
+}
+
+void Vertex::move() {
+	int x, y;
+	int page = 0;
+	while (true) {
+		
+		delay(10);
+		if (ismouseclick(WM_MOUSEMOVE) && ismouseclick(WM_LBUTTONDOWN)) {
+			getmouseclick(WM_MOUSEMOVE, x, y);	
+//			if ((this->coordinates.x - x) * (this->coordinates.x - x)
+//			+ (this->coordinates.y - y) * (this->coordinates.y - y) <= RADIUS * RADIUS) {
+//				getmouseclick(WM_MOUSEMOVE, x, y);
+//				cout << x << " " << y << endl;	
+//			}
+			this->coordinates.x = x;
+			this->coordinates.y = y;	
+		}
+		if (ismouseclick(WM_LBUTTONUP))
+			break;
+		if (!this->isHover())
+			break;
+		this->draw();
+	}
+	
+}
+
 void Vertex::defaultVtex() {
 	this->coordinates.x = -1;
 	this->coordinates.y = -1;
 }
 
 void drawVertices() {
+	int x, y;
 	for (int i = 0; i < n; i++) 
-		vertices[i].drawVtex();
+		vertices[i].draw();
+//	x = mousex(), y = mousey();
+//	for (int i = 0; i < n; i++) {
+//		if ((vertices[i].coordinates.x - x) * (vertices[i].coordinates.x - x)
+//		 + (vertices[i].coordinates.y - y) * (vertices[i].coordinates.y - y) <= RADIUS * RADIUS)
+//		 	vertices[i].move(); 
+//	}
 }
 
 void initDefaultVertices() {
@@ -680,6 +805,7 @@ bool drawYesNoBar(char *question) {
 	int height = 100;
 	int width = 200;
 	int margin = 5;
+	int x, y;
 	frame.init(425 + (834 - width) / 2 , 20 + (500 - height) / 2, height, width, YELLOW, BLACK, 1, "");
 	yesButton.init(425 + (834 - width) / 2 + margin, 20 + (500 - height) / 2 + (height - 40 - margin), 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "CO");
 	noButton.init(425 + (834 - width) / 2 + margin * 2 + (width - 3 * margin) / 2, 20 + (500 - height) / 2 + (height - 40 - margin), 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "KHONG");
@@ -694,8 +820,9 @@ bool drawYesNoBar(char *question) {
 		drawTaskBarButtons();
 		drawVertices();
 		frame.draw();
-		yesButton.draw();
 		noButton.draw();
+		yesButton.draw();
+		
 		outtextxy(425 + (834 - width) / 2 + (width - textwidth(question)) / 2, 20 + (500 - height) / 2 + 10, question);
 		if (kbhit()) {
 			char key = getch();
@@ -705,20 +832,26 @@ bool drawYesNoBar(char *question) {
 		}
 		if (yesButton.isHover())//neu chuot di chuyen toi thanh yes thanh yes se sang
 			yesButton.highLight();
-		if (noButton.isHover())//neu chuot di chuyen toi thanh no thanh no se sang
+		else if (noButton.isHover())//neu chuot di chuyen toi thanh no thanh no se sang
 			noButton.highLight();
-		if (yesButton.isClickLMButton())//neu click chuot trai vao thanh yes thi tra ve gia tri true 
-			return 1;
-		if (noButton.isClickLMButton())//neu click chuot trai vao thanh no thi tra ve gia tri false
-			return 0;
-		page = 1 - page;
+		if (ismouseclick(WM_LBUTTONDOWN)) {
+			getmouseclick(WM_LBUTTONDOWN, x, y);
+			if (x >= yesButton.coordinates.x && x <= yesButton.coordinates.x + yesButton.width
+			&& y >= yesButton.coordinates.y && y <= yesButton.coordinates.y + yesButton.height)
+				return 1;
+			if (x >= noButton.coordinates.x && x <= noButton.coordinates.x + noButton.width
+			&& y >= noButton.coordinates.y && y <= noButton.coordinates.y + noButton.height)
+				return 0;
+		}
+ 		page = 1 - page;
 	}
+	
 }
 
 bool isClickOtherVertex(Vertex vtex) {
 	int x = vtex.coordinates.x, y = vtex.coordinates.y;
 	for (int i = 0; i < n; i++) {
-		if ((x - vertices[i].coordinates.x) * (x - vertices[i].coordinates.x) + (y - vertices[i].coordinates.y) * (y - vertices[i].coordinates.y) <= RADIUS * RADIUS)
+		if ((x - vertices[i].coordinates.x) * (x - vertices[i].coordinates.x) + (y - vertices[i].coordinates.y) * (y - vertices[i].coordinates.y) <= 4 * RADIUS * RADIUS)
 		// tam I(a,b) phuong trinh (x - a)2 + (y - b)2 <= r2)
 			return 1;
 	}
