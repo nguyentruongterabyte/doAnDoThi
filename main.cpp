@@ -32,6 +32,7 @@ struct Vertex /*cau truc dinh*/{
 	void draw();
 	void createName();
 	void highLight();
+	void highLight(int tColor, int bColor);
 	void defaultVtex();
 	bool isDefaultVtex();
 	bool isHover();
@@ -152,14 +153,6 @@ void moveVertex() {
 					if (ismouseclick(WM_MOUSEMOVE)) {
 						getmouseclick(WM_MOUSEMOVE, x, y);
 						bool check = 0;
-						if (x > 1259 - RADIUS)
-							x = 1259 - RADIUS;
-						if (x < 425 + RADIUS)
-							x = 425 + RADIUS;
-						if (y > 520 - RADIUS)
-							y = 520 - RADIUS;
-						if (y < 20 + RADIUS)
-							y = 20 + RADIUS;
 						for (int j = 0; j < n; j++)
 							if (j != i) {
 								int xB = vertices[j].coordinates.x;
@@ -172,21 +165,21 @@ void moveVertex() {
 							vertices[i].coordinates.x = x;
 							vertices[i].coordinates.y = y;
 						}
-						if (x == 435 + RADIUS && y >= 20 + RADIUS && y <= 520 - RADIUS) {
+						if (x < 435 + RADIUS && y >= 20 + RADIUS && y <= 520 - RADIUS) {
 							vertices[i].coordinates.x = 425 + RADIUS;
 							vertices[i].coordinates.y = y;
 						}
-						if (x == 1259 - RADIUS && y >= 20 + RADIUS && y <= 520 - RADIUS) {
+						if (x > 1259 - RADIUS && y >= 20 + RADIUS && y <= 520 - RADIUS) {
 							vertices[i].coordinates.x = 1259 - RADIUS;
 							vertices[i].coordinates.y = y;
 						}
 						if (x >= 425 + RADIUS && x <= 1259 - RADIUS
-						&& y == 20 + RADIUS) {
+						&& y < 20 + RADIUS) {
 							vertices[i].coordinates.x = x;
 							vertices[i].coordinates.y = 20 + RADIUS;
 						}
 						if (x >= 425 + RADIUS && x <= 1259 - RADIUS
-						&& y == 520 - RADIUS) {
+						&& y > 520 - RADIUS) {
 							vertices[i].coordinates.x = x;
 							vertices[i].coordinates.y = 520 - RADIUS;
 						}
@@ -335,8 +328,6 @@ void initEditTools() {
 }
 
 void editVertex() {
-//		if (x >= 425 + RADIUS && x <= 1259 - RADIUS
-//		&& y >= 20 + RADIUS && y <= 520 - RADIUS) {
 	int x, y;
 	if (ismouseclick(WM_RBUTTONDOWN)) {
 		getmouseclick(WM_RBUTTONDOWN, x, y);
@@ -375,9 +366,6 @@ void editVertex() {
 					if (ismouseclick(WM_LBUTTONDOWN)) {
 						int xL, yL;
 						getmouseclick(WM_LBUTTONDOWN, xL, yL);
-//						if (xL < editFrame.coordinates.x && xL > editFrame.coordinates.x + editFrame.width
-//						&& yL < editFrame.coordinates.y && yL > editFrame.coordinates.y + editFrame.height)
-//							break;
 						if (xL >= deleteButton.coordinates.x && xL <= deleteButton.coordinates.x + deleteButton.width
 						&& yL >= deleteButton.coordinates.y && yL <= deleteButton.coordinates.y + deleteButton.height) {
 							bool confirm = drawYesNoBar("Ban co chac muon xoa dinh?");
@@ -394,7 +382,6 @@ void editVertex() {
 						else 
 							break;
 					}
-					//clearmouseclick(WM_LBUTTONDOWN);
 					page = 1 - page;
 				}
 			}
@@ -975,7 +962,7 @@ void Vertex::createName() {
 			if (isNamesake(name)) {
 				for (int i = 0; i < n; i++)
 					if (stricmp(name, vertices[i].name) == 0) {
-						vertices[i].highLight();
+						vertices[i].highLight(WHITE, RED);
 						delay(50);
 					}
 			}
@@ -1031,6 +1018,16 @@ void Vertex::highLight() {
 	setfillstyle(1, c);
 }
 
+void Vertex::highLight(int tColor, int bColor) {
+	char c = getcolor();
+	setfillstyle(1, bColor);
+	pieslice(this->coordinates.x, this->coordinates.y, 0, 0, RADIUS);
+	setcolor(tColor);
+	outtextxy(this->coordinates.x - textwidth(this->name) / 2, this->coordinates.y - textheight(this->name) / 2, this->name);
+	setcolor(c);
+	setfillstyle(1, c);	
+}
+
 bool Vertex::isDefaultVtex() {
 	if (this->coordinates.x == -1 && this->coordinates.y == -1)
 		return 1;
@@ -1064,12 +1061,6 @@ void drawVertices() {
 	int x, y;
 	for (int i = 0; i < n; i++) 
 		vertices[i].draw();
-//	x = mousex(), y = mousey();
-//	for (int i = 0; i < n; i++) {
-//		if ((vertices[i].coordinates.x - x) * (vertices[i].coordinates.x - x)
-//		 + (vertices[i].coordinates.y - y) * (vertices[i].coordinates.y - y) <= RADIUS * RADIUS)
-//		 	vertices[i].move(); 
-//	}
 }
 
 void initDefaultVertices() {
