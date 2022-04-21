@@ -35,7 +35,7 @@ struct Vertex /*cau truc dinh*/{
 	bool isDefaultVtex();
 	bool isHover();
 	bool isClickLMButton();
-	void move();
+	void changeName();
 };
 
 struct Button /*cau truc nut*/{
@@ -65,7 +65,10 @@ Button menuBar/*thanh menu*/,
 		adjacencyMatrixFrame/*khung hien thi ma tran ke*/, 
 		pointBarFrame/*khung hien thi dinh va canh*/,
 		taskBarFrame/*khung hien thi thanh tac vu gom menu, file va help*/,
-		vertexTaskBarFrame/*khung hien thi thanh tac vu */;
+		vertexTaskBarFrame/*khung hien thi thanh tac vu */,
+		editFrame/*khung hien thi cac cong cu sua ten va xoa dinh*/,
+		deleteButton/*Nut xoa dinh*/,
+		editNameButton/*Nut sua ten dinh*/;
 
 void process();
 void helpBox(char *helpStr);
@@ -89,6 +92,12 @@ bool isEmptyVertex();//Kiem tra dinh tren man hinh da co hay chua
 void strnDel(char *s, int pos, int count);//ham xoa ki tu trong chuoi
 void upper(char *s);//Doi day s thanh chu in hoa
 bool isNamesake(char *s);//Ham de kiem tra xem ten cua dinh vua tao co cung ten voi cac dinh khac khong
+void drawAddVertex(int x, int y);//ve mot vong tron khi tao dinh
+void editVertex();//xoa dinh tren do thi hoac doi ten dinh
+void initEditTools();//Khoi tao hop thoai chinh sua dinh
+void drawEditTools(int x, int y);//Vẽ hộp thoại edit dinh
+void deleteVertex(int pos);//xoa dinh trong danh sach tai mot vi tri cho truoc
+void moveVertex();//ham di chuyen dinh
 
 int main() {
 //
@@ -103,6 +112,7 @@ void process() {
 	setTaskBarButtons();
 	setFrame();
 	initDefaultVertices();
+	initEditTools();
 	loadFileStartUp();
 	while (true) {	
 		setactivepage(page);
@@ -112,16 +122,273 @@ void process() {
 		setfillstyle(10, GREEN);
 		bar(1, 1, 1279, 719);
 		drawFrame();
+		moveVertex();
 		if (n < MAX) {
 			vtex.create();
 			addVertexToList(vtex);
 		}
 		drawVertices();
 		taskBar();
+		editVertex();
 		page = 1 - page;
 	}
 	getch();
 	closegraph();
+}
+
+void moveVertex() {
+	int x, y;
+	if (ismouseclick(WM_LBUTTONDOWN)) {
+		getmouseclick(WM_LBUTTONDOWN, x, y);
+		for (int i = 0; i < n; i++) {
+			int x0 = vertices[i].coordinates.x;
+			int y0 = vertices[i].coordinates.y;
+			if ((x - x0) * (x - x0) + (y - y0) * (y - y0) <= RADIUS * RADIUS) {
+				int page = 0;
+				while (true) {
+					setactivepage(page);
+					setvisualpage(1 - page);
+					if (ismouseclick(WM_MOUSEMOVE)) {
+						getmouseclick(WM_MOUSEMOVE, x, y);
+						if (x >= 425 + RADIUS && x <= 1259 - RADIUS
+						&& y >= 20 + RADIUS && y <= 520 - RADIUS) {
+							vertices[i].coordinates.x = x;
+							vertices[i].coordinates.y = y;
+						}
+						if (x < 435 + RADIUS && y >= 20 + RADIUS && y <= 520 - RADIUS) {
+							vertices[i].coordinates.x = 425 + RADIUS;
+							vertices[i].coordinates.y = y;
+						}
+						if (x > 1259 - RADIUS && y >= 20 + RADIUS && y <= 520 - RADIUS) {
+							vertices[i].coordinates.x = 1259 - RADIUS;
+							vertices[i].coordinates.y = y;
+						}
+						if (x >= 425 + RADIUS && x <= 1259 - RADIUS
+						&& y < 20 + RADIUS) {
+							vertices[i].coordinates.x = x;
+							vertices[i].coordinates.y = 20 + RADIUS;
+						}
+						if (x >= 425 + RADIUS && x <= 1259 - RADIUS
+						&& y > 520 - RADIUS) {
+							vertices[i].coordinates.x = x;
+							vertices[i].coordinates.y = 520 - RADIUS;
+						}
+					}
+					drawFrame();
+					drawTaskBarButtons();
+					drawVertices();
+					if (ismouseclick(WM_LBUTTONUP)) {
+						break;
+					}
+					page = 1 - page;	
+				}
+			}
+		}
+	
+	}
+	saveFileStartUp();
+	clearmouseclick(WM_LBUTTONDOWN);
+	clearmouseclick(WM_LBUTTONUP);
+}
+
+void Vertex::changeName() {
+	Button frame, finishButton, cancelButton, enterNameBar;
+	int margin = 5;
+	int height = 275 - 3 * margin - 40;
+	int width = 400 - 2 * margin;
+	int x, y;
+	char name[3] = ""; 
+	char request[] = "Nhap ten dinh";
+	frame.init(15 + margin, 15 + 2 * margin + 40, height, width, YELLOW, DARKGRAY, 1, "");
+	finishButton.init(15 + 2 * margin, 275 - margin - 30, 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HOAN THANH");
+	cancelButton.init(15 + 3 * margin + (width - 3 * margin) / 2,275 - margin - 30, 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HUY");
+	enterNameBar.init(15 + 2 * margin, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50, 40, (width - 2 * margin), YELLOW, BLACK, 9, "");
+	int page = 0;
+	int i = 0; 
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		delay(50);
+		if (ismouseclick(WM_LBUTTONDOWN))
+			getmouseclick(WM_LBUTTONDOWN, x, y);
+		setfillstyle(10, GREEN);
+		bar (1, 1, 1279, 719);
+		drawFrame();
+		drawTaskBarButtons();
+		drawVertices();
+		frame.draw();
+		finishButton.draw();
+		cancelButton.draw();
+		enterNameBar.draw();
+		drawAddVertex(this->coordinates.x, this->coordinates.y);
+	
+		if (strcmp(name, "") == 0) {
+			outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+//			outtextxy(this->coordinates.x, this->coordinates.y, "+");
+			int x0 = this->coordinates.x, y0 = this->coordinates.y;
+			line(x0, y0, x0 - RADIUS + 5, y0);
+			line(x0, y0, x0 + RADIUS - 5, y0);
+			line(x0, y0, x0, y0 + RADIUS - 5);
+			line(x0, y0, x0, y0 - RADIUS + 5);
+		}
+		if (kbhit()) {
+			char key = getch();
+			if ((key >= 'A' && key <= 'Z') || (key >= 'a' && key <= 'z')) {
+				//Neu phim ta nhap la chu cai thi moi them vao chuoi
+				if (i < 2) {
+					//Neu chieu dai cua chuoi da day thi khong cho them vao chuoi
+					name[i] = key;
+					i++;//vi tri se duoc nhay len mot don vi sau khi them mot ky tu vao chuoi
+				}
+			}
+			if (i > 2)
+				i = 2;
+			if (key == 8) {
+				strnDel(name, i - 1, 1);//xoa ki tu co vi tri sau cung cua chuoi
+				i--;//vi tri se duoc giam xuong 1 don vi
+			}
+			if (i < 0)
+				i = 0;
+			if (strcmp(name, "") != 0 && key == 13 && !isNamesake(name)) {
+				break;
+			}
+			if ((strcmp(name, "") == 0 && key == 13)) {
+				frame.highLight(WHITE, RED);
+				enterNameBar.draw();
+				finishButton.draw();
+				cancelButton.draw();
+				delay(50);
+			}
+			if (isNamesake(name)) {
+				for (int i = 0; i < n; i++)
+					if (stricmp(name, vertices[i].name) == 0) {
+						vertices[i].highLight();
+						delay(50);
+					}
+			}
+			//cout << i << endl;
+		}
+		upper(name);
+		outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);
+		outtextxy(this->coordinates.x - textwidth(name) / 2, this->coordinates.y - textheight(name) / 2, name);
+		if (finishButton.isHover())
+			finishButton.highLight();
+		if (cancelButton.isHover())
+			cancelButton.highLight();
+		page = 1 - page;
+		if (strcmp(name, "") != 0 && !isNamesake(name)
+		&& x >= finishButton.coordinates.x && x <= finishButton.coordinates.x + finishButton.width
+		&& y >= finishButton.coordinates.y && y <= finishButton.coordinates.y + finishButton.height)
+			break;
+		if (x >= cancelButton.coordinates.x && x <= cancelButton.coordinates.x + cancelButton.width
+		&& y >= cancelButton.coordinates.y && y <= cancelButton.coordinates.y + cancelButton.height) {
+			return;
+		}
+	}
+	cout << name << endl;
+	if (strcmp(name, "") == 0)
+		return;
+//	this->name = name;
+	strcpy(this->name, name);
+}
+
+void deleteVertex(int pos) {
+	for (int i = pos; i < n - 1; i++) {
+		vertices[i] = vertices[i + 1];
+	}
+	vertices[n - 1].defaultVtex();
+	n--;
+	saveFileStartUp();
+}
+
+void drawEditTools(int x, int y) {
+	editFrame.coordinates.x = x, editFrame.coordinates.y = y;
+	deleteButton.coordinates.x = x, deleteButton.coordinates.y = y;
+	editNameButton.coordinates.x = x, editNameButton.coordinates.y = y + deleteButton.height;
+	
+	editFrame.draw();
+	deleteButton.draw();
+	editNameButton.draw();
+}
+
+void initEditTools() {
+	//do hop thoai nay co the dung o bat ky vi tri nao trong chuong trinh nen x y mac dinh cua no la 0
+	editFrame.init(0, 0, 80, 100, WHITE, DARKGRAY, 1, "");
+	deleteButton.init(0, 0, 40, 100, YELLOW, BLACK, 1, "Xoa dinh");
+	editNameButton.init(0, 0, 40, 100, YELLOW, BLACK, 1, "Sua ten");
+}
+
+void editVertex() {
+//		if (x >= 425 + RADIUS && x <= 1259 - RADIUS
+//		&& y >= 20 + RADIUS && y <= 520 - RADIUS) {
+	int x, y;
+	if (ismouseclick(WM_RBUTTONDOWN)) {
+		getmouseclick(WM_RBUTTONDOWN, x, y);
+		for (int i = 0; i < n; i++) {
+			int x0 = vertices[i].coordinates.x,
+				y0 = vertices[i].coordinates.y;
+			if ((x - x0) * (x - x0) + (y - y0) * (y - y0) <= RADIUS * RADIUS) {
+				int page = 0;
+				while (true) {
+					setactivepage(page);
+					setvisualpage(1 - page);
+					delay(10);
+					setfillstyle(10, GREEN);
+					bar(1, 1, 1279, 719);
+					drawFrame();
+					drawTaskBarButtons();
+					drawVertices();
+					if (x0 + RADIUS > 1259 - editFrame.width && y0 < 520 - editFrame.height)
+						drawEditTools(x0 - RADIUS - editFrame.width, y0);//goc tren cung ben phai
+					else if (x0 + RADIUS > 1259 - editFrame.width && y0 > 520 - editFrame.height)
+						drawEditTools(x0 - RADIUS - editFrame.width, y0 - editFrame.height);//goc duoi cung ben phai
+					else if (y0 > 520 - editFrame.height)
+						drawEditTools(x0 + RADIUS, y0 - editFrame.height);//goc duoi cung ben trai
+					else 
+						drawEditTools(x0 + RADIUS, y0);//cac cho con lai
+					if (ismouseclick(WM_RBUTTONDOWN)) {
+						int xR, yR;
+						getmouseclick(WM_RBUTTONDOWN, xR, yR);
+						if ((xR - x0) * (xR - x0) + (yR - y0) * (yR - y0) > RADIUS * RADIUS)
+							break;
+					} 
+					if (deleteButton.isHover())
+						deleteButton.highLight();
+					if (editNameButton.isHover())
+						editNameButton.highLight();
+					if (ismouseclick(WM_LBUTTONDOWN)) {
+						int xL, yL;
+						getmouseclick(WM_LBUTTONDOWN, xL, yL);
+//						if (xL >= editNameButton.coordinates.x && xL <= editNameButton.coordinates.x + editNameButton.width
+//						&& yL >= editNameButton.coordinates.y && yL <= editNameButton.coordinates.x + editNameButton.height)
+//						if ((xL - x0) * (xL - x0) + (yL - y0) * (yL - y0) > RADIUS * RADIUS)
+//							break;
+						if (xL >= deleteButton.coordinates.x && xL <= deleteButton.coordinates.x + deleteButton.width
+						&& yL >= deleteButton.coordinates.y && yL <= deleteButton.coordinates.y + deleteButton.height) {
+							bool confirm = drawYesNoBar("Ban co chac muon xoa dinh?");
+							if (confirm) {
+								deleteVertex(i);
+							}
+							break;
+						}
+						if (xL >= editNameButton.coordinates.x && xL <= editNameButton.coordinates.x + editNameButton.width
+						&& yL >= editNameButton.coordinates.y && yL <= editNameButton.coordinates.y + editNameButton.height) {
+							vertices[i].changeName();	
+							break;	
+						}
+					} 
+					page = 1 - page;
+				}
+			}
+		}
+	}
+}
+
+void drawAddVertex(int x, int y) {
+	char c = getcolor();
+	setcolor(YELLOW);
+	circle(x, y, RADIUS);
+	setcolor(c);
 }
 
 bool isNamesake(char *s) {
@@ -220,9 +487,16 @@ bool Button::isHover() {
 }
 
 void setTaskBarButtons() {
-	menuBar.init(20, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "MENU");
-	helpBar.init(125, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "HELP");
-	fileBar.init(230, 20, 40, 100, YELLOW, LIGHTBLUE, 9, "FILE");
+	int margin = 5, 
+		width = (400 - margin * 4) / 3,
+		height = 40;
+	int xM, yM, xH, yH, xF, yF;
+	xM = 15 + margin, yM = 15 + margin;
+	xH = xM + margin + width, yH = yM;
+	xF = xH + margin + width, yF = yH;
+	menuBar.init(xM, yM, height, width, YELLOW, LIGHTBLUE, 9, "MENU");
+	helpBar.init(xH, yH, height, width, YELLOW, LIGHTBLUE, 9, "HELP");
+	fileBar.init(xF, yF, height, width, YELLOW, LIGHTBLUE, 9, "FILE");
 }
 
 void drawTaskBarButtons() {
@@ -357,8 +631,13 @@ void taskBar() {
 
 int helpTools() {
 	const short itemsAmount = 8;
+	int margin = 5,
+		height = 40,
+		width = (400 - 3 * margin) / 2;
+	int x0 = 15,
+		y0 = 15 + height + 2 * margin;
 	Button helpTools[8], helpToolsHoverBar /*khung de xu ly hover*/;
-	helpToolsHoverBar.init(20, 60, 40 * 4 + 20, 320, BLACK, BLACK, 1, "");
+	helpToolsHoverBar.init(x0 + margin, y0 - margin, (height + margin) * itemsAmount / 2, 2 * width, BLACK, BLACK, 1, "");
 	helpTools[0].name = "Cach them dinh";
 	helpTools[1].name = "Cach them cung";
 	helpTools[2].name = "Cach sua dinh";
@@ -367,20 +646,19 @@ int helpTools() {
 	helpTools[5].name = "Cach xoa cung";
 	helpTools[6].name = "Cach di chuyen dinh";
 	helpTools[7].name = "Cach di chuyen cung";
-	int y0 = 65;
 	for (int i = 0; i < itemsAmount; i++) {
 		helpTools[i].pattern = 1;
-		helpTools[i].width = 151;
+		helpTools[i].width = width;
 		helpTools[i].height = 40;
 		helpTools[i].bColor = BLACK;
 		helpTools[i].tColor = YELLOW;
 		if (i % 2 == 0) {
-			helpTools[i].coordinates.x = 20;
+			helpTools[i].coordinates.x = x0 + margin;
 			helpTools[i].coordinates.y = y0;
 			helpTools[i + 1].coordinates.y = y0;
-			y0 += 45; 
+			y0 += (height + margin); 
 		} else {
-			helpTools[i].coordinates.x = 178; 
+			helpTools[i].coordinates.x = x0 + width + 2 * margin; 
 		}
 	}
 	for (int i = 0; i < itemsAmount; i++) {
@@ -416,6 +694,8 @@ int helpTools() {
 
 int menuTools() {
 	const short itemsAmount = 10;
+	int margin = 5,
+		height = 40;
 	Button menuTools[10], menuToolsHoverBar/*khung de xu ly hover*/;
 	menuToolsHoverBar.init(20, 60, 225, 315, BLACK, BLACK, 1, "");//Nut gia de xu ly hover
 	menuTools[0].name = "Canh cau";
@@ -429,6 +709,7 @@ int menuTools() {
 	menuTools[8].name = "Topo sort";
 	menuTools[9].name = "Hamliton";
 	int y0 = 65, i;
+			//Cap nut dau tien se co toa do nam duoi nut menuBar (y0 = 65)
 	//Vong for duoi day se tao cac nut sap xep xen ke
 	//Chi ap dung voi danh sach tools co so luong chan (cu the ta cho la 10 items)
 	for (i = 0; i < itemsAmount; i++) {
@@ -436,37 +717,37 @@ int menuTools() {
 		menuTools[i].bColor = BLACK;
 		//Cai mau chu
 		menuTools[i].tColor = YELLOW;
-		menuTools[i].height = 40;
+		menuTools[i].height = height;
 		menuTools[i].pattern = 1;
 		//Cac cap nut (0 1), (2 3), (4 5), (6 7), (8 9) se co chung toa do y
 		//Cac nut 0 2 4 6 8 se co chung toa do x
 		//Cac nut 0 1 4 5 8 9 se co chung chieu rong 
 		//Cac nut 2 6 se co chung chieu rong
 		//Cac nut 3 7 se co chung chieu rong
+		menuTools[i].coordinates.y = y0;
 		if (i % 2 == 0) {
 			//Cac nut 0 2 4 6 8 se co chung toa do x
-			menuTools[i].coordinates.x = 20;
-			//Cap nut dau tien se co toa do nam duoi nut menuBar (y0 = 65)
-			//Cap nut tiep theo co toa do bang cap nut truoc cong them 45 
-			menuTools[i].coordinates.y = y0;
-			menuTools[i + 1].coordinates.y = y0;
-			y0 += 45; 
-		}
-		if (i % 4 == 0 || i % 4 == 1) {
-			//Do rong cua cac nut 0 1 4 5 8 9 se la 151
-			menuTools[i].width = 151;
+			menuTools[i].coordinates.x = 15 + margin;
+			//menuTools[i + 1].coordinates.y = y0;
 		} 
-		if (i % 4 == 0) {
-			//Toa do x cua cac nut 0 4 8 la 179
-			menuTools[i + 1].coordinates.x = 179;
+		else 
+			y0 += (height + margin);
+			//Cap nut tiep theo co toa do bang cap nut truoc cong them 45 
+			
+		if (i % 4 == 0 || i % 4 == 1) {
+			menuTools[i].width = (400 - 3 * margin) / 2;
+		} 
+		if (i % 4 == 1) {
+			//Toa do x cua cac nut 1 5 9 la 179
+			menuTools[i].coordinates.x = 15 + 2 * margin + (400 - 3 * margin) / 2;
 		}
 		if (i % 4 == 2) { 
 			//Toa do x cua cac nut 3 7 la 227
-			menuTools[i + 1].coordinates.x = 227;
+			menuTools[i + 1].coordinates.x = 15 + 2 * margin + 2 * (400 - 3 * margin) / 3;
 			//Chieu rong cua no la 103
-			menuTools[i + 1].width = 103;
+			menuTools[i + 1].width = (400 - 3 * margin) / 3;
 			//Chieu rong cua nut 2 6 la 200
-			menuTools[i].width = 200;
+			menuTools[i].width = 2 * (400 - 3 * margin) / 3;
 			
 		}
 	}
@@ -510,9 +791,13 @@ int menuTools() {
 
 int fileTools() {
 	const short itemsAmount = 4;
+	int margin = 5,
+		height = 40, 
+		width = 400 - 2 * margin;
+	int y0 = 15 + height + 2 * margin,
+		x0 = 15;
 	Button fileTools[4], fileToolsHoverBar/*khung xử lý hover*/;
-	fileToolsHoverBar.init(20, 60, 40 * 4 + 5 * 4, 315, BLACK, BLACK, 1, "");
-	int y0 = 65;
+	fileToolsHoverBar.init(x0 + margin, y0 - margin, itemsAmount * (height + margin), width, BLACK, BLACK, 1, "");
 	fileTools[0].name = "Mo file";
 	fileTools[1].name = "Luu file";
 	fileTools[2].name = "Xoa do thi trong file";
@@ -521,11 +806,11 @@ int fileTools() {
 		fileTools[i].tColor = YELLOW;
 		fileTools[i].bColor = BLACK;
 		fileTools[i].pattern = 1;
-		fileTools[i].coordinates.x = 20;
+		fileTools[i].coordinates.x = x0 + margin;
 		fileTools[i].coordinates.y = y0;
-		y0 += 45;
-		fileTools[i].width = 310;
-		fileTools[i].height = 40;
+		y0 += (height + margin);
+		fileTools[i].width = width;
+		fileTools[i].height = height;
 	}
 	for (int i = 0; i < itemsAmount; i++)
 		fileTools[i].draw();
@@ -580,14 +865,21 @@ void drawFrame() {
 
 void Vertex::create() {
 	int x, y;
-	if (ismouseclick(WM_LBUTTONDOWN)) {
+	if (ismouseclick(WM_LBUTTONDBLCLK)) {
 		//Neu co click chuot trai
-		getmouseclick(WM_LBUTTONDOWN, x, y);
+		getmouseclick(WM_LBUTTONDBLCLK, x, y);
 		//Neu no nam trong pham vi cua bang hien thi dinh thi moi cho tao dinh
 		if (x >= 425 + RADIUS && x <= 1259 - RADIUS
 		&& y >= 20 + RADIUS && y <= 520 - RADIUS) {
+			for (int i = 0; i < n; i++) {
+				int x0 = vertices[i].coordinates.x;
+				int y0 = vertices[i].coordinates.y;
+				if ((x - x0) * (x - x0) + (y - y0) * (y - y0) <= 4 * RADIUS * RADIUS)
+					return;
+			}
 			this->coordinates.x = x;
 			this->coordinates.y = y;
+			circle(x, y, RADIUS);
 			this->createName();
 		}
 	}
@@ -595,17 +887,17 @@ void Vertex::create() {
 
 void Vertex::createName() {
 	Button frame, finishButton, cancelButton, enterNameBar;
-	int height = 200;
-	int width = 250;
 	int margin = 5;
+	int height = 275 - 3 * margin - 40;
+	int width = 400 - 2 * margin;
 	int x, y;
 	this->name = new char[3];
 	char name[3] = ""; 
 	char request[] = "Nhap ten dinh";
-	frame.init(425 + (834 - width) / 2 , 20 + (500 - height) / 2, height, width, YELLOW, DARKGRAY, 1, "");
-	finishButton.init(425 + (834 - width) / 2 + margin, 20 + (500 - height) / 2 + (height - 40 - margin), 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HOAN THANH");
-	cancelButton.init(425 + (834 - width) / 2 + margin * 2 + (width - 3 * margin) / 2, 20 + (500 - height) / 2 + (height - 40 - margin), 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HUY");
-	enterNameBar.init(425 + (834 - width) / 2 + margin, 20 + (500 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50, 40, (width - 2 * margin), YELLOW, BLACK, 9, "");
+	frame.init(15 + margin, 15 + 2 * margin + 40, height, width, YELLOW, DARKGRAY, 1, "");
+	finishButton.init(15 + 2 * margin, 275 - margin - 30, 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HOAN THANH");
+	cancelButton.init(15 + 3 * margin + (width - 3 * margin) / 2,275 - margin - 30, 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HUY");
+	enterNameBar.init(15 + 2 * margin, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50, 40, (width - 2 * margin), YELLOW, BLACK, 9, "");
 	int page = 0;
 	int i = 0; 
 	while (true) {
@@ -623,8 +915,17 @@ void Vertex::createName() {
 		finishButton.draw();
 		cancelButton.draw();
 		enterNameBar.draw();
-		if (strcmp(name, "") == 0)
-			outtextxy(425 + (834 - width) / 2 + (width - textwidth(request)) / 2, 20 + (500 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+		drawAddVertex(this->coordinates.x, this->coordinates.y);
+	
+		if (strcmp(name, "") == 0) {
+			outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+//			outtextxy(this->coordinates.x, this->coordinates.y, "+");
+			int x0 = this->coordinates.x, y0 = this->coordinates.y;
+			line(x0, y0, x0 - RADIUS + 5, y0);
+			line(x0, y0, x0 + RADIUS - 5, y0);
+			line(x0, y0, x0, y0 + RADIUS - 5);
+			line(x0, y0, x0, y0 - RADIUS + 5);
+		}
 		if (kbhit()) {
 			char key = getch();
 			if ((key >= 'A' && key <= 'Z') || (key >= 'a' && key <= 'z')) {
@@ -663,7 +964,8 @@ void Vertex::createName() {
 			//cout << i << endl;
 		}
 		upper(name);
-		outtextxy(425 + (834 - width) / 2 + (width - textwidth(name)) / 2, 20 + (500 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);
+		outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);
+		outtextxy(this->coordinates.x - textwidth(name) / 2, this->coordinates.y - textheight(name) / 2, name);
 		if (finishButton.isHover())
 			finishButton.highLight();
 		if (cancelButton.isHover())
@@ -734,30 +1036,6 @@ bool Vertex::isClickLMButton() {
 	return 0;
 }
 
-void Vertex::move() {
-	int x, y;
-	int page = 0;
-	while (true) {
-		
-		delay(10);
-		if (ismouseclick(WM_MOUSEMOVE) && ismouseclick(WM_LBUTTONDOWN)) {
-			getmouseclick(WM_MOUSEMOVE, x, y);	
-//			if ((this->coordinates.x - x) * (this->coordinates.x - x)
-//			+ (this->coordinates.y - y) * (this->coordinates.y - y) <= RADIUS * RADIUS) {
-//				getmouseclick(WM_MOUSEMOVE, x, y);
-//				cout << x << " " << y << endl;	
-//			}
-			this->coordinates.x = x;
-			this->coordinates.y = y;	
-		}
-		if (ismouseclick(WM_LBUTTONUP))
-			break;
-		if (!this->isHover())
-			break;
-		this->draw();
-	}
-	
-}
 
 void Vertex::defaultVtex() {
 	this->coordinates.x = -1;
