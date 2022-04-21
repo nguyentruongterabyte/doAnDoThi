@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <fstream>
 #include <string.h>
+#include <math.h>
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wconversion-null"
 #pragma GCC diagnostic ignored "-Wpointer-arith"
@@ -150,30 +151,46 @@ void moveVertex() {
 					setvisualpage(1 - page);
 					if (ismouseclick(WM_MOUSEMOVE)) {
 						getmouseclick(WM_MOUSEMOVE, x, y);
+						bool check = 0;
+						if (x > 1259 - RADIUS)
+							x = 1259 - RADIUS;
+						if (x < 425 + RADIUS)
+							x = 425 + RADIUS;
+						if (y > 520 - RADIUS)
+							y = 520 - RADIUS;
+						if (y < 20 + RADIUS)
+							y = 20 + RADIUS;
+						for (int j = 0; j < n; j++)
+							if (j != i) {
+								int xB = vertices[j].coordinates.x;
+								int yB = vertices[j].coordinates.y;
+								if ((x - xB) * (x - xB) + (y - yB) * (y - yB) <= 4 * RADIUS * RADIUS)
+									check = 1;
+							}
 						if (x >= 425 + RADIUS && x <= 1259 - RADIUS
-						&& y >= 20 + RADIUS && y <= 520 - RADIUS) {
+						&& y >= 20 + RADIUS && y <= 520 - RADIUS && !check) {
 							vertices[i].coordinates.x = x;
 							vertices[i].coordinates.y = y;
 						}
-						if (x < 435 + RADIUS && y >= 20 + RADIUS && y <= 520 - RADIUS) {
+						if (x == 435 + RADIUS && y >= 20 + RADIUS && y <= 520 - RADIUS) {
 							vertices[i].coordinates.x = 425 + RADIUS;
 							vertices[i].coordinates.y = y;
 						}
-						if (x > 1259 - RADIUS && y >= 20 + RADIUS && y <= 520 - RADIUS) {
+						if (x == 1259 - RADIUS && y >= 20 + RADIUS && y <= 520 - RADIUS) {
 							vertices[i].coordinates.x = 1259 - RADIUS;
 							vertices[i].coordinates.y = y;
 						}
 						if (x >= 425 + RADIUS && x <= 1259 - RADIUS
-						&& y < 20 + RADIUS) {
+						&& y == 20 + RADIUS) {
 							vertices[i].coordinates.x = x;
 							vertices[i].coordinates.y = 20 + RADIUS;
 						}
 						if (x >= 425 + RADIUS && x <= 1259 - RADIUS
-						&& y > 520 - RADIUS) {
+						&& y == 520 - RADIUS) {
 							vertices[i].coordinates.x = x;
 							vertices[i].coordinates.y = 520 - RADIUS;
 						}
-					}
+					}					
 					drawFrame();
 					drawTaskBarButtons();
 					drawVertices();
@@ -184,7 +201,6 @@ void moveVertex() {
 				}
 			}
 		}
-	
 	}
 	saveFileStartUp();
 	clearmouseclick(WM_LBUTTONDOWN);
@@ -359,9 +375,8 @@ void editVertex() {
 					if (ismouseclick(WM_LBUTTONDOWN)) {
 						int xL, yL;
 						getmouseclick(WM_LBUTTONDOWN, xL, yL);
-//						if (xL >= editNameButton.coordinates.x && xL <= editNameButton.coordinates.x + editNameButton.width
-//						&& yL >= editNameButton.coordinates.y && yL <= editNameButton.coordinates.x + editNameButton.height)
-//						if ((xL - x0) * (xL - x0) + (yL - y0) * (yL - y0) > RADIUS * RADIUS)
+//						if (xL < editFrame.coordinates.x && xL > editFrame.coordinates.x + editFrame.width
+//						&& yL < editFrame.coordinates.y && yL > editFrame.coordinates.y + editFrame.height)
 //							break;
 						if (xL >= deleteButton.coordinates.x && xL <= deleteButton.coordinates.x + deleteButton.width
 						&& yL >= deleteButton.coordinates.y && yL <= deleteButton.coordinates.y + deleteButton.height) {
@@ -371,12 +386,15 @@ void editVertex() {
 							}
 							break;
 						}
-						if (xL >= editNameButton.coordinates.x && xL <= editNameButton.coordinates.x + editNameButton.width
+						else if (xL >= editNameButton.coordinates.x && xL <= editNameButton.coordinates.x + editNameButton.width
 						&& yL >= editNameButton.coordinates.y && yL <= editNameButton.coordinates.y + editNameButton.height) {
 							vertices[i].changeName();	
 							break;	
 						}
-					} 
+						else 
+							break;
+					}
+					//clearmouseclick(WM_LBUTTONDOWN);
 					page = 1 - page;
 				}
 			}
@@ -866,7 +884,7 @@ void drawFrame() {
 void Vertex::create() {
 	int x, y;
 	if (ismouseclick(WM_LBUTTONDBLCLK)) {
-		//Neu co click chuot trai
+		//Neu co click double chuot trai
 		getmouseclick(WM_LBUTTONDBLCLK, x, y);
 		//Neu no nam trong pham vi cua bang hien thi dinh thi moi cho tao dinh
 		if (x >= 425 + RADIUS && x <= 1259 - RADIUS
