@@ -60,6 +60,7 @@ struct Button /*cau truc nut*/{
 
 int n = MAX;
 Vertex vertices[MAX];
+int G[MAX][MAX];
 
 Button menuBar/*thanh menu*/, 
 		helpBar/*thanh help*/,
@@ -100,9 +101,16 @@ void initEditTools();//Khoi tao hop thoai chinh sua dinh
 void drawEditTools(int x, int y);//Vẽ hộp thoại edit dinh
 void deleteVertex(int pos);//xoa dinh trong danh sach tai mot vi tri cho truoc
 void moveVertex();//ham di chuyen dinh
+void drawMatrix();//ve ma tran trong so
+void drawArrow(Vertex u, Vertex v, int color, int w);//ve mui ten
+void drawTriangle(int x1, int y1, int x2, int y2, int color);//ve hinh tam giac dung cho mui ten
+void printWeight(int x, int y, int w);//xuat trong so 
+void drawAllEdges();//ham ve tat ca cac canh
+void drawCurvedArrow(Vertex u, Vertex v, int color, int w);//ve mui ten dang cong
+void drawCurvedArrow2(Vertex u, Vertex v, int color, int w);
+
 
 int main() {
-//
 	process();
 
 }
@@ -130,12 +138,226 @@ void process() {
 			addVertexToList(vtex);
 		}
 		drawVertices();
+		drawMatrix();
 		taskBar();
 		editVertex();
+		drawAllEdges();
 		page = 1 - page;
 	}
 	getch();
 	closegraph();
+}
+
+void drawCurvedArrow2(Vertex u, Vertex v, int color, int w) {
+	int x1 = u.coordinates.x, 
+		y1 = u.coordinates.y,
+		x2 = v.coordinates.x,
+		y2 = v.coordinates.y;
+	char c = getcolor();
+	float xO = (x1 + x2) / 2 + (y1 - y2) / M_SQRT2; // or +
+	float yO = (y1 + y2) / 2 + (x2 - x1) / M_SQRT2; // or +
+	float r = sqrt(pow(xO - x1, 2) + pow(yO - y1, 2));
+	float d = sqrt(pow(x1 - xO, 2) + pow(y1 - yO, 2));
+	float a = (pow(r, 2) - pow(RADIUS, 2) + pow(d ,2)) / (2 * d);
+	float h = sqrt(r * r - a * a);								//					 
+	float tmpx1 = xO + a * (x1 - xO) / d;						//					   xT		  
+	float tmpx2 = xO + a * (x2 - xO) / d;						//        *  * x3             x4*  *
+	float tmpy1 = yO + a * (y1 - yO) / d;						//     *        *            *        *
+	float tmpy2 = yO + a * (y2 - yO) / d;						//    *    x1    *          *     x2   *
+	int x3 = tmpx1 - h* (y1 - yO) / d;   // -h					//    *          *          *          *
+	int x4 = tmpx2 + h* (y2 - yO) / d;   // +h					//     *        *            *        *
+	int y3 = tmpy1 + h * (x1 - xO) / d;  // 					//        *  *                  *  *
+	int y4 = tmpy2 - h * (x2 - xO) / d;  // 					//				 	   xO          
+	float stangle, endangle;									//					 
+	float angle1 = float(x1 - xO) / r;
+	float angle2 = 1 - float(pow(RADIUS, 2)) / (2 * pow(r, 2));
+	if (angle1 < -1 || angle1 > 1) angle1 = int(angle1);
+	if (angle2 < -1 || angle2 > 1) angle2 = int(angle2);
+	angle1 = acos(angle1) * 180 / M_PI;
+	angle2 = acos(angle2) * 180 / M_PI;
+	if (y1 >= yO) angle1 = 360 - angle1;
+	stangle = angle1 + angle2;
+	angle1 = acos(1 - pow(sqrt(pow(x3 - x4, 2) + pow(y3 - y4, 2)), 2) / (2 * pow(r, 2)));
+	angle1 = angle1 * 180 / M_PI;
+	stangle = stangle - angle1 - 2 * angle2;
+	endangle = stangle + angle1;
+	float theta = atan2((y1 + y2) / 2 - yO, (x1 + x2) / 2 - xO);
+	float xT = xO + r * cos(theta);
+	float yT = yO + r * sin(theta);
+	setcolor(color);
+	setlinestyle(SOLID_LINE, 1, 2);
+	arc(xO, yO, stangle, endangle, r);
+	drawTriangle(2 * x4 - (x2 + x4) / 2, 2 * y4 - (y2 + y4) / 2, x4, y4, color); // FINALY
+	printWeight(xT, yT, w);
+	setcolor(c);
+}
+
+void drawCurvedArrow(Vertex u, Vertex v, int color, int w) {
+	int x1 = u.coordinates.x,
+		y1 = u.coordinates.y,
+		x2 = v.coordinates.x,
+		y2 = v.coordinates.y;
+	//M_SQRT2		1.41421356237309504880
+	char c = getcolor();
+		float xO = (x1 + x2) / 2 + (y1 - y2) / -M_SQRT2; // or +
+	float yO = (y1 + y2) / 2 + (x2 - x1) / -M_SQRT2; // or +
+	float r = sqrt(pow(xO - x1, 2) + pow(yO - y1, 2));
+	float d = sqrt(pow(x1 - xO, 2) + pow(y1 - yO, 2));
+	float a = (pow(r, 2) - pow(RADIUS, 2) + pow(d ,2)) / (2 * d);
+	float h = sqrt(r * r - a * a);								//					 
+	float tmpx1 = xO + a * (x1 - xO) / d;						//					   xT		  
+	float tmpx2 = xO + a * (x2 - xO) / d;						//        *  * x3             x4*  *
+	float tmpy1 = yO + a * (y1 - yO) / d;						//     *        *            *        *
+	float tmpy2 = yO + a * (y2 - yO) / d;						//    *    x1    *          *     x2   *
+	int x3 = tmpx1 + h* (y1 - yO) / d;   // -h					//    *          *          *          *
+	int x4 = tmpx2 - h* (y2 - yO) / d;   // +h					//     *        *            *        *
+	int y3 = tmpy1 - h * (x1 - xO) / d;  // 					//        *  *                  *  *
+	int y4 = tmpy2 + h * (x2 - xO) / d;  // 					//				 	   xO          
+	float stangle, endangle;									//					 
+	float angle1 = float(x1 - xO) / r;
+	float angle2 = 1 - float(pow(RADIUS, 2)) / (2 * pow(r, 2));
+	if (angle1 < -1 || angle1 > 1) angle1 = int(angle1);
+	if (angle2 < -1 || angle2 > 1) angle2 = int(angle2);
+	angle1 = acos(angle1) * 180 / M_PI;
+	angle2 = acos(angle2) * 180 / M_PI;
+	if (y1 >= yO) angle1 = 360 - angle1;
+	stangle = angle1 + angle2;
+	angle1 = acos(1 - pow(sqrt(pow(x3 - x4, 2) + pow(y3 - y4, 2)), 2) / (2 * pow(r, 2)));
+	angle1 = angle1 * 180 / M_PI;
+	endangle = stangle + angle1; 
+	float theta = atan2((y1 + y2) / 2 - yO, (x1 + x2) / 2 - xO);
+	float xT = xO + r * cos(theta);
+	float yT = yO + r * sin(theta);
+	if (xT < 425 || xT > 1259 || yT < 20 || yT > 520)
+		return drawCurvedArrow2(u, v, color, w);
+	setcolor(color);
+	setlinestyle(SOLID_LINE, 1, 2);
+	arc(xO, yO, stangle, endangle, r);
+	drawTriangle(2 * x4 - (x2 + x4) / 2, 2 * y4 - (y2 + y4) / 2, x4, y4, color); // FINALY
+	printWeight(xT, yT, w);
+	setcolor(c);
+	
+}
+
+void drawAllEdges() {
+	for (int i = 0; i < n; i++) {
+		for(int j = 0; j < n; j++) {
+			if (G[i][j])
+				drawCurvedArrow(vertices[i], vertices[j], CYAN, G[i][j]);
+		}
+	}
+}
+
+void printWeight(int x, int y, int w) {
+	char c = getcolor();
+	setcolor(YELLOW);
+	char str[10];
+	itoa(w, str, 10);
+	outtextxy(x, y, str);
+	setcolor(c);
+}
+
+void drawTriangle(int x1, int y1, int x2, int y2, int color) {
+	char c = getcolor();
+	setlinestyle(SOLID_LINE, 0, 3);
+	setfillstyle(SOLID_LINE, color);
+	int a[8];
+	a[0] = x1 + y2 - y1;
+	a[1] = y1 + x1 - x2;
+	a[2] = x1 - y2 + y1;
+	a[3] = y1 - x1 + x2;
+	a[4] = x2;
+	a[5] = y2;
+	a[6] = a[0]; 
+	a[7] = a[1];
+	setcolor(color);
+	fillpoly(4, a);
+	setlinestyle(SOLID_LINE, 0, 1);
+	setcolor(c);
+	
+	setfillstyle(1, c);
+}
+
+void drawArrow(Vertex u, Vertex v, int color, float w) {
+	
+	int x1, x2, y1, y2;
+	char c = getcolor();
+	x1 = u.coordinates.x;
+	y1 = u.coordinates.y;
+	x2 = v.coordinates.x;
+	y2 = v.coordinates.y;
+	float corner = atan(float(abs(y2 - y1)) / abs(x1 - x2));
+	float Rsin = RADIUS * sin(corner);
+	float Rcos = RADIUS * cos(corner);
+	int x11 = x1 + Rcos;
+	int y11 = y1 + Rsin;
+	int x22 = x2 - Rcos;
+	int y22 = y2 - Rsin;
+	if (x1 > x2) {
+		x11 = x1 - Rcos;
+		x22 = x2 + Rcos;
+	}
+	if (y1 > y2) {
+		y11 = y1 - Rsin;
+		y22 = y2 + Rsin;
+	}
+	setlinestyle(SOLID_LINE, 1, 2);
+	setcolor(color);
+	line(x11, y11, x22, y22);
+	drawTriangle(2 * x22 - (x2 + x22) / 2, 2 * y22 - (y22 + y2) / 2, x22, y22, color);
+	printWeight((x1 + x2) / 2, (y1 + y2) / 2, w);
+	setcolor(c);
+}
+
+void drawMatrix() {
+	Point center;
+	int squareEdge = 30;
+	Button square, vertexButton[MAX];
+	square.init(0, 0, squareEdge, squareEdge, BLACK, BLACK, 1, "");
+	//bien center de ghi toa do can giua cua khung ma tran
+	center.x = 15 + 400 / 2;
+	center.y = 304 + 400 / 2;
+	int x0 = center.x - n * squareEdge / 2 + squareEdge / 2;
+	int y0 = center.y - n * squareEdge / 2 + squareEdge;
+	for (int i = 0; i < n; i++) {//ve khung ma tran trong so va in ra gia tri cua ma tran trong so
+		int x = x0;//su dung bien x de luu gia tri ban dau cua x0
+		vertexButton[i].init(0, 0, squareEdge, squareEdge, YELLOW, BLUE, 1, vertices[i].name);
+		//khoi tao gia tri cua cac nut dinh trong ma tran trong so
+		for (int j = 0; j < n; j++) {
+			char numText[3];
+			itoa(G[i][j], numText, 10);//chuyen trong so canh sang dang text
+			square.init(x0, y0, squareEdge, squareEdge, WHITE, BLACK, 1, numText);
+			//square.highLight();
+			square.draw();
+			if (square.isHover()) 
+				square.highLight();
+ 			x0 += squareEdge;
+		}
+		x0 = x;
+		y0 += squareEdge;
+	}
+	x0 = center.x - squareEdge * n / 2 - squareEdge / 2;
+	y0 = center.y - squareEdge * n / 2;
+	int y = y0;
+	if (!isEmptyVertex()) {
+		square.coordinates.x = x0;
+		square.coordinates.y = y0;
+		square.name = "";
+		square.draw();
+	}
+	for (int i = 0; i < n; i++) {
+		y0 += squareEdge;
+		vertexButton[i].coordinates.x = x0;
+		vertexButton[i].coordinates.y = y0;
+		vertexButton[i].draw();
+	}
+	y0 = y;
+	for (int i = 0; i < n; i++) {
+		x0 += squareEdge;
+		vertexButton[i].coordinates.x = x0;
+		vertexButton[i].coordinates.y = y0;
+		vertexButton[i].draw();
+	}
 }
 
 void moveVertex() {
@@ -152,7 +374,7 @@ void moveVertex() {
 					setvisualpage(1 - page);
 					if (ismouseclick(WM_MOUSEMOVE)) {
 						getmouseclick(WM_MOUSEMOVE, x, y);
-						bool check = 0;
+						bool check = 0;//check trung dinh
 						for (int j = 0; j < n; j++)
 							if (j != i) {
 								int xB = vertices[j].coordinates.x;
@@ -162,6 +384,7 @@ void moveVertex() {
 							}
 						if (x >= 425 + RADIUS && x <= 1259 - RADIUS
 						&& y >= 20 + RADIUS && y <= 520 - RADIUS && !check) {
+							//neu nam trong pham vi bang dieu khien thi moi duoc di chuyen 
 							vertices[i].coordinates.x = x;
 							vertices[i].coordinates.y = y;
 						}
@@ -187,6 +410,8 @@ void moveVertex() {
 					drawFrame();
 					drawTaskBarButtons();
 					drawVertices();
+					drawMatrix();
+					drawAllEdges();
 					if (ismouseclick(WM_LBUTTONUP)) {
 						break;
 					}
@@ -225,6 +450,7 @@ void Vertex::changeName() {
 		drawFrame();
 		drawTaskBarButtons();
 		drawVertices();
+		drawMatrix();
 		frame.draw();
 		finishButton.draw();
 		cancelButton.draw();
@@ -233,7 +459,6 @@ void Vertex::changeName() {
 	
 		if (strcmp(name, "") == 0) {
 			outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
-//			outtextxy(this->coordinates.x, this->coordinates.y, "+");
 			int x0 = this->coordinates.x, y0 = this->coordinates.y;
 			line(x0, y0, x0 - RADIUS + 5, y0);
 			line(x0, y0, x0 + RADIUS - 5, y0);
@@ -275,7 +500,6 @@ void Vertex::changeName() {
 						delay(50);
 					}
 			}
-			//cout << i << endl;
 		}
 		upper(name);
 		outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);
@@ -284,6 +508,12 @@ void Vertex::changeName() {
 			finishButton.highLight();
 		if (cancelButton.isHover())
 			cancelButton.highLight();
+		if (ismouseclick(WM_LBUTTONDBLCLK))// neu co double click chuot trai khi dang tao ten thi phai xoa di
+											//de tranh truong hop sau khi tao ten thi tao luon dinh moi
+			clearmouseclick(WM_LBUTTONDBLCLK);
+		if (ismouseclick(WM_RBUTTONDOWN))//neu co click chuot phai khi dang tao ten thi phai xoa di 
+										//de tranh truong hop sau khi tao ten thi mo thanh edit dinh
+			clearmouseclick(WM_RBUTTONDOWN);
 		page = 1 - page;
 		if (strcmp(name, "") != 0 && !isNamesake(name)
 		&& x >= finishButton.coordinates.x && x <= finishButton.coordinates.x + finishButton.width
@@ -302,9 +532,14 @@ void Vertex::changeName() {
 }
 
 void deleteVertex(int pos) {
-	for (int i = pos; i < n - 1; i++) {
-		vertices[i] = vertices[i + 1];
-	}
+	for (int i = pos; i < n - 1; i++)
+		vertices[i] = vertices[i + 1];//Cap nhat lai danh sach dinh
+	for (int i = pos; i < n - 1; i++) 
+		for (int j = 0; j < n; j++) 
+			G[i][j] = G[i + 1][j];//Xoa hang trong ma tran ke
+	for (int i = 0; i < n; i++)
+		for (int j = pos; j < n - 1; j++)
+			G[i][j] = G[i][j + 1];//Xoa cot trong ma tran ke
 	vertices[n - 1].defaultVtex();
 	n--;
 	saveFileStartUp();
@@ -345,6 +580,7 @@ void editVertex() {
 					drawFrame();
 					drawTaskBarButtons();
 					drawVertices();
+					drawMatrix();
 					if (x0 + RADIUS > 1259 - editFrame.width && y0 < 520 - editFrame.height)
 						drawEditTools(x0 - RADIUS - editFrame.width, y0);//goc tren cung ben phai
 					else if (x0 + RADIUS > 1259 - editFrame.width && y0 > 520 - editFrame.height)
@@ -676,6 +912,7 @@ int helpTools() {
 		setvisualpage(1- page);
 		taskBarFrame.draw();
 		drawTaskBarButtons();
+		drawAllEdges();
 		helpBar.highLight();
 		if (helpBar.isHover() || helpToolsHoverBar.isHover()) {
 			int x, y;
@@ -765,7 +1002,9 @@ int menuTools() {
 		setvisualpage(1 - page);
 		delay(10);
 		taskBarFrame.draw();
+		drawAllEdges();
 		drawTaskBarButtons();
+//		drawAllEdges();
 		menuBar.highLight();
 		//Neu con tro chuot dang nam trong pham vi cua thanh menu 
 		//hoac no dang nam trong pham vi o chua cac cong cu cua thanh menu thi moi thao tac
@@ -826,6 +1065,7 @@ int fileTools() {
 		setvisualpage(1 - page);
 		taskBarFrame.draw();
 		drawTaskBarButtons();
+		drawAllEdges();
 		fileBar.highLight();
 		if (fileToolsHoverBar.isHover() || fileBar.isHover()) {
 			int x, y;
@@ -909,22 +1149,38 @@ void Vertex::createName() {
 		setactivepage(page);
 		setvisualpage(1 - page);
 		delay(50);
-		if (ismouseclick(WM_LBUTTONDOWN))
-			getmouseclick(WM_LBUTTONDOWN, x, y);
 		setfillstyle(10, GREEN);
 		bar (1, 1, 1279, 719);
 		drawFrame();
 		drawTaskBarButtons();
 		drawVertices();
+		drawMatrix();
 		frame.draw();
 		finishButton.draw();
 		cancelButton.draw();
 		enterNameBar.draw();
-		drawAddVertex(this->coordinates.x, this->coordinates.y);
-	
+		drawAddVertex(this->coordinates.x, this->coordinates.y);//ve dau vong tron co dau cong
+		if (ismouseclick(WM_LBUTTONDOWN))
+			getmouseclick(WM_LBUTTONDOWN, x, y);
+		if (ismouseclick(WM_LBUTTONDBLCLK))// neu co double click chuot trai khi dang tao ten thi phai xoa di
+											//de tranh truong hop sau khi tao ten thi tao luon dinh moi
+			clearmouseclick(WM_LBUTTONDBLCLK);
+		if (ismouseclick(WM_RBUTTONDOWN))//neu co click chuot phai khi dang tao ten thi phai xoa di 
+										//de tranh truong hop sau khi tao ten thi mo thanh edit dinh
+			clearmouseclick(WM_RBUTTONDOWN);
+		if (strcmp(name, "") != 0 && !isNamesake(name)//neu ten khong bi trong va ten khong bi trung voi cac dinh khac thi se duoc nhan enter
+		&& x >= finishButton.coordinates.x && x <= finishButton.coordinates.x + finishButton.width
+		&& y >= finishButton.coordinates.y && y <= finishButton.coordinates.y + finishButton.height)
+		//xu ly click chuot trai vao o hoan thanh
+			break;
+		if (x >= cancelButton.coordinates.x && x <= cancelButton.coordinates.x + cancelButton.width
+		&& y >= cancelButton.coordinates.y && y <= cancelButton.coordinates.y + cancelButton.height) {
+			//neu chuot trai co click vao o huy thi ket thuc ham
+			this->defaultVtex();
+			return;
+		}
 		if (strcmp(name, "") == 0) {
 			outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
-//			outtextxy(this->coordinates.x, this->coordinates.y, "+");
 			int x0 = this->coordinates.x, y0 = this->coordinates.y;
 			line(x0, y0, x0 - RADIUS + 5, y0);
 			line(x0, y0, x0 + RADIUS - 5, y0);
@@ -976,15 +1232,6 @@ void Vertex::createName() {
 		if (cancelButton.isHover())
 			cancelButton.highLight();
 		page = 1 - page;
-		if (strcmp(name, "") != 0 && !isNamesake(name)
-		&& x >= finishButton.coordinates.x && x <= finishButton.coordinates.x + finishButton.width
-		&& y >= finishButton.coordinates.y && y <= finishButton.coordinates.y + finishButton.height)
-			break;
-		if (x >= cancelButton.coordinates.x && x <= cancelButton.coordinates.x + cancelButton.width
-		&& y >= cancelButton.coordinates.y && y <= cancelButton.coordinates.y + cancelButton.height) {
-			this->defaultVtex();
-			return;
-		}
 	}
 	
 //	this->name = name;
@@ -1078,6 +1325,9 @@ void loadFileStartUp() {
 			vertices[i].name = new char[3];
 			input >> vertices[i].name;
 		}
+		for (int i = 0; i < n; i++) 
+			for (int j = 0; j < n; j++)
+				input >> G[i][j];
 	} else {
 		FILE * newFile = fopen("filesInProgram//startUpFile.txt", "a");
 		fprintf(newFile, "%d", 0);
@@ -1096,11 +1346,22 @@ void saveFileStartUp() {
 		 << vertices[i].coordinates.y << " "
 		 << vertices[i].name << endl;
 	}
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			output << G[i][j] << " ";
+		}
+		output << endl;
+	}
+	output.close();
 }
 
 void addVertexToList(Vertex vtex) {
 	if (n < MAX && vertices[n].isDefaultVtex() && !vtex.isDefaultVtex()) {
 		vertices[n] = vtex;
+		for (int i = 0; i <= n; i++) {
+			G[n][i] = 0;
+			G[i][n] = 0;
+		}
 		n++;
 		saveFileStartUp();
 	}
@@ -1133,10 +1394,16 @@ bool drawYesNoBar(char *question) {
 		drawFrame();
 		drawTaskBarButtons();
 		drawVertices();
+		drawMatrix();
 		frame.draw();
 		noButton.draw();
 		yesButton.draw();
-		
+		if (ismouseclick(WM_RBUTTONDOWN))//neu co click chuot phai vao man hinh thi phai xoa 
+										// de no khong mo hop thoai edit dinh khi ta vo tinh click chuot phai vao dinh bat ky
+			clearmouseclick(WM_RBUTTONDOWN);
+		if (ismouseclick(WM_LBUTTONDBLCLK))//neu co double click chuot trai vao man hinh thi phai xoa no vi neu khi thoat 
+											//ham nay co the tao dinh moi ngay tuc thi
+			clearmouseclick(WM_LBUTTONDBLCLK);
 		outtextxy(425 + (834 - width) / 2 + (width - textwidth(question)) / 2, 20 + (500 - height) / 2 + 10, question);
 		if (kbhit()) {
 			char key = getch();
@@ -1164,11 +1431,10 @@ bool drawYesNoBar(char *question) {
 
 bool isClickOtherVertex(Vertex vtex) {
 	int x = vtex.coordinates.x, y = vtex.coordinates.y;
-	for (int i = 0; i < n; i++) {
+	for (int i = 0; i < n; i++) 
 		if ((x - vertices[i].coordinates.x) * (x - vertices[i].coordinates.x) + (y - vertices[i].coordinates.y) * (y - vertices[i].coordinates.y) <= 4 * RADIUS * RADIUS)
 		// tam I(a,b) phuong trinh (x - a)2 + (y - b)2 <= r2)
 			return 1;
-	}
 	return 0;
 }
 
