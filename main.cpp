@@ -71,7 +71,8 @@ Button menuBar/*thanh menu*/,
 		vertexTaskBarFrame/*khung hien thi thanh tac vu */,
 		editFrame/*khung hien thi cac cong cu sua ten va xoa dinh*/,
 		deleteButton/*Nut xoa dinh*/,
-		editNameButton/*Nut sua ten dinh*/;
+		editNameButton/*Nut sua ten dinh*/,
+		addEdgeButton/*Nut tao canh*/;
 
 void process();
 void helpBox(char *helpStr);
@@ -108,7 +109,8 @@ void printWeight(int x, int y, int w);//xuat trong so
 void drawAllEdges();//ham ve tat ca cac canh
 void drawCurvedArrow(Vertex u, Vertex v, int color, int w);//ve mui ten dang cong
 void drawCurvedArrow2(Vertex u, Vertex v, int color, int w);
-
+void addEdge(int startPos);//tao canh
+int enterWeight();//ham nhap trong so
 
 int main() {
 	process();
@@ -146,6 +148,157 @@ void process() {
 	}
 	getch();
 	closegraph();
+}
+
+int enterWeight() {
+	int margin = 5;
+	int height = 275 - 3 * margin - 40;
+	int width = 400 - 2 * margin;
+	char weightStr[4] = "";
+	char request[] = "Nhap trong so";
+	int i = 0, x, y;
+	int page = 0;
+	Button frame, finishButton, cancelButton, enterWeightBar;
+	frame.init(15 + margin, 15 + 2 * margin + 40, height, width, YELLOW, DARKGRAY, 1, "");
+	finishButton.init(15 + 2 * margin, 275 - margin - 30, 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HOAN THANH");
+	cancelButton.init(15 + 3 * margin + (width - 3 * margin) / 2,275 - margin - 30, 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HUY");
+	enterWeightBar.init(15 + 2 * margin, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50, 40, (width - 2 * margin), YELLOW, BLACK, 9, "");
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		delay(50);
+		drawFrame();
+		drawVertices();
+		drawMatrix();
+		drawAllEdges();
+		drawTaskBarButtons();
+		frame.draw();
+		finishButton.draw();
+		cancelButton.draw();
+		enterWeightBar.draw();
+		if (ismouseclick(WM_LBUTTONDOWN))
+			getmouseclick(WM_LBUTTONDOWN, x, y);
+		if (strcmp(weightStr, "") == 0) 
+			outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+		if (finishButton.isHover())
+			finishButton.highLight();
+		if (cancelButton.isHover())	
+			cancelButton.highLight();
+		if (strcmp(weightStr, "") != 0
+		&& x >= finishButton.coordinates.x && x <= finishButton.coordinates.x + finishButton.width
+		&& y >= finishButton.coordinates.y && y <= finishButton.coordinates.y + finishButton.height)
+			break;
+		if (x >= cancelButton.coordinates.x && x <= cancelButton.coordinates.x + cancelButton.width
+		&& y >= cancelButton.coordinates.y && y <= cancelButton.coordinates.y + cancelButton.height) 
+			return 0;
+		if (ismouseclick(WM_LBUTTONDOWN)) {
+			int x, y;
+			getmouseclick(WM_LBUTTONDOWN, x, y);
+			if (x >= finishButton.coordinates.x && x <= finishButton.coordinates.x + finishButton.width
+			&& y >= finishButton.coordinates.y && y <= finishButton.coordinates.y + finishButton.height
+			&& strcmp(weightStr, "") != 0)
+				break; 
+		}
+		if (kbhit()) {
+			char key = getch();
+			if (key >= '0' && key <= '9')
+				if (i < 3) {
+					weightStr[i] = key;
+					i++;
+				}
+			if (i > 3)
+				i = 3;
+			if (key == 8) {
+				strnDel(weightStr, i - 1, 1);
+				i--;
+			}
+			if (i < 0)
+				i = 0;
+			if (strcmp(weightStr, "") != 0 && key == 13)
+				break;
+			if (strcmp(weightStr, "") == 0 && key == 13) {
+				frame.highLight(WHITE, RED);
+				enterWeightBar.draw();
+				finishButton.draw();
+				cancelButton.draw();
+				delay(50);
+			}
+		}
+		outtextxy(15 + (400 - width) / 2 + (width - textwidth(weightStr)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(weightStr)) / 2, weightStr);
+		if (i < 3 && strcmp(weightStr, "") != 0)
+				outtextxy(15 + (400 - width) / 2 + (width - textwidth(weightStr)) / 2 + textwidth(weightStr), 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(weightStr)) / 2, "_");
+		
+		page = 1 - page;
+	}
+	return atoi(weightStr);
+}
+
+void addEdge(int startPos) {
+	int x, y;
+	char c = getcolor();
+	int page = 0;
+	int i = startPos;
+	int x0 = vertices[i].coordinates.x;
+	int y0 = vertices[i].coordinates.y;
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		delay(50);
+		drawFrame();
+		drawTaskBarButtons();
+		drawVertices();
+		drawMatrix();
+		drawAllEdges();
+		x = mousex(), y = mousey();
+		float corner = atan(float(abs(y - y0)) / abs(x - x0));
+		float Rsin = RADIUS * sin(corner);
+		float Rcos = RADIUS * cos(corner);
+		int x11 = x0 + Rcos;
+		int y11 = y0 + Rsin;
+		int x22 = x - Rcos;
+		int y22 = y - Rsin;
+		if (x0 > x) {
+			x11 = x0 - Rcos;
+			x22 = x + Rcos;
+		}
+		if (y0 > y) {
+			y11 = y0 - Rsin;
+			y22 = y + Rsin;
+		}	
+		if (x22 >= 425 && x22 <= 1259 && y22 >= 20 && y22 <= 520) {
+			setcolor(WHITE);
+			setlinestyle(SOLID_LINE, 1, 2);
+			line(x11, y11, x22, y22);
+			drawTriangle(2 * x22 - (x + x22) / 2, 2 * y22 - (y22 + y) / 2, x22, y22, WHITE);
+			setcolor(c);
+			setlinestyle(SOLID_LINE, 0, 1);
+		}
+		if (ismouseclick(WM_LBUTTONDBLCLK))
+			clearmouseclick(WM_LBUTTONDBLCLK);
+		if (ismouseclick(WM_RBUTTONDOWN))
+			break;
+		if (ismouseclick(WM_LBUTTONDOWN)) {//click chuot trai vao cac dinh con lai
+			bool checked = false;								//-> nhap trong so -> tao canh
+			int xL, yL;
+			getmouseclick(WM_LBUTTONDOWN, xL, yL);
+			for (int j = 0; j < n; j++) {
+				int xV, yV;
+				xV = vertices[j].coordinates.x;
+				yV = vertices[j].coordinates.y;
+				if ((x0 - xL) * (x0 - xL) + (y0 - yL) * (y0 - yL) &&
+				(xV - xL) * (xV - xL) + (yV - yL) * (yV - yL) <= RADIUS * RADIUS) {
+					G[i][j] = enterWeight();
+					checked = true;
+				}
+			}
+			if (checked)
+				break;
+		}
+		page = 1 - page;
+	}
+	saveFileStartUp();
+	clearmouseclick(WM_RBUTTONDOWN);
+	clearmouseclick(WM_LBUTTONDOWN);
 }
 
 void drawCurvedArrow2(Vertex u, Vertex v, int color, int w) {
@@ -242,8 +395,14 @@ void drawCurvedArrow(Vertex u, Vertex v, int color, int w) {
 void drawAllEdges() {
 	for (int i = 0; i < n; i++) {
 		for(int j = 0; j < n; j++) {
-			if (G[i][j])
-				drawCurvedArrow(vertices[i], vertices[j], CYAN, G[i][j]);
+			if (G[i][j]) {
+				if (G[j][i] == G[i][j] || !G[j][i])
+					drawArrow(vertices[i], vertices[j], MAGENTA, G[i][j]);
+				else 
+				drawCurvedArrow(vertices[i], vertices[j], MAGENTA, G[i][j]);
+			}
+			
+			
 		}
 	}
 }
@@ -278,7 +437,7 @@ void drawTriangle(int x1, int y1, int x2, int y2, int color) {
 	setfillstyle(1, c);
 }
 
-void drawArrow(Vertex u, Vertex v, int color, float w) {
+void drawArrow(Vertex u, Vertex v, int color, int w) {
 	
 	int x1, x2, y1, y2;
 	char c = getcolor();
@@ -514,17 +673,17 @@ void Vertex::changeName() {
 		if (ismouseclick(WM_RBUTTONDOWN))//neu co click chuot phai khi dang tao ten thi phai xoa di 
 										//de tranh truong hop sau khi tao ten thi mo thanh edit dinh
 			clearmouseclick(WM_RBUTTONDOWN);
-		page = 1 - page;
 		if (strcmp(name, "") != 0 && !isNamesake(name)
 		&& x >= finishButton.coordinates.x && x <= finishButton.coordinates.x + finishButton.width
 		&& y >= finishButton.coordinates.y && y <= finishButton.coordinates.y + finishButton.height)
 			break;
 		if (x >= cancelButton.coordinates.x && x <= cancelButton.coordinates.x + cancelButton.width
-		&& y >= cancelButton.coordinates.y && y <= cancelButton.coordinates.y + cancelButton.height) {
+		&& y >= cancelButton.coordinates.y && y <= cancelButton.coordinates.y + cancelButton.height) 
 			return;
-		}
+		if (strcmp(name, "") != 0 && i < 2)
+			outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2 + textwidth(name), 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, "_");
+		page = 1 - page;
 	}
-	cout << name << endl;
 	if (strcmp(name, "") == 0)
 		return;
 //	this->name = name;
@@ -549,17 +708,21 @@ void drawEditTools(int x, int y) {
 	editFrame.coordinates.x = x, editFrame.coordinates.y = y;
 	deleteButton.coordinates.x = x, deleteButton.coordinates.y = y;
 	editNameButton.coordinates.x = x, editNameButton.coordinates.y = y + deleteButton.height;
+	addEdgeButton.coordinates.x = x, addEdgeButton.coordinates.y = editNameButton.coordinates.y + editNameButton.height;
 	
 	editFrame.draw();
 	deleteButton.draw();
 	editNameButton.draw();
+	addEdgeButton.draw();
 }
 
 void initEditTools() {
 	//do hop thoai nay co the dung o bat ky vi tri nao trong chuong trinh nen x y mac dinh cua no la 0
-	editFrame.init(0, 0, 80, 100, WHITE, DARKGRAY, 1, "");
+	editFrame.init(0, 0, 120, 100, WHITE, DARKGRAY, 1, "");
 	deleteButton.init(0, 0, 40, 100, YELLOW, BLACK, 1, "Xoa dinh");
 	editNameButton.init(0, 0, 40, 100, YELLOW, BLACK, 1, "Sua ten");
+	addEdgeButton.init(0, 0, 40, 100, YELLOW, BLACK, 1, "Tao canh");
+	
 }
 
 void editVertex() {
@@ -599,6 +762,8 @@ void editVertex() {
 						deleteButton.highLight();
 					if (editNameButton.isHover())
 						editNameButton.highLight();
+					if (addEdgeButton.isHover())
+						addEdgeButton.highLight();
 					if (ismouseclick(WM_LBUTTONDOWN)) {
 						int xL, yL;
 						getmouseclick(WM_LBUTTONDOWN, xL, yL);
@@ -615,6 +780,11 @@ void editVertex() {
 							vertices[i].changeName();	
 							break;	
 						}
+						else if (xL >= addEdgeButton.coordinates.x && xL <= addEdgeButton.coordinates.x + addEdgeButton.width
+						&& yL >= addEdgeButton.coordinates.y && yL <= addEdgeButton.coordinates.y + addEdgeButton.height) {
+							addEdge(i);
+							break;
+						}	
 						else 
 							break;
 					}
@@ -660,6 +830,7 @@ void strnDel(char s[], int pos, int count) {
 bool Button::isClickLMButton() {
 	int x, y;
 	getmouseclick(WM_LBUTTONDOWN, x, y);
+	clearmouseclick(WM_LBUTTONDOWN);
 	if (x >= this->coordinates.x && x <= this->coordinates.x + this->width
 	&& y >= this->coordinates.y && y <= this->coordinates.y + this->height)
 		return 1;
@@ -1227,6 +1398,8 @@ void Vertex::createName() {
 		upper(name);
 		outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);
 		outtextxy(this->coordinates.x - textwidth(name) / 2, this->coordinates.y - textheight(name) / 2, name);
+		if (strcmp(name, "") != 0 && i < 2)
+			outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2 + textwidth(name), 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, "_");
 		if (finishButton.isHover())
 			finishButton.highLight();
 		if (cancelButton.isHover())
@@ -1426,7 +1599,6 @@ bool drawYesNoBar(char *question) {
 		}
  		page = 1 - page;
 	}
-	
 }
 
 bool isClickOtherVertex(Vertex vtex) {
