@@ -7,6 +7,8 @@
 #include <fstream>
 #include <string.h>
 #include <math.h>
+#include "include/stack.hpp"
+#include "include/queue.hpp"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wconversion-null"
 #pragma GCC diagnostic ignored "-Wpointer-arith"
@@ -14,15 +16,18 @@
 #define MAX 10
 using namespace std;
 
+enum key {
+	KEY_BACKSPACE = 8,
+	KEY_ESC = 27,
+	KEY_ENTER = 13
+};
+
 struct Point/*cau truc diem*/ {
 	int x;
 	int y;
 };
 
 char *helpStr[] = {
-	"Click chuot trai len bang hien thi dinh va canh",
-	"Click chuot trai len 1 dinh bat ky -> click tiep vao dinh tiep theo. Mot canh se duoc tao giua dinh",
-	"Click chuot phai len dinh can sua"
 };
 
 struct Vertex /*cau truc dinh*/{
@@ -61,6 +66,7 @@ struct Button /*cau truc nut*/{
 int n = MAX;
 Vertex vertices[MAX];
 int G[MAX][MAX];
+int visited[MAX];
 
 Button menuBar/*thanh menu*/, 
 		helpBar/*thanh help*/,
@@ -111,6 +117,11 @@ void drawCurvedArrow(Vertex u, Vertex v, int color, int w);//ve mui ten dang con
 void drawCurvedArrow2(Vertex u, Vertex v, int color, int w);
 void addEdge(int startPos);//tao canh
 int enterWeight();//ham nhap trong so
+void bfsTraveler(int u);
+void BFS();
+int chooseVertex(char * request);//chon dinh
+void setArrayTo(int *arr, int num, int value);//ham de cho tat ca cac gia tri cua mang ve mot gia tri nao do
+
 
 int main() {
 	process();
@@ -129,7 +140,7 @@ void process() {
 	while (true) {	
 		setactivepage(page);
 		setvisualpage(1 - page);
-		delay(1);
+		delay(10);
 		vtex.defaultVtex();
 		setfillstyle(10, GREEN);
 		bar(1, 1, 1279, 719);
@@ -148,6 +159,104 @@ void process() {
 	}
 	getch();
 	closegraph();
+}
+
+void setArrayTo(int *arr, int num, int value) {
+	for (int i = 0; i < num; i++)
+		arr[i] = value;
+}
+
+void BFS() {
+	if (isEmptyVertex()) return;
+	int start = chooseVertex("Chon dinh bat dau duyet BFS");
+	if (start != -1) {
+		setArrayTo(visited, n, 0);
+		visited[start] = 1;
+		bfsTraveler(start);
+	}
+}
+
+void bfsTraveler(int u) {
+	Vertex displayTraveler[MAX];
+	queue q;
+	Button resultBox, xButton;
+	//	pointBarFrame.init(425, 20, 500, 834, 0, BLACK , 1, ""); 
+	resultBox.init(425, 525, 40, 834, YELLOW, BLACK, 1, "");
+	xButton.init(1219, 525, 40, 40, WHITE, RED, 1, "x");
+	int count = 0;
+	char resultText[100] = "";
+	q.push(u);
+	strcat(resultText, vertices[u].name);
+	strcat(resultText, " -> ");
+	while (!q.isEmpty()) {
+		u = q.pop();
+		displayTraveler[count] = vertices[u];
+		count++;
+		for (int i = 0; i < n; i++)
+			if (visited[i] == 0 && G[u][i] != 0) {
+				visited[i] = 1;
+				strcat(resultText, vertices[i].name);
+				strcat(resultText, " -> ");
+				q.push(i); 
+			}
+	}
+	resultBox.name = resultText;
+	int page = 0; 
+	int i = 0;
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		delay(1000);
+		drawFrame();
+		drawVertices();
+		drawAllEdges();
+		drawTaskBarButtons();
+		drawMatrix();
+		vertices[i].highLight();
+		
+		i++;
+		if (i >= count)
+			i = 0;
+		if (kbhit())
+			break;
+		resultBox.draw();
+		page = 1 - page;
+	}
+}
+
+int chooseVertex(char *request) {
+	int x, y;
+	int page = 0;
+	Button instruction;
+	//	pointBarFrame.init(425, 20, 500, 834, 0, BLACK , 1, ""); 
+	instruction.init(425, 525, 40, 834, YELLOW, BLACK, 1, request);
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		delay(50);
+		drawFrame();
+		drawTaskBarButtons();
+		drawMatrix();
+		drawAllEdges();
+		drawVertices();
+		instruction.draw();
+		if (ismouseclick(WM_LBUTTONDOWN)) {
+			getmouseclick(WM_LBUTTONDOWN, x, y);
+			for (int i = 0; i < n; i++) {
+				int x0 = vertices[i].coordinates.x;
+				int y0 = vertices[i].coordinates.y;
+				if ((x - x0) * (x - x0) + (y - y0) * (y - y0) <= RADIUS * RADIUS)
+					return i;
+			}
+		}
+		if (kbhit()) {
+			char key = getch();
+			if (key == KEY_ESC) {
+				return -1;
+			}
+		}
+		page = 1 - page;
+	}
 }
 
 int enterWeight() {
@@ -235,11 +344,13 @@ int enterWeight() {
 
 void addEdge(int startPos) {
 	int x, y;
+	Button instruction;
 	char c = getcolor();
 	int page = 0;
 	int i = startPos;
 	int x0 = vertices[i].coordinates.x;
 	int y0 = vertices[i].coordinates.y;
+	instruction.init(425, 525, 40, 834, YELLOW, BLACK, 1, "Di chuyen chuot toi vi tri dinh con lai va click chuot trai. Click chuot phai vao vi tri bat ky de huy tao canh");
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
@@ -249,6 +360,7 @@ void addEdge(int startPos) {
 		drawVertices();
 		drawMatrix();
 		drawAllEdges();
+		instruction.draw();
 		x = mousex(), y = mousey();
 		float corner = atan(float(abs(y - y0)) / abs(x - x0));
 		float Rsin = RADIUS * sin(corner);
@@ -285,7 +397,7 @@ void addEdge(int startPos) {
 				int xV, yV;
 				xV = vertices[j].coordinates.x;
 				yV = vertices[j].coordinates.y;
-				if ((x0 - xL) * (x0 - xL) + (y0 - yL) * (y0 - yL) &&
+				if ((x0 - xL) * (x0 - xL) + (y0 - yL) * (y0 - yL) > RADIUS * RADIUS &&
 				(xV - xL) * (xV - xL) + (yV - yL) * (yV - yL) <= RADIUS * RADIUS) {
 					G[i][j] = enterWeight();
 					checked = true;
@@ -744,6 +856,7 @@ void editVertex() {
 					drawTaskBarButtons();
 					drawVertices();
 					drawMatrix();
+					drawAllEdges();
 					if (x0 + RADIUS > 1259 - editFrame.width && y0 < 520 - editFrame.height)
 						drawEditTools(x0 - RADIUS - editFrame.width, y0);//goc tren cung ben phai
 					else if (x0 + RADIUS > 1259 - editFrame.width && y0 > 520 - editFrame.height)
@@ -959,7 +1072,8 @@ void taskBar() {
 				break;
 			}
 			case 8: {
-				outtextxy(340, 15, "BFS");
+//				outtextxy(340, 15, "BFS");
+				BFS();
 				break;
 			}
 			case 9: {
@@ -1110,7 +1224,7 @@ int menuTools() {
 	int margin = 5,
 		height = 40;
 	Button menuTools[10], menuToolsHoverBar/*khung de xu ly hover*/;
-	menuToolsHoverBar.init(20, 60, 225, 315, BLACK, BLACK, 1, "");//Nut gia de xu ly hover
+	menuToolsHoverBar.init(20, 60, 225, 395, BLACK, BLACK, 1, "");//Nut gia de xu ly hover
 	menuTools[0].name = "Canh cau";
 	menuTools[1].name = "Dinh tru";
 	menuTools[2].name = "Thanh phan lien thong";
@@ -1568,6 +1682,7 @@ bool drawYesNoBar(char *question) {
 		drawTaskBarButtons();
 		drawVertices();
 		drawMatrix();
+		drawAllEdges();
 		frame.draw();
 		noButton.draw();
 		yesButton.draw();
