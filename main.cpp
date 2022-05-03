@@ -7,19 +7,27 @@
 #include <fstream>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 #include "include/stack.hpp"
 #include "include/queue.hpp"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wconversion-null"
 #pragma GCC diagnostic ignored "-Wpointer-arith"
 #define RADIUS 20
-#define MAX 10
+#define MAX 11
 using namespace std;
 
 enum key {
 	KEY_BACKSPACE = 8,
 	KEY_ESC = 27,
 	KEY_ENTER = 13
+};
+
+enum workingZone {
+	W_LEFT = 425,
+	W_TOP = 20,
+	W_RIGHT = 1259,
+	W_BOTTOM = 520
 };
 
 struct Point/*cau truc diem*/ {
@@ -67,7 +75,7 @@ struct Button /*cau truc nut*/{
 int n = MAX;
 Vertex vertices[MAX];
 int G[MAX][MAX];
-int visited[MAX];
+bool visited[MAX];
 
 Button menuBar/*thanh menu*/, 
 		helpBar/*thanh help*/,
@@ -79,7 +87,8 @@ Button menuBar/*thanh menu*/,
 		editFrame/*khung hien thi cac cong cu sua ten va xoa dinh*/,
 		deleteButton/*Nut xoa dinh*/,
 		editNameButton/*Nut sua ten dinh*/,
-		addEdgeButton/*Nut tao canh*/;
+		addEdgeButton/*Nut tao canh*/,
+		ESCButton;
 
 void process();
 void helpBox(char *helpStr);
@@ -93,12 +102,14 @@ void setFrame();//cai dat khung hien thi
 void drawFrame();//
 void drawVertices();
 void initDefaultVertices();//khi goi ham nay toa do cua cac dinh se tu dong la x = -1, y = -1
-void loadFileStartUp();//khi tat chuong trinh, file nay se co chuc nang luu lai thong tin dinh canh cho lan chay tiep theo
+void loadFileStartUp();//khi tat chuong trinh, 
+					  //file nay se co chuc nang luu lai thong tin dinh canh cho lan chay tiep theo
 void saveFileStartUp();//khi tao hay xoa dinh, file nay se co tac dung cap nhat lai nhung gi chung ta thao tac
 void addVertexToList(Vertex vtex);//ham nay giup chung ta them mot dinh vua tao vao danh sach dinh
 void clearAllVertices();//ham nay cho phep xoa tat ca cac dinh va cung dang hien thi tren man hinh
 bool drawYesNoBar(char *question);//ham nay dung de xac nhan truoc khi lam gi do
-bool isClickOtherVertex(Vertex vtexs);//kiem tra xem chuot trai co click vao dinh hay khong. Ham nay su dung de tranh tao dinh de len dinh khac
+bool isClickOtherVertex(Vertex vtexs);//kiem tra xem chuot trai co click vao dinh hay khong.
+									  // Ham nay su dung de tranh tao dinh de len dinh khac
 bool isEmptyVertex();//Kiem tra dinh tren man hinh da co hay chua
 void strnDel(char *s, int pos, int count);//ham xoa ki tu trong chuoi
 void upper(char *s);//Doi day s thanh chu in hoa
@@ -124,8 +135,16 @@ void BFS();
 void dfsTraveler(int u);
 void DFS();
 int chooseVertex(char * request);//chon dinh
-void setArrayTo(int *arr, int num, int value);//ham de cho tat ca cac gia tri cua mang ve mot gia tri nao do
-void clearmouseclick();
+template <typename Type>
+void setArrayTo(Type *arr, int num, int value);//ham de cho tat ca cac gia tri cua mang ve mot gia tri nao do
+void clearmouseclick();//xoa tat ca cac click chuot
+void pathXY();//tim duong di ngan nhat tu x toi y
+void dijkstra(int start, int end);//thuat toan tim duong di ngan nhat
+int minDistance(int *dist, bool *sptSet);// mot ham tien ich de tim dinh voi gia tri khoang cach toi thieu, 
+										 //tu tap hop cac dinh chua duoc bao gom trong cay duong dan ngan nhat
+void showResultPathXY(int *trace, int *dist, int start, int end);//show ra man hinh duong di ngan nhat tu x toi y
+void eulerCycle(int u);//ham tim chu trinh euler
+void showResultEulerCycle(stack CE);//show ket qua chu trinh euler ra man hinh
 
 int main() {
 	
@@ -136,7 +155,6 @@ int main() {
 	initEditTools();
 	loadFileStartUp();
 	process();
-
 }
 
 void process() {
@@ -161,9 +179,359 @@ void process() {
 		editVertex();
 		drawAllEdges();
 		page = 1 - page;
+		
+		
+		
+//		if (ismouseclick(WM_MOUSEMOVE)) {
+//			int x, y;
+//			getmouseclick(WM_MOUSEMOVE, x, y);
+//			cout << x << " " << y << endl;
+//		}
 	}
 	getch();
 	closegraph();
+}
+
+void showResultEulerCycle(stack CE) {
+	Button resultBox, xButton;
+	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
+	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
+	char resultStr[20] = "Chu trinh euler", eulerResultStr[200] = "";
+	int trace[n * n];
+	int counter = 0;
+	while (!CE.isEmpty()) {
+		char vertex[3];
+		int v = CE.pop();
+		strcpy(vertex, vertices[v].name);
+		strcat(eulerResultStr, vertex);
+		strcat(eulerResultStr, " -> ");
+		trace[counter] = v;
+		counter++;
+	}
+	strnDel(eulerResultStr, strlen(eulerResultStr) - 3, 3);
+	resultBox.name = eulerResultStr;
+	int page = 0;
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		pointBarFrame.draw();
+		drawVertices();
+		drawAllEdges();
+		resultBox.draw();
+		vertices[trace[0]].highLight();
+		setactivepage(1);
+		setvisualpage(1);
+		for (int i = 1; i < counter; i++) {
+			drawArrow(vertices[trace[i - 1]], vertices[trace[i]], LIGHTGREEN, 0);
+			delay(500);
+		}
+		if (kbhit()) {
+			char key = getch();
+			if (key == KEY_ESC)
+				break;
+		}
+		page = 1 - page;
+	}
+}
+
+void eulerCycle() {
+	Button resultBox, xButton;
+	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
+	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
+	if (isEmptyVertex())
+		return;
+	stack st, CE;
+	bool isUndirectedGraph = true;//kiem tra do thi co huong hay vo huong
+	for (int i = 0; i < n; i++) 
+		for (int j = 0; j < n; j++)
+			if (G[i][j] != G[j][i]) {
+				isUndirectedGraph = false;
+				break;
+			}
+	if (isUndirectedGraph) {
+		bool isEulerGraph = true;
+		//neu la do thi vo huong
+		//dieu kien de do thi co chu trinh euler
+		//khi va chi khi moi dinh cua no deu co bac chan
+		//mang deg[] dung de luu bac cua tung dinh trong do thi
+		int deg[n];
+		for (int i = 0; i < n; i++) {
+			deg[i] = 0;
+			for (int j = 0; j < n; j++)
+				if (G[i][j])
+					deg[i]++;
+		}
+		for (int i = 0; i < n; i++)
+			//neu bac cua no la le thi do thi khong co chu trinh euler 
+			if (deg[i] % 2) {
+				isEulerGraph = false;
+				break;
+			}
+		if (!isEulerGraph) {
+			//neu do thi khong co chu trinh euler 
+			//thi thong bao ra man hinh
+			int page = 0;
+			char resultStr[100] = "Do thi nay khong co chu trinh euler vi dinh ";
+			for (int i = 0; i < n; i++) {
+				if (deg[i] % 2) {
+					strcat(resultStr, vertices[i].name);
+					strcat(resultStr, " ");
+				}
+			}
+			strcat(resultStr, " co bac le.");
+			resultBox.name = resultStr;
+			while (true) {
+				setactivepage(page);
+				setvisualpage(1 - page);
+				resultBox.draw();
+				ESCButton.draw();
+				xButton.draw();
+				taskBarFrame.draw();
+				drawTaskBarButtons();
+				if (kbhit()) {
+					char key = getch();
+					if (key == KEY_ESC)
+						return;
+				}
+				if (xButton.isClickLMButton())
+					return;
+				page = 1 - page;
+			}
+		}
+	}
+	int u = chooseVertex("Chon dinh bat dau");
+	st.push(u);//cho dinh u vao ngan xep
+	int tmpMatrx[n][n];//luu ma tran ke vao mot ma tran tam thoi khac 
+					//vi khi tim chu trinh Euler no se bi bien doi
+	//sao chep ma tran G sang ma tran tmp
+	for (int i = 0; i < n; i++)
+		for (int j = 0; j < n; j++)
+			tmpMatrx[i][j] = G[i][j];
+	
+	while (!st.isEmpty()) {
+		int counter = 0;
+		int s = st.get();
+		for (int i = 0; i < n; i++) {
+			if (tmpMatrx[s][i] == 0)
+				counter++;
+		}
+		if (counter != n) {
+			for (int t = 0; t < n; t++) {
+				if (tmpMatrx[s][t]) {
+					st.push(t);
+					tmpMatrx[s][t] = tmpMatrx[t][s] = 0;
+					break;
+				}
+			} 
+		} 
+		else {
+			CE.push(s);
+			st.pop();
+		}
+	}
+	showResultEulerCycle(CE);
+}
+
+void showResultPathXY(int *trace, int *dist, int start, int end) {
+	Button resultBox, xButton;
+	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
+	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
+	if (dist[end] == INT_MAX) {
+		char str[80] = "Khong ton tai duong di tu ";
+		strcat(str, vertices[start].name);
+		strcat(str, " den ");
+		strcat(str, vertices[end].name);
+		strcat(str, "! Tu dong thoat sau [     s]");
+//		strcpy(resultBox.name, str);
+		resultBox.name = str;
+		int page = 0, startTime, endTime, timeCount;
+		time_t now = time(0);
+		tm *ltm = localtime(&now);
+		startTime =ltm->tm_hour * 3600 + ltm->tm_min * 60 + ltm->tm_sec;
+		while(true) {
+			now = time(0);
+			ltm = localtime(&now);
+			endTime = ltm->tm_hour * 3600 + ltm->tm_min * 60 + ltm->tm_sec;
+			timeCount = endTime - startTime;
+			if (timeCount == 15)
+				break;
+			setactivepage(page);
+			setvisualpage(1 - page);
+			drawFrame();
+			drawTaskBarButtons();
+			drawMatrix();
+			drawVertices();
+			drawAllEdges();
+			ESCButton.draw();
+			clearmouseclick();
+			
+			resultBox.draw();
+			if (kbhit()) {
+				char key = getch();
+				if (key == KEY_ESC)
+					break;
+			}
+			char timeCountdownStr[4];
+			itoa(15 - timeCount, timeCountdownStr, 10);
+			outtextxy(425 + (834 - textwidth(str)) / 2 + textwidth(str) - textwidth(timeCountdownStr) - textwidth("s]"), 525 + (100 - textheight(timeCountdownStr)) / 2, timeCountdownStr);
+			page = 1 - page;
+		}
+		
+	} 
+	else {
+		Vertex display[n];
+		int pathGraph[n][n];
+		char resultText[100] = "";
+		char weightSumText[25] = "Chieu dai duong di: ", weightSumStr[5]; 
+		resultBox.name = "";
+		itoa(dist[end], weightSumStr, 10);
+		
+		strcat(weightSumText, weightSumStr);
+		stack s;
+		//sau khi tim duoc duong di ta se truy vet duong di tu 
+		//dinh end toi dinh start bang mang trace
+		//va push no vao trong stack
+		while (end != start) {
+			s.push(end);
+			end = trace[end];
+		}
+		s.push(start);
+		int count = 1, v, u;
+		v = s.pop();
+		strcat(resultText, vertices[v].name);
+		strcat(resultText, " -> ");
+		display[0] = vertices[v]; 
+		while (!s.isEmpty()) {
+			//bay gio ta dung LIFO de lay nguoc lai tap dinh do 
+			//ta duoc duong di tu start toi end 
+			u = v;
+			v = s.pop();
+			strcat(resultText, vertices[v].name);
+			strcat(resultText, " -> ");
+			display[count] = vertices[v];
+			pathGraph[count][count - 1] = G[v][u];
+			pathGraph[count - 1][count] = G[u][v];
+			count++;
+		}
+		
+	
+		strnDel(resultText, strlen(resultText) - 3, 3);
+		resultBox.name = resultText;
+		int page = 0;
+		//show ra man hinh
+		while (true) {
+			setactivepage(page);
+			setvisualpage(1 - page);
+			drawFrame();
+			drawTaskBarButtons();
+			drawMatrix();
+			drawVertices();
+			drawAllEdges();
+			resultBox.draw();
+			xButton.draw();
+			ESCButton.draw();
+			clearmouseclick();
+			outtextxy(425 + (834 - textwidth(weightSumText)) / 2, 525 + (150 - textheight(weightSumText)) / 2, weightSumText);
+			setactivepage(1);
+			setvisualpage(1);
+			display[0].highLight();
+			for (int i = 1; i < count; i++) {
+				delay(500);
+				if (pathGraph[i][i - 1] == pathGraph[i - 1][i] || !pathGraph[i][i - 1])
+					drawArrow(display[i - 1], display[i], LIGHTGREEN, pathGraph[i - 1][i]);
+				else 
+					drawCurvedArrow(display[i - 1], display[i], LIGHTGREEN, pathGraph[i - 1][i]);
+				display[i].highLight();
+			}
+			if (kbhit()) {
+				char key = getch();
+				if (key == KEY_ESC)
+					break;
+			}
+			if (xButton.isClickLMButton())
+				break;
+ 			page = 1 - page;
+		}
+	}
+}
+ 
+int minDistance(int *dist, bool *sptSet) {
+    // Khoi tao gia tri toi thieu
+    int min = INT_MAX, min_index;
+    for (int v = 0; v < n; v++)
+        if (sptSet[v] == false && dist[v] <= min)
+            min = dist[v], min_index = v;
+    return min_index;
+}
+
+void dijkstra(int start, int end) {
+	int dist[n];//Mang dau ra. dist [i] se giu khoang cach ngan nhat 
+				// tu start den end
+	bool sptSet[n];//sptset [i] se dung neu dinh duoc dua vao ngan nhat
+					// cay duong dan hoac khoang cach ngan nhat tu start den end duoc hoan thanh
+	int trace[n];
+	// Khoi tao tat ca cac khoang cach la vo han va stpset [] la false
+	for (int i = 0; i < n; i++)
+		dist[i] = INT_MAX, sptSet[i] = false;
+	dist[start] = 0;//khoang cach cua dinh nguon tu chinh no luon la 0
+	// Tim duong di ngan nhat cho tat ca cac dinh
+	for (int count = 0; count < n - 1; count++) {
+		//Chon dinh khoang cach toi thieu tu tap hop cac dinh chua
+		//duoc xu ly. u luon bang start trong lan lap dau tien.
+		int u = minDistance(dist, sptSet);
+		sptSet[u] = true;//danh dau dinh duoc lua chon la da duoc xu ly
+		for (int v = 0; v < n; v++)
+			// Cap nhat dist [v] Chi khi khong co trong sptset, co mot canh tu 
+			// u den v va tong trong luong cua duong dan tu src den v qua u la 
+			// nho hon gia tri hien tai cua dist [v]
+			if (!sptSet[v] && G[u][v] && dist[u] != INT_MAX
+                && dist[u] + G[u][v] < dist[v]) {
+                	dist[v] = dist[u] + G[u][v];
+                	trace[v] = u;
+				}
+	}
+	showResultPathXY(trace, dist, start, end);
+}
+
+void pathXY() {
+	Button instruction;
+	instruction.init(425, 525, 40, 834, YELLOW, BLACK, 1, "Chon dinh ket thuc");
+	if (isEmptyVertex()) return;
+	if (n < 2) return;
+	int start, end;
+	start = chooseVertex("Chon dinh bat dau");
+	end = start;
+	int page = 0;
+	while (end == start) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		pointBarFrame.draw();
+		drawVertices();
+		instruction.draw();
+		int x = mousex();
+		int y = mousey();
+		if (x >= W_LEFT && x <= W_RIGHT && y >= W_TOP && y <= W_BOTTOM) {
+			setlinestyle(DOTTED_LINE, 1, 2);
+			line(vertices[start].coordinates.x, vertices[start].coordinates.y, x, y);
+			setlinestyle(SOLID_LINE, 1, 1);
+		}
+		vertices[start].highLight();
+		if (ismouseclick(WM_LBUTTONDOWN)) {
+			int xL, yL;
+			getmouseclick(WM_LBUTTONDOWN, xL, yL); 
+			for (int i = 0; i < n; i++) {
+				int xV = vertices[i].coordinates.x;
+				int yV = vertices[i].coordinates.y;
+				if ((xV - xL) * (xV - xL) + (yV - yL) * (yV - yL) <= RADIUS * RADIUS) {
+					end = i;
+				}
+			}
+		}
+		clearmouseclick();
+		page = 1 - page;
+	}
+	dijkstra(start, end);
+	
 }
 
 void clearmouseclick() {
@@ -175,7 +543,9 @@ void clearmouseclick() {
 		clearmouseclick(WM_LBUTTONDBLCLK);
 }
 
-void setArrayTo(int *arr, int num, int value) {
+template <typename Type>
+
+void setArrayTo(Type *arr, int num, int value) {
 	for (int i = 0; i < num; i++)
 		arr[i] = value;
 }
@@ -190,15 +560,13 @@ void DFS() {
 }
 
 void dfsTraveler(int u) {
-	int GTrace[n][n];
 	int start = u;
 	stack s;
 	Vertex edgeVertices[n * n];
 	stack edgeStart;
 	Button resultBox, xButton;
-	//	pointBarFrame.init(425, 20, 500, 834, 0, BLACK , 1, ""); 
-	resultBox.init(425, 525, 40, 834, YELLOW, BLACK, 1, "");
-	xButton.init(1219, 525, 40, 40, WHITE, RED, 1, "x");
+	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
+	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
 	int count = 0;
 	char resultText[100] = "";
 	s.push(u);
@@ -209,15 +577,14 @@ void dfsTraveler(int u) {
 		u = s.pop();//lay dinh o tren ngan xep va xoa no ra khoi danh sach
 		if (!visited[u]) {//neu dinh do chua duoc tham
 			vertices[u].highLight();
-			
 			strcat(resultText, vertices[u].name);
 			strcat(resultText, " -> ");
 			resultBox.name = resultText;
 			resultBox.draw();
 			visited[u] = 1;//danh dau no da tham
 			for (int i = n - 1; i >= 0; i--)
-				if (G[u][i] && !visited[i]) {
-					s.push(i);//them no vao ngan xep
+				if ((G[u][i] || G[i][u]) && !visited[i]) {
+					s.push(i);//them no vao hang doi
 					edgeStart.push(u);
 				}//neu dinh chua duyet va ke voi dinh u	
 		}
@@ -230,14 +597,14 @@ void dfsTraveler(int u) {
 			drawArrow(vertices[k], vertices[j], LIGHTGREEN, G[k][j]);
 			edgeVertices[count] = vertices[k];
 			edgeVertices[count + 1] = vertices[j];
+			delay(500);
 			count += 2;
 		}
 		if (kbhit()) {
 			char key = getch();
 			if (key == KEY_ESC)
-				return process();
+				return;
 		}
-		delay(500);
 	}
 	
 	strnDel(resultText, strlen(resultText) - 3, 3);
@@ -252,19 +619,18 @@ void dfsTraveler(int u) {
 		drawAllEdges();
 		drawTaskBarButtons();
 		drawMatrix();
+		ESCButton.draw();
 		resultBox.draw();
 		xButton.draw();
-		outtextxy(430, 525 + (40 - textheight("Ket qua thuat toan DFS:")) / 2, "Ket qua thuat toan DFS:");
+		outtextxy(430, 525 + (100 - textheight("Ket qua thuat toan DFS:")) / 2, "Ket qua thuat toan DFS:");
 		setactivepage(1);
 		setvisualpage(1);
 		for (int i = 0; i < count; i += 2) {
 			edgeVertices[i].highLight();
 			drawArrow(edgeVertices[i], edgeVertices[i + 1], LIGHTGREEN, 0);
 			edgeVertices[i + 1].highLight();
-			delay(200);
+			delay(100);
 		}
-		if (xButton.isHover())
-			xButton.highLight(WHITE, LIGHTRED);
 		if (xButton.isClickLMButton())
 			break;
 		if (kbhit()) {
@@ -282,70 +648,83 @@ void BFS() {
 	int start = chooseVertex("Chon dinh bat dau duyet theo chieu rong (BFS)");
 	if (start != -1) {
 		setArrayTo(visited, n, 0);
-		visited[start] = 1;
 		bfsTraveler(start);
 	}
 }
 
 void bfsTraveler(int u) {
-	Vertex displayTraveler[MAX];
+	int start = u;
 	queue q;
+	Vertex edgeVertices[n * n];
+	queue edgeStart;
 	Button resultBox, xButton;
-	//	pointBarFrame.init(425, 20, 500, 834, 0, BLACK , 1, ""); 
-	resultBox.init(425, 525, 40, 834, YELLOW, BLACK, 1, "");
-	xButton.init(1219, 525, 40, 40, WHITE, RED, 1, "x");
+	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
+	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
 	int count = 0;
 	char resultText[100] = "";
 	q.push(u);
-	strcat(resultText, vertices[u].name);
-	strcat(resultText, " -> ");
 	setactivepage(1);
 	setvisualpage(1);
 	while (!q.isEmpty()) {
 		clearmouseclick();
-		u = q.pop();
-		displayTraveler[count] = vertices[u];	
-		count++;
-		vertices[u].highLight();
-		resultBox.name = resultText;
-		resultBox.draw();
-		delay(500);
-		for (int i = 0; i < n; i++)
-			if (visited[i] == 0 && G[u][i] != 0) {
-				visited[i] = 1;
-				q.push(i); 
-				strcat(resultText, vertices[i].name);
-				strcat(resultText, " -> ");
-				resultBox.name = resultText;
-				resultBox.draw();
-				drawArrow(vertices[u], vertices[i], LIGHTGREEN, G[u][i]);
-				vertices[i].highLight();
-				delay(500);
-			}
+		u = q.pop();//lay dinh o tren hang doi va xoa no ra khoi danh sach
+		if (!visited[u]) {//neu dinh do chua duoc tham
+			vertices[u].highLight();
+			strcat(resultText, vertices[u].name);
+			strcat(resultText, " -> ");
+			resultBox.name = resultText;
+			resultBox.draw();
+			visited[u] = 1;//danh dau no da tham
+			for (int i = 0; i < n; i++)
+				if ((G[u][i] || G[i][u]) && !visited[i]) {
+					q.push(i);//them no vao ngan xep
+					edgeStart.push(u);
+				}//neu dinh chua duyet va ke voi dinh u	
+		}
+		int k = edgeStart.pop();
+		int j = q.get();
+		while (!G[k][j] && !edgeStart.isEmpty()) {
+			k = edgeStart.pop();
+		}	
+		if (j != k && !visited[j]) {
+			drawArrow(vertices[k], vertices[j], LIGHTGREEN, G[k][j]);
+			edgeVertices[count] = vertices[k];
+			edgeVertices[count + 1] = vertices[j];
+			delay(500);
+			count += 2;
+		}
+		if (kbhit()) {
+			char key = getch();
+			if (key == KEY_ESC)
+				return;
+		}
 	}
-	delay(3000);
+	
 	strnDel(resultText, strlen(resultText) - 3, 3);
 	resultBox.name = resultText;
 	int page = 0; 
-	int i = 0;
 	while (true) {
+		
 		setactivepage(page);
 		setvisualpage(1 - page);
-		delay(500);
+		delay(100);
 		drawFrame();
 		drawVertices();
 		drawAllEdges();
 		drawTaskBarButtons();
 		drawMatrix();
+		ESCButton.draw();
 		resultBox.draw();
 		xButton.draw();
-		outtextxy(430, 525 + (40 - textheight("Ket qua thuat toan BFS:")) / 2, "Ket qua thuat toan BFS:");
-		vertices[i].highLight();
-		i++;
-		if (i >= count)
-			i = 0;
-		if (xButton.isHover())
-			xButton.highLight(WHITE, LIGHTRED);
+		outtextxy(430, 525 + (100 - textheight("Ket qua thuat toan DFS:")) / 2, "Ket qua thuat toan DFS:");
+		setactivepage(1);
+		setvisualpage(1);
+		for (int i = 0; i < count; i += 2) {
+			edgeVertices[i].highLight();
+			drawArrow(edgeVertices[i], edgeVertices[i + 1], LIGHTGREEN, 0);
+			edgeVertices[i + 1].highLight();
+			delay(100);
+		}
 		if (xButton.isClickLMButton())
 			break;
 		if (kbhit()) {
@@ -362,7 +741,6 @@ int chooseVertex(char *request) {
 	int x, y;
 	int page = 0;
 	Button instruction;
-	//	pointBarFrame.init(425, 20, 500, 834, 0, BLACK , 1, ""); 
 	instruction.init(425, 525, 40, 834, YELLOW, BLACK, 1, request);
 	while (true) {
 		setactivepage(page);
@@ -1168,6 +1546,7 @@ void setTaskBarButtons() {
 	menuBar.init(xM, yM, height, width, YELLOW, LIGHTBLUE, 9, "MENU");
 	helpBar.init(xH, yH, height, width, YELLOW, LIGHTBLUE, 9, "HELP");
 	fileBar.init(xF, yF, height, width, YELLOW, LIGHTBLUE, 9, "FILE");
+	ESCButton.init(425, 660, 40, 100, YELLOW, BLACK, 1, "ESC | Thoat");
 }
 
 void drawTaskBarButtons() {
@@ -1207,7 +1586,8 @@ void taskBar() {
 				break;
 			}
 			case 5: {
-				outtextxy(340, 15, "Euler");
+//				outtextxy(340, 15, "Euler");
+				eulerCycle();
 				break;
 			}
 			case 6: {
@@ -1215,7 +1595,8 @@ void taskBar() {
 				break;
 			}
 			case 7: {
-				outtextxy(340, 15, "Tim duong di ngan nhat");
+//				outtextxy(340, 15, "Tim duong di ngan nhat");
+				pathXY();
 				break;
 			}
 			case 8: {
