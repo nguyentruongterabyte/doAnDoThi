@@ -244,7 +244,8 @@ void showResultEulerCycle(stack CE) {
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
-		pointBarFrame.draw();
+		drawFrame();
+		drawTaskBarButtons();
 		drawVertices();
 		drawAllEdges();
 		resultBox.draw();
@@ -297,9 +298,10 @@ void eulerCycle() {
 	Button resultBox, xButton;
 	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
 	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
+	stack st, CE;
 	
 	if (!isConnectedGraph()) {
-		char resultStr[100] = "Do thi nay khong co chu trinh euler vi khong lien thong";
+		char resultStr[100] = "Do thi nay khong co chu trinh Euler vi khong lien thong";
 		resultBox.name = resultStr;
 		int page = 0;
 		while (true) {
@@ -320,10 +322,11 @@ void eulerCycle() {
 		return;
 	bool isUGr = isUndirectedGraph();
 	if (isUGr) {
-		bool isEulerGraph = true;
 		//neu la do thi vo huong
 		//dieu kien de do thi co chu trinh euler
 		//khi va chi khi moi dinh cua no deu co bac chan
+		//hoac co duy nhat 2 dinh bac le (truong hop nay chi tim duoc duong di euler)
+		//khong co chu trinh euler
 		//mang deg[] dung de luu bac cua tung dinh trong do thi
 		int deg[n];
 		for (int i = 0; i < n; i++) {
@@ -332,17 +335,17 @@ void eulerCycle() {
 				if (G[i][j])
 					deg[i]++;
 		}
+		int oddVertexDeg = 0;
 		for (int i = 0; i < n; i++)
 			//neu bac cua no la le thi do thi khong co chu trinh euler 
 			if (deg[i] % 2) {
-				isEulerGraph = false;
-				break;
+				oddVertexDeg++;
 			}
-		if (!isEulerGraph) {
+		if (oddVertexDeg != 0 && oddVertexDeg != 2) {
 			//neu do thi khong co chu trinh euler 
 			//thi thong bao ra man hinh
 			int page = 0;
-			char resultStr[100] = "Do thi nay khong co chu trinh euler vi dinh ";
+			char resultStr[100] = "Do thi nay khong co chu trinh Euler vi dinh ";
 			for (int i = 0; i < n; i++) {
 				if (deg[i] % 2) {
 					strcat(resultStr, vertices[i].name);
@@ -367,13 +370,53 @@ void eulerCycle() {
 				page = 1 - page;
 			}
 		}
+		else if (oddVertexDeg == 2) {
+			//truong hop do thi co hai dinh bac le duy nhat thi
+			//co duong di euler
+			//dinh bat dau duong di euler la dinh dau tien co dinh bac le
+			int tmpMatrx[n][n];
+			int u;
+			for (u = 0; u < n; u++)
+				if (deg[u] % 2)
+					break;
+			st.push(u);
+				//sao chep ma tran G sang ma tran tmp
+			for (int i = 0; i < n; i++)
+				for (int j = 0; j < n; j++)
+					tmpMatrx[i][j] = G[i][j];
+			while (!st.isEmpty()) {
+				int counter = 0;
+				int s = st.get();
+				for (int i = 0; i < n; i++) {
+					if (tmpMatrx[s][i] == 0)
+						counter++;
+				}
+				if (counter != n) {
+					for (int t = 0; t < n; t++) {
+						if (tmpMatrx[s][t]) {
+							st.push(t);
+							tmpMatrx[s][t] /*= tmpMatrx[t][s]*/ = 0;
+							if (isUGr)
+								tmpMatrx[t][s] = 0;
+							break;
+						}
+					} 
+				} 
+				else {
+					CE.push(s);
+					st.pop();
+				}
+			}
+			showResultEulerCycle(CE);
+			return;
+		}
 	}
 	else {
 		//khi do thi la co huong
 		//kiem tra ban bac ra va ban bac vao cua tat ca cac dinh
 		//neu degIn != degOut thi khong co chu trinh euler
 		int degOut[n], degIn[n], tmpMatrx[n][n];
-		char resultStr[100] = "Do thi nay khong co chu trinh euler vi dinh ";
+		char resultStr[100] = "Do thi nay khong co chu trinh Euler vi dinh ";
 		//tinh ban bac ra cua moi dinh
 		for (int i = 0; i < n; i++) {
 			degOut[i] = 0;
@@ -417,8 +460,7 @@ void eulerCycle() {
 			}	
 		}
 	}
-	stack st, CE;
-	int u = chooseVertex("Chon dinh bat dau");
+	int u = chooseVertex("Chon dinh bat dau chu trinh Euler");
 	st.push(u);//cho dinh u vao ngan xep
 	int tmpMatrx[n][n];//luu ma tran ke vao mot ma tran tam thoi khac 
 					//vi khi tim chu trinh Euler no se bi bien doi
@@ -2006,7 +2048,7 @@ int fileTools() {
 		width = 400 - 2 * margin;
 	int y0 = 15 + height + 2 * margin,
 		x0 = 15;
-	Button fileTools[4], fileToolsHoverBar/*khung x? lý hover*/;
+	Button fileTools[4], fileToolsHoverBar/*khung x? lï¿½ hover*/;
 	fileToolsHoverBar.init(x0 + margin, y0 - margin, itemsAmount * (height + margin), width, BLACK, BLACK, 1, "");
 	fileTools[0].name = "Mo file";
 	fileTools[1].name = "Luu file";
