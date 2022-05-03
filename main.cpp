@@ -117,7 +117,7 @@ bool isNamesake(char *s);//Ham de kiem tra xem ten cua dinh vua tao co cung ten 
 void drawAddVertex(int x, int y);//ve mot vong tron khi tao dinh
 void editVertex();//xoa dinh tren do thi hoac doi ten dinh
 void initEditTools();//Khoi tao hop thoai chinh sua dinh
-void drawEditTools(int x, int y);//V? h?p tho?i edit dinh
+void drawEditTools(int x, int y);//Ve hop thoai edit dinh
 void deleteVertex(int pos);//xoa dinh trong danh sach tai mot vi tri cho truoc
 void moveVertex();//ham di chuyen dinh
 void drawMatrix();//ve ma tran trong so
@@ -148,9 +148,9 @@ void eulerCycle(int u);//ham tim chu trinh euler
 void showResultEulerCycle(stack CE);//show ket qua chu trinh euler ra man hinh
 bool isUndirectedGraph();//ham kiem tra do thi co vo huong khong
 bool isConnectesGraph();//ham kiem tra do thi co lien thong hay khong
+void hamilton();
 
 int main() {
-	
 	initwindow(1280, 720);
 	setTaskBarButtons();
 	setFrame();
@@ -722,7 +722,7 @@ void DFS() {
 void dfsTraveler(int u) {
 	int start = u;
 	stack s;
-	Vertex edgeVertices[n * n];
+	int trace[n * n];
 	stack edgeStart;
 	Button resultBox, xButton;
 	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
@@ -755,8 +755,8 @@ void dfsTraveler(int u) {
 		}	
 		if (j != k && !visited[j]) {
 			drawArrow(vertices[k], vertices[j], LIGHTGREEN, G[k][j]);
-			edgeVertices[count] = vertices[k];
-			edgeVertices[count + 1] = vertices[j];
+			trace[count] = k;
+			trace[count + 1] = j;
 			delay(500);
 			count += 2;
 		}
@@ -786,10 +786,12 @@ void dfsTraveler(int u) {
 		setactivepage(1);
 		setvisualpage(1);
 		for (int i = 0; i < count; i += 2) {
-			edgeVertices[i].highLight();
-			drawArrow(edgeVertices[i], edgeVertices[i + 1], LIGHTGREEN, 0);
-			edgeVertices[i + 1].highLight();
-			delay(100);
+			int u = trace[i];
+			int v = trace[i + 1];
+			vertices[u].highLight();
+			drawArrow(vertices[u], vertices[v], LIGHTGREEN, 0);
+			delay(200);
+			vertices[v].highLight();
 		}
 		if (xButton.isClickLMButton())
 			break;
@@ -816,6 +818,7 @@ void bfsTraveler(int u) {
 	int start = u;
 	queue q;
 	Vertex edgeVertices[n * n];
+	int trace[n * n];
 	queue edgeStart;
 	Button resultBox, xButton;
 	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
@@ -848,8 +851,8 @@ void bfsTraveler(int u) {
 		}	
 		if (j != k && !visited[j]) {
 			drawArrow(vertices[k], vertices[j], LIGHTGREEN, G[k][j]);
-			edgeVertices[count] = vertices[k];
-			edgeVertices[count + 1] = vertices[j];
+			trace[count] = k;
+			trace[count + 1] = j;
 			delay(500);
 			count += 2;
 		}
@@ -864,7 +867,6 @@ void bfsTraveler(int u) {
 	resultBox.name = resultText;
 	int page = 0; 
 	while (true) {
-		
 		setactivepage(page);
 		setvisualpage(1 - page);
 		delay(100);
@@ -876,14 +878,16 @@ void bfsTraveler(int u) {
 		ESCButton.draw();
 		resultBox.draw();
 		xButton.draw();
-		outtextxy(430, 525 + (100 - textheight("Ket qua thuat toan DFS:")) / 2, "Ket qua thuat toan DFS:");
+		outtextxy(430, 525 + (100 - textheight("Ket qua thuat toan BFS:")) / 2, "Ket qua thuat toan BFS:");
 		setactivepage(1);
 		setvisualpage(1);
 		for (int i = 0; i < count; i += 2) {
-			edgeVertices[i].highLight();
-			drawArrow(edgeVertices[i], edgeVertices[i + 1], LIGHTGREEN, 0);
-			edgeVertices[i + 1].highLight();
-			delay(100);
+			int u = trace[i];
+			int v = trace[i + 1];
+			vertices[u].highLight();
+			drawArrow(vertices[u], vertices[v], LIGHTGREEN, 0);
+			delay(200);
+			vertices[v].highLight();
 		}
 		if (xButton.isClickLMButton())
 			break;
