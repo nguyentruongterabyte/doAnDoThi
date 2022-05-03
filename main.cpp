@@ -123,6 +123,7 @@ void moveVertex();//ham di chuyen dinh
 void drawMatrix();//ve ma tran trong so
 void drawArrow(Vertex u, Vertex v, int color, int w);//ve mui ten
 void drawTriangle(int x1, int y1, int x2, int y2, int color);//ve hinh tam giac dung cho mui ten
+void drawLine(Vertex u, Vertex v, int color);//ve duong noi hai dinh, ap dung cho do thi vo huong
 void printWeight(int x, int y, int w);//xuat trong so 
 void drawAllEdges();//ham ve tat ca cac canh
 void drawAllEdges(int color);//ham ve tat ca cac canh voi mau do nguoi dung chon
@@ -145,6 +146,8 @@ int minDistance(int *dist, bool *sptSet);// mot ham tien ich de tim dinh voi gia
 void showResultPathXY(int *trace, int *dist, int start, int end);//show ra man hinh duong di ngan nhat tu x toi y
 void eulerCycle(int u);//ham tim chu trinh euler
 void showResultEulerCycle(stack CE);//show ket qua chu trinh euler ra man hinh
+bool isUndirectedGraph();//ham kiem tra do thi co vo huong khong
+bool isConnectesGraph();//ham kiem tra do thi co lien thong hay khong
 
 int main() {
 	
@@ -192,6 +195,32 @@ void process() {
 	closegraph();
 }
 
+bool isUndirectedGraph() {
+	for (int i = 0; i < n; i++) 
+		for (int j = 0; j < n; j++)
+			if (G[i][j] != G[j][i]) 
+				return false;
+	return true;	
+}
+
+bool isConnectedGraph() {
+	//Kiem tra do thi co lien thong hay khong
+	for (int i = 0; i < n; i++) {
+		int LinkerCounter = 0;
+		//dem so lien
+		//ket cua moi dinh
+		for (int j = 0; j < n; j++)
+			if (G[i][j] || G[j][i])
+				LinkerCounter += 1; 
+		if (LinkerCounter == 0)
+			//neu so lien ket bang 0 thi do thi 
+			//do thi do co dinh don khong lien ket voi cac dinh con lai
+			return false;
+			break;
+	}
+	return true; 
+}
+
 void showResultEulerCycle(stack CE) {
 	Button resultBox, xButton;
 	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
@@ -211,6 +240,7 @@ void showResultEulerCycle(stack CE) {
 	strnDel(eulerResultStr, strlen(eulerResultStr) - 3, 3);
 	resultBox.name = eulerResultStr;
 	int page = 0;
+	bool isUGr = isUndirectedGraph();
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
@@ -223,17 +253,34 @@ void showResultEulerCycle(stack CE) {
 		xButton.draw();
 		setactivepage(1);
 		setvisualpage(1);
-		for (int i = 1; i < counter; i++) {
-			int u = trace[i - 1];
-			int v = trace[i];
-			
-			if (G[u][v] == G[v][u] || !G[v][u])
-					drawArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
-				else 
-					drawCurvedArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
-
-			delay(500);
+		if (isUGr) {
+			for (int i = 1; i < counter; i++) {
+				int u = trace[i - 1];
+				int v = trace[i];
+				drawArrow(vertices[u], vertices[v], LIGHTGREEN, 0);
+				delay(500);
+				vertices[v].highLight();
+			}
 		}
+		else {
+			for (int i = 1; i < counter; i++) {
+				int u = trace[i - 1];
+				int v = trace[i];
+				if (G[u][v]) {
+					if (!G[v][u]) {
+						drawArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
+						delay(500);
+						vertices[v].highLight();
+					}
+					else {
+						drawCurvedArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
+						delay(500);
+						vertices[v].highLight();						
+					}
+				}
+			}
+		}
+
 		if (kbhit()) {
 			char key = getch();
 			if (key == KEY_ESC)
@@ -250,23 +297,8 @@ void eulerCycle() {
 	Button resultBox, xButton;
 	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
 	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
-	bool isConnectedGraph = true;
-	//Kiem tra do thi co lien thong hay khong
-	for (int i = 0; i < n; i++) {
-		int LinkerCounter = 0;
-		//dem so lien ket cua moi dinh
-		for (int j = 0; j < n; j++)
-			if (G[i][j] || G[j][i])
-				LinkerCounter += 1; 
-		if (LinkerCounter == 0) {
-			//neu so lien ket bang 0 thi do thi 
-			//do thi do co dinh don khong lien ket voi cac dinh con lai
-			isConnectedGraph = false;
-			break;
-		}
-	} 
 	
-	if (!isConnectedGraph) {
+	if (!isConnectedGraph()) {
 		char resultStr[100] = "Do thi nay khong co chu trinh euler vi khong lien thong";
 		resultBox.name = resultStr;
 		int page = 0;
@@ -286,15 +318,8 @@ void eulerCycle() {
 	
 	if (isEmptyVertex())
 		return;
-	bool isUndirectedGraph = true;
-	//kiem tra do thi co huong hay vo huong
-	for (int i = 0; i < n; i++) 
-		for (int j = 0; j < n; j++)
-			if (G[i][j] != G[j][i]) {
-				isUndirectedGraph = false;
-				break;
-			}
-	if (isUndirectedGraph) {
+	bool isUGr = isUndirectedGraph();
+	if (isUGr) {
 		bool isEulerGraph = true;
 		//neu la do thi vo huong
 		//dieu kien de do thi co chu trinh euler
@@ -364,12 +389,6 @@ void eulerCycle() {
 					degIn[i]++;
 		}
 		
-		
-		for (int i = 0; i < n; i++) {
-			cout << vertices[i].name << endl
-			<< "Vao: " << degIn[i] << endl
-			<< "Ra: " << degOut[i] << endl;
-		}
 		bool isEulerGraph = true;
 		for (int i = 0; i < n; i++)
 			//neu ban bac ra cua no khong bang ban bac vao
@@ -419,7 +438,9 @@ void eulerCycle() {
 			for (int t = 0; t < n; t++) {
 				if (tmpMatrx[s][t]) {
 					st.push(t);
-					tmpMatrx[s][t] = tmpMatrx[t][s] = 0;
+					tmpMatrx[s][t] /*= tmpMatrx[t][s]*/ = 0;
+					if (isUGr)
+						tmpMatrx[t][s] = 0;
 					break;
 				}
 			} 
@@ -1127,15 +1148,21 @@ void drawAllEdges(int color) {
 }
 
 void drawAllEdges() {
-	for (int i = 0; i < n; i++) {
-		for(int j = 0; j < n; j++) {
-			if (G[i][j]) {
-				if (G[j][i] == G[i][j] || !G[j][i])
-					drawArrow(vertices[i], vertices[j], MAGENTA, G[i][j]);
-				else 
-					drawCurvedArrow(vertices[i], vertices[j], MAGENTA, G[i][j]);
-			}
-		}
+	if (isUndirectedGraph()) {
+		for (int i = 0; i < n; i++) 
+			for(int j = 0; j < n; j++)
+				if (G[i][j]) 
+					drawLine(vertices[i], vertices[j], MAGENTA);
+	}
+	else {
+		for (int i = 0; i < n; i++) 
+			for(int j = 0; j < n; j++)
+				if (G[i][j]) {
+					if (!G[j][i])
+						drawArrow(vertices[i], vertices[j], MAGENTA, G[i][j]);
+					else 
+						drawCurvedArrow(vertices[i], vertices[j], MAGENTA, G[i][j]);
+				} 
 	}
 }
 
@@ -1167,6 +1194,35 @@ void drawTriangle(int x1, int y1, int x2, int y2, int color) {
 	setcolor(c);
 	
 	setfillstyle(1, c);
+}
+
+void drawLine(Vertex u, Vertex v, int color) {
+	int x1, x2, y1, y2;
+	char c = getcolor();
+	x1 = u.coordinates.x;
+	y1 = u.coordinates.y;
+	x2 = v.coordinates.x;
+	y2 = v.coordinates.y;
+	float corner = atan(float(abs(y2 - y1)) / abs(x1 - x2));
+	float Rsin = RADIUS * sin(corner);
+	float Rcos = RADIUS * cos(corner);
+	int x11 = x1 + Rcos;
+	int y11 = y1 + Rsin;
+	int x22 = x2 - Rcos;
+	int y22 = y2 - Rsin;
+	if (x1 > x2) {
+		x11 = x1 - Rcos;
+		x22 = x2 + Rcos;
+	}
+	if (y1 > y2) {
+		y11 = y1 - Rsin;
+		y22 = y2 + Rsin;
+	}
+	setlinestyle(SOLID_LINE, 1, 2);
+	setcolor(color);
+	line(x11, y11, x22, y22);
+	setcolor(c);
+	setlinestyle(SOLID_LINE, 1, 1);
 }
 
 void drawArrow(Vertex u, Vertex v, int color, int w) {
