@@ -133,8 +133,10 @@ void addEdge(int startPos);//tao canh
 int enterWeight();//ham nhap trong so
 void bfsTraveler(int u);
 void BFS();
+void showResultBFS(int *trace, char *resultText, int count);//show ket qua thuat toan duyet BFS ra man hinh
 void dfsTraveler(int u);
 void DFS();
+void showResultDFS(int *trace, char *resultText, int count);//show ket qua thuat toan duyet DFS ra man hinh
 int chooseVertex(char * request);//chon dinh
 template <typename Type>
 void setArrayTo(Type *arr, int num, int value);//ham de cho tat ca cac gia tri cua mang ve mot gia tri nao do
@@ -158,6 +160,7 @@ int** create2DArray(unsigned height, unsigned width);//tao ma tran
 void delete2DArray(int **arr, unsigned height, unsigned width);//xoa ma tran
 template <typename Type>
 void set2DArrayTo(Type **arr, unsigned height, unsigned width, int value);//cho tat ca cac gia tri cua ma tran ve mot gia tri nao do
+void drawEnterToExitText();
 
 int main() {
 	initwindow(1280, 720);
@@ -202,6 +205,13 @@ void process() {
 	}
 	getch();
 	closegraph();
+}
+
+void drawEnterToExitText() {
+	char c = getcolor();
+	setcolor(YELLOW);
+	outtextxy(1259 - textwidth("press ENTER to exit"), 520 - textheight("press ENTER to exit"), "press ENTER to exit");
+	setcolor(c);
 }
 
 template <typename Type>
@@ -307,10 +317,7 @@ void showResultConnectedComponents(int **connectedComponents, int count) {
 		drawTaskBarButtons();
 		drawMatrix();
 		drawVertices();
-		char c = getcolor();
-		setcolor(YELLOW);
-		outtextxy(1259 - textwidth("press ENTER to exit"), 520 - textheight("press ENTER to exit"), "press ENTER to exit");
-		setcolor(c);
+		drawEnterToExitText();
 		for (int i = 0; i < count; i++) {
 			for (int j = 0; j < n; j++) {
 				int v = connectedComponents[i][j];
@@ -699,6 +706,7 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 			ltm = localtime(&now);
 			endTime = ltm->tm_hour * 3600 + ltm->tm_min * 60 + ltm->tm_sec;
 			timeCount = endTime - startTime;
+			
 			if (timeCount == 15)
 				break;
 			setactivepage(page);
@@ -708,10 +716,13 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 			drawMatrix();
 			drawVertices();
 			drawAllEdges();
-			ESCButton.draw();
-			xButton.draw();
 			resultBox.draw();
-			if (kbhit() || xButton.isClickLMButton()) 
+			xButton.draw();
+			char c = getcolor();
+			setcolor(YELLOW);
+			outtextxy(1259 - textwidth("press key to exit"), 520 - textheight("press key to exit"), "press key to exit");
+			setcolor(c);
+			if (kbhit()) 
 				break;
 			clearmouseclick();
 			char timeCountdownStr[4];
@@ -902,14 +913,52 @@ void DFS() {
 	}
 }
 
+void showResultDFS(int *trace, char *resultText, int count) {
+	Button resultBox, xButton;
+	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, resultText);
+	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
+	int page = 0; 
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		delay(100);
+		drawFrame();
+		drawVertices();
+		drawAllEdges();
+		drawTaskBarButtons();
+		drawMatrix();
+		ESCButton.draw();
+		resultBox.draw();
+		xButton.draw();
+		outtextxy(430, 525 + (100 - textheight("Ket qua thuat toan DFS:")) / 2, "Ket qua thuat toan DFS:");
+		drawEnterToExitText();
+		setactivepage(1);
+		setvisualpage(1);
+		for (int i = 0; i < count; i += 2) {
+			int u = trace[i];
+			int v = trace[i + 1];
+			vertices[u].highLight();
+			drawArrow(vertices[u], vertices[v], LIGHTGREEN, 0);
+			delay(200);
+			vertices[v].highLight();
+		}
+		if (xButton.isClickLMButton())
+			break;
+		if (kbhit()) {
+			char key = getch();
+			if (key == KEY_ENTER)
+				break;
+		}
+		clearmouseclick();
+		page = 1 - page;
+	}
+}
+
 void dfsTraveler(int u) {
 	int start = u;
 	stack s;
 	int trace[n * n];
 	stack edgeStart;
-	Button resultBox, xButton;
-	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
-	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
 	int count = 0;
 	char resultText[100] = "";
 	s.push(u);
@@ -922,8 +971,6 @@ void dfsTraveler(int u) {
 			vertices[u].highLight();
 			strcat(resultText, vertices[u].name);
 			strcat(resultText, " -> ");
-			resultBox.name = resultText;
-			resultBox.draw();
 			visited[u] = 1;//danh dau no da tham
 			for (int i = n - 1; i >= 0; i--)
 				if ((G[u][i] || G[i][u]) && !visited[i]) {
@@ -949,9 +996,23 @@ void dfsTraveler(int u) {
 				return;
 		}
 	}
-	
 	strnDel(resultText, strlen(resultText) - 3, 3);
-	resultBox.name = resultText;
+	showResultDFS(trace, resultText, count);
+}
+
+void BFS() {
+	if (isEmptyVertex()) return;
+	int start = chooseVertex("Chon dinh bat dau duyet theo chieu rong (BFS)");
+	if (start != -1) {
+		setArrayTo(visited, n, 0);
+		bfsTraveler(start);
+	}
+}
+
+void showResultBFS(int *trace, char *resultText, int count) {
+	Button resultBox, xButton;
+	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, resultText);
+	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
 	int page = 0; 
 	while (true) {
 		setactivepage(page);
@@ -965,7 +1026,8 @@ void dfsTraveler(int u) {
 		ESCButton.draw();
 		resultBox.draw();
 		xButton.draw();
-		outtextxy(430, 525 + (100 - textheight("Ket qua thuat toan DFS:")) / 2, "Ket qua thuat toan DFS:");
+		outtextxy(430, 525 + (100 - textheight("Ket qua thuat toan BFS:")) / 2, "Ket qua thuat toan BFS:");
+		drawEnterToExitText();
 		setactivepage(1);
 		setvisualpage(1);
 		for (int i = 0; i < count; i += 2) {
@@ -980,7 +1042,7 @@ void dfsTraveler(int u) {
 			break;
 		if (kbhit()) {
 			char key = getch();
-			if (key == KEY_ESC)
+			if (key == KEY_ENTER)
 				break;
 		}
 		clearmouseclick();
@@ -988,24 +1050,11 @@ void dfsTraveler(int u) {
 	}
 }
 
-void BFS() {
-	if (isEmptyVertex()) return;
-	int start = chooseVertex("Chon dinh bat dau duyet theo chieu rong (BFS)");
-	if (start != -1) {
-		setArrayTo(visited, n, 0);
-		bfsTraveler(start);
-	}
-}
-
 void bfsTraveler(int u) {
 //	int start = u;
 	queue q;
-	Vertex edgeVertices[n * n];
 	int trace[n * n];
 	queue edgeStart;
-	Button resultBox, xButton;
-	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
-	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
 	int count = 0;
 	char resultText[100] = "";
 	q.push(u);
@@ -1018,8 +1067,6 @@ void bfsTraveler(int u) {
 			vertices[u].highLight();
 			strcat(resultText, vertices[u].name);
 			strcat(resultText, " -> ");
-			resultBox.name = resultText;
-			resultBox.draw();
 			visited[u] = 1;//danh dau no da tham
 			for (int i = 0; i < n; i++)
 				if ((G[u][i] || G[i][u]) && !visited[i]) {
@@ -1045,43 +1092,8 @@ void bfsTraveler(int u) {
 				return;
 		}
 	}
-	
 	strnDel(resultText, strlen(resultText) - 3, 3);
-	resultBox.name = resultText;
-	int page = 0; 
-	while (true) {
-		setactivepage(page);
-		setvisualpage(1 - page);
-		delay(100);
-		drawFrame();
-		drawVertices();
-		drawAllEdges();
-		drawTaskBarButtons();
-		drawMatrix();
-		ESCButton.draw();
-		resultBox.draw();
-		xButton.draw();
-		outtextxy(430, 525 + (100 - textheight("Ket qua thuat toan BFS:")) / 2, "Ket qua thuat toan BFS:");
-		setactivepage(1);
-		setvisualpage(1);
-		for (int i = 0; i < count; i += 2) {
-			int u = trace[i];
-			int v = trace[i + 1];
-			vertices[u].highLight();
-			drawArrow(vertices[u], vertices[v], LIGHTGREEN, 0);
-			delay(200);
-			vertices[v].highLight();
-		}
-		if (xButton.isClickLMButton())
-			break;
-		if (kbhit()) {
-			char key = getch();
-			if (key == KEY_ESC)
-				break;
-		}
-		clearmouseclick();
-		page = 1 - page;
-	}
+	showResultBFS(trace, resultText, count);
 }
 
 int chooseVertex(char *request) {
