@@ -438,8 +438,8 @@ void showResultEulerCycle(stack CE) {
 		drawTaskBarButtons();
 		drawVertices();
 		drawAllEdges();
+		drawEnterToExitText();
 		resultBox.draw();
-		ESCButton.draw();
 		vertices[trace[0]].highLight();
 		xButton.draw();
 		setactivepage(1);
@@ -474,7 +474,7 @@ void showResultEulerCycle(stack CE) {
 
 		if (kbhit()) {
 			char key = getch();
-			if (key == KEY_ESC)
+			if (key == KEY_ENTER)
 				break;
 		}
 		if (xButton.isClickLMButton())
