@@ -123,7 +123,7 @@ void moveVertex();//ham di chuyen dinh
 void drawMatrix();//ve ma tran trong so
 void drawArrow(Vertex u, Vertex v, int color, int w);//ve mui ten
 void drawTriangle(int x1, int y1, int x2, int y2, int color);//ve hinh tam giac dung cho mui ten
-void drawLine(Vertex u, Vertex v, int color);//ve duong noi hai dinh, ap dung cho do thi vo huong
+void drawLine(Vertex u, Vertex v, int color, int w);//ve duong noi hai dinh, ap dung cho do thi vo huong
 void printWeight(int x, int y, int w);//xuat trong so 
 void drawAllEdges();//ham ve tat ca cac canh
 void drawAllEdges(int color);//ham ve tat ca cac canh voi mau do nguoi dung chon
@@ -160,7 +160,9 @@ int** create2DArray(unsigned height, unsigned width);//tao ma tran
 void delete2DArray(int **arr, unsigned height, unsigned width);//xoa ma tran
 template <typename Type>
 void set2DArrayTo(Type **arr, unsigned height, unsigned width, int value);//cho tat ca cac gia tri cua ma tran ve mot gia tri nao do
-void drawEnterToExitText();
+void drawEnterToExitText();//in ra dong "press ENTER to exit" o goc phai duoi man hinh lam viec
+void drawKeyToExitText();//in ra dong "press KEY to exit" o goc phai duoi man hinh lam viec
+						//ham nay thuong duoc dung cho cac ham khong co ket qua 
 
 int main() {
 	initwindow(1280, 720);
@@ -205,6 +207,13 @@ void process() {
 	}
 	getch();
 	closegraph();
+}
+
+void drawKeyToExitText() {
+	char c = getcolor();
+	setcolor(YELLOW);
+	outtextxy(1259 - textwidth("press KEY to exit"), 520 - textheight("press KEY to exit"), "press KEY to exit");
+	setcolor(c);
 }
 
 void drawEnterToExitText() {
@@ -327,9 +336,13 @@ void showResultConnectedComponents(int **connectedComponents, int count) {
 					//nen o ham nay ta chi thao tac voi nhung 
 					//dinh co gia tri khac -1
 					vertices[v].highLight(YELLOW, i + 1);//mau i + 1 tuong tu nhu mau tu 1 toi 11 (voi dieu kien la MAX = 10)
-				for (int k = 0; k < n; k++)
-					if (G[v][k] || G[k][v])
-						drawLine(vertices[v], vertices[k], i + 1);
+				for (int k = 0; k < n; k++) {
+					if (G[v][k])
+						drawLine(vertices[v], vertices[k], i + 1, G[v][k]);
+					if (G[k][v])
+						drawLine(vertices[k], vertices[v], i + 1, G[k][v]);
+						
+				}
 			}
 			components[i].draw();
 			if (components[i].isHover()) {
@@ -376,7 +389,8 @@ int countConnectedComponents(int **connectedComponents) {
 					//va dinh do chua duoc them vao thanh phan lien thong nao
 					//thi them no vao thanh phan lien thong thu counter
 					isAdded[j] = true;
-					connectedComponents[counter][k++] = j;	
+					connectedComponents[counter][k] = j;	
+					k++;
 				}
 			counter++;
 		}
@@ -400,8 +414,9 @@ void DFS(int u) {
 bool isUndirectedGraph() {
 	for (int i = 0; i < n; i++) 
 		for (int j = 0; j < n; j++)
-			if (G[i][j] != G[j][i]) 
-				return false;
+			if (G[i][j])
+				if (G[i][j] != G[j][i] || G[i][j] != 1) 
+					return false;
 	return true;	
 }
 
@@ -451,6 +466,13 @@ void showResultEulerCycle(stack CE) {
 				drawArrow(vertices[u], vertices[v], LIGHTGREEN, 0);
 				delay(500);
 				vertices[v].highLight();
+				if (kbhit()) {
+					char key = getch();
+					if (key == KEY_ENTER)
+						return;
+				}
+				if (xButton.isClickLMButton())
+					return;
 			}
 		}
 		else {
@@ -469,6 +491,13 @@ void showResultEulerCycle(stack CE) {
 						vertices[v].highLight();						
 					}
 				}
+				if (kbhit()) {
+					char key = getch();
+					if (key == KEY_ENTER)
+						return;
+				}
+				if (xButton.isClickLMButton())
+					return;
 			}
 		}
 
@@ -501,9 +530,15 @@ void eulerCycle() {
 			drawTaskBarButtons();
 			resultBox.draw();
 			xButton.draw();
-			ESCButton.draw();
-			if (kbhit() || xButton.isClickLMButton())
+			clearmouseclick();
+			drawKeyToExitText();
+//			ESCButton.draw();
+			if (xButton.isClickLMButton())
 				return;
+			if (kbhit()) {
+				getch();
+				return;
+			}
 			page = 1 - page;
 		}
 	}
@@ -548,8 +583,9 @@ void eulerCycle() {
 				setactivepage(page);
 				setvisualpage(1 - page);
 				resultBox.draw();
-				ESCButton.draw();
+//				ESCButton.draw();
 				xButton.draw();
+				drawKeyToExitText();
 				taskBarFrame.draw();
 				drawTaskBarButtons();
 				if (kbhit())
@@ -638,11 +674,12 @@ void eulerCycle() {
 				setactivepage(page);
 				setvisualpage(1 - page);
 				taskBarFrame.draw();
-				ESCButton.draw();
+//				ESCButton.draw();
 				resultBox.draw();
 				xButton.draw();
+				drawKeyToExitText();
 				if (kbhit())
-				return;
+					return;
 				if (xButton.isClickLMButton())
 					return;
 				clearmouseclick();
@@ -718,10 +755,7 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 			drawAllEdges();
 			resultBox.draw();
 			xButton.draw();
-			char c = getcolor();
-			setcolor(YELLOW);
-			outtextxy(1259 - textwidth("press key to exit"), 520 - textheight("press key to exit"), "press key to exit");
-			setcolor(c);
+			drawKeyToExitText();
 			if (kbhit()) 
 				break;
 			clearmouseclick();
@@ -771,9 +805,10 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 			drawAllEdges();
 			resultBox.draw();
 			xButton.draw();
-			ESCButton.draw();
+//			ESCButton.draw();
 			clearmouseclick();
 			outtextxy(425 + (834 - textwidth(weightSumText)) / 2, 525 + (150 - textheight(weightSumText)) / 2, weightSumText);
+			drawEnterToExitText();
 			setactivepage(1);
 			setvisualpage(1);
 			int u = trace[0], v;
@@ -785,6 +820,14 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 					drawArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
 					delay(200);
 					vertices[v].highLight();
+					drawEnterToExitText();
+					if (kbhit()) {
+						char key = getch();
+						if (key == KEY_ENTER)
+							return;
+					}
+					if (xButton.isClickLMButton())
+						return;
 				}
 			else 
 				for (int i = 1; i < count; i++) {
@@ -796,14 +839,21 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 						drawCurvedArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
 					delay(200);
 					vertices[v].highLight();
+					if (kbhit()) {
+						char key = getch();
+						if (key == KEY_ENTER)
+							return;
+					}
+					if (xButton.isClickLMButton())
+						return;
 				}
 			if (kbhit()) {
 				char key = getch();
-				if (key == KEY_ESC)
-					break;
+				if (key == KEY_ENTER)
+					return;
 			}
 			if (xButton.isClickLMButton())
-				break;
+				return;
  			page = 1 - page;
 		}
 	}
@@ -845,6 +895,7 @@ void dijkstra(int start, int end) {
 				}
 	}
 	showResultPathXY(trace, dist, start, end);
+	return;
 }
 
 void pathXY() {
@@ -966,6 +1017,7 @@ void dfsTraveler(int u) {
 	setvisualpage(1);
 	while (!s.isEmpty()) {
 		clearmouseclick();
+		drawEnterToExitText();
 		u = s.pop();//lay dinh o tren ngan xep va xoa no ra khoi danh sach
 		if (!visited[u]) {//neu dinh do chua duoc tham
 			vertices[u].highLight();
@@ -992,7 +1044,7 @@ void dfsTraveler(int u) {
 		}
 		if (kbhit()) {
 			char key = getch();
-			if (key == KEY_ESC)
+			if (key == KEY_ENTER)
 				return;
 		}
 	}
@@ -1062,6 +1114,7 @@ void bfsTraveler(int u) {
 	setvisualpage(1);
 	while (!q.isEmpty()) {
 		clearmouseclick();
+		drawEnterToExitText();
 		u = q.pop();//lay dinh o tren hang doi va xoa no ra khoi danh sach
 		if (!visited[u]) {//neu dinh do chua duoc tham
 			vertices[u].highLight();
@@ -1088,7 +1141,7 @@ void bfsTraveler(int u) {
 		}
 		if (kbhit()) {
 			char key = getch();
-			if (key == KEY_ESC)
+			if (key == KEY_ENTER)
 				return;
 		}
 	}
@@ -1376,15 +1429,21 @@ void drawCurvedArrow(Vertex u, Vertex v, int color, int w) {
 }
 
 void drawAllEdges(int color) {
-	for (int i = 0; i < n; i++) {
-		for(int j = 0; j < n; j++) {
-			if (G[i][j]) {
-				if (G[j][i] == G[i][j] || !G[j][i])
-					drawArrow(vertices[i], vertices[j], color, G[i][j]);
-				else 
-					drawCurvedArrow(vertices[i], vertices[j], color, G[i][j]);
-			}
-		}
+	if (isUndirectedGraph()) {
+		for (int i = 0; i < n; i++) 
+			for(int j = 0; j < n; j++)
+				if (G[i][j]) 
+					drawLine(vertices[i], vertices[j], color, 0);
+	}
+	else {
+		for (int i = 0; i < n; i++) 
+			for(int j = 0; j < n; j++)
+				if (G[i][j]) {
+					if (!G[j][i])
+						drawArrow(vertices[i], vertices[j], color, G[i][j]);
+					else 
+						drawCurvedArrow(vertices[i], vertices[j], color, G[i][j]);
+				} 
 	}
 }
 
@@ -1393,7 +1452,7 @@ void drawAllEdges() {
 		for (int i = 0; i < n; i++) 
 			for(int j = 0; j < n; j++)
 				if (G[i][j]) 
-					drawLine(vertices[i], vertices[j], MAGENTA);
+					drawLine(vertices[i], vertices[j], MAGENTA, 0);
 	}
 	else {
 		for (int i = 0; i < n; i++) 
@@ -1433,11 +1492,10 @@ void drawTriangle(int x1, int y1, int x2, int y2, int color) {
 	fillpoly(4, a);
 	setlinestyle(SOLID_LINE, 0, 1);
 	setcolor(c);
-	
 	setfillstyle(1, c);
 }
 
-void drawLine(Vertex u, Vertex v, int color) {
+void drawLine(Vertex u, Vertex v, int color, int w) {
 	int x1, x2, y1, y2;
 	char c = getcolor();
 	x1 = u.coordinates.x;
@@ -1462,6 +1520,8 @@ void drawLine(Vertex u, Vertex v, int color) {
 	setlinestyle(SOLID_LINE, 1, 2);
 	setcolor(color);
 	line(x11, y11, x22, y22);
+	if (w != 0)
+		printWeight((x1 + x2) / 2, (y1 + y2) / 2, w);
 	setcolor(c);
 	setlinestyle(SOLID_LINE, 1, 1);
 }
