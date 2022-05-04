@@ -247,16 +247,6 @@ void connectedComponents() {
 	int **list = create2DArray(n, n);
 	set2DArrayTo(list, n, n, -1);			
 	int counter = countConnectedComponents(list);
-		cout << "So thanh phan lien thong la: " << counter << endl;
-		for (int i = 0; i < counter; i++) {
-			cout << "Thanh phan lien thong " << i + 1 << ": ";
-			for (int j = 0; j < n; j++) {
-				int v = list[i][j];
-				if (v != -1)
-					cout << vertices[v].name << " ";
-			}
-			cout << endl;
-		}
 	showResultConnectedComponents(list, counter);
 	delete2DArray(list, n, n);
 }
@@ -317,7 +307,11 @@ void showResultConnectedComponents(int **connectedComponents, int count) {
 		drawTaskBarButtons();
 		drawMatrix();
 		drawVertices();
-		for (int i = 0; i < count; i++)
+		char c = getcolor();
+		setcolor(YELLOW);
+		outtextxy(1259 - textwidth("press ENTER to exit"), 520 - textheight("press ENTER to exit"), "press ENTER to exit");
+		setcolor(c);
+		for (int i = 0; i < count; i++) {
 			for (int j = 0; j < n; j++) {
 				int v = connectedComponents[i][j];
 				if (v != -1)
@@ -330,8 +324,18 @@ void showResultConnectedComponents(int **connectedComponents, int count) {
 					if (G[v][k] || G[k][v])
 						drawLine(vertices[v], vertices[k], i + 1);
 			}
-		for (int i = 0; i < count; i++)
 			components[i].draw();
+			if (components[i].isHover()) {
+				components[i].highLight();
+				//neu di chuot vao vi tri o cua thanh phan lien thong 
+				//nao thi cac dinh cua thanh phan lien thong do se duoc to sang
+				for (int j = 0; j < n; j++) {
+					int v = connectedComponents[i][j];
+					if (v != -1)
+						vertices[v].highLight(WHITE, 13);
+				}
+			}
+		}
 		if (kbhit()) {
 			char key = getch();
 			if (key == KEY_ESC || key == KEY_ENTER)
