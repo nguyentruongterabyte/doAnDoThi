@@ -148,7 +148,16 @@ void eulerCycle(int u);//ham tim chu trinh euler
 void showResultEulerCycle(stack CE);//show ket qua chu trinh euler ra man hinh
 bool isUndirectedGraph();//ham kiem tra do thi co vo huong khong
 bool isConnectesGraph();//ham kiem tra do thi co lien thong hay khong
-void hamilton();
+void DFS(int u);//duyet theo chieu sau
+void connectedComponents();//thanh phan lien thong
+int countConnectedComponents();//tinh thanh phan lien thong cua do thi
+int countConnectedComponents(int **connectedComponents);//tinh thanh phan lien thong cua do thi 
+														//va tra ve mang cac thanh phan lien thong cua do thi
+void showResultConnectedComponents(int **connectedComponents, int count);//show ra man hinh thanh phan lien thong cua do thi
+int** create2DArray(unsigned height, unsigned width);//tao ma tran
+void delete2DArray(int **arr, unsigned height, unsigned width);//xoa ma tran
+template <typename Type>
+void set2DArrayTo(Type **arr, unsigned height, unsigned width, int value);//cho tat ca cac gia tri cua ma tran ve mot gia tri nao do
 
 int main() {
 	initwindow(1280, 720);
@@ -185,14 +194,196 @@ void process() {
 		
 		
 		
-//		if (ismouseclick(WM_MOUSEMOVE)) {
-//			int x, y;
-//			getmouseclick(WM_MOUSEMOVE, x, y);
-//			cout << x << " " << y << endl;
-//		}
+		if (ismouseclick(WM_MOUSEMOVE)) {
+			int x, y;
+			getmouseclick(WM_MOUSEMOVE, x, y);
+			cout << x << " " << y << endl;
+		}
 	}
 	getch();
 	closegraph();
+}
+
+template <typename Type>
+void set2DArrayTo(Type **arr, unsigned height, unsigned width, int value) {
+	for (int i = 0; i < height; i++)
+		for (int j = 0; j < width; j++)
+			arr[i][j] = value;
+}
+
+void delete2DArray(int **arr, unsigned height, unsigned width) {
+	for (int h = 0; h < height; h++)
+		delete []arr[h];
+	delete []arr;
+	arr = 0;
+}
+
+int** create2DArray(unsigned height, unsigned width) {
+    int** array2D = 0;
+    array2D = new int*[height];//tao bien ma tran
+    
+    for (int h = 0; h < height; h++) {
+    	//tao cot cho ma tran
+        array2D[h] = new int[width];
+        for (int w = 0; w < width; w++) 
+            //cho gia tri ban dau cua moi phan tu cua ma tran la 0
+            array2D[h][w] = 0;
+    }
+    return array2D;
+}
+
+int countConnectedComponents() {
+	setArrayTo(visited, n, false);
+	int counter = 0;
+	for (int i = 0; i < n; i++)
+		if (!visited[i]) {
+			counter++;
+			DFS(i);
+		}
+	return counter;
+}
+
+void connectedComponents() {
+	int **list = create2DArray(n, n);
+	set2DArrayTo(list, n, n, -1);			
+	int counter = countConnectedComponents(list);
+		cout << "So thanh phan lien thong la: " << counter << endl;
+		for (int i = 0; i < counter; i++) {
+			cout << "Thanh phan lien thong " << i + 1 << ": ";
+			for (int j = 0; j < n; j++) {
+				int v = list[i][j];
+				if (v != -1)
+					cout << vertices[v].name << " ";
+			}
+			cout << endl;
+		}
+	showResultConnectedComponents(list, counter);
+	delete2DArray(list, n, n);
+}
+
+void showResultConnectedComponents(int **connectedComponents, int count) {
+	int page = 0;
+	char componentsStr[n][20] = {""};
+	Button resultBox, xButton, components[n];
+	for (int i = 0; i < count; i++) {
+		//duyet tung thanh phan lien thong
+		//tuong ung voi so hang cua ma tran connectedComponents
+		for (int j = 0; j < n; j++) {
+			//moi thanh phan lien thong se co cac dinh
+			//tuong uong voi tung cot cua ma tran connectedComponets
+			int v = connectedComponents[i][j];
+			if (v != -1) {
+				//neu v khac -1 thi noi ten dinh v vao sau componentsStr[i]
+				strcat(componentsStr[i], vertices[v].name);
+				//noi dau phay
+				strcat(componentsStr[i], ", ");
+			}
+		}
+		//xoa dau phay o sau cua moi chuoi thanh phan lien thong
+		strnDel(componentsStr[i], strlen(componentsStr[i]) - 2, 2);
+		//sao chep thanh phan lien thong sang moi button cua no
+		//de hien thi ra man hinh
+		components[i].name = componentsStr[i];
+		components[i].height = 40;
+		if (count < 5)
+			components[i].width = 200;
+		else 
+			components[i].width = 100;
+			
+		components[i].bColor = BLACK;
+		components[i].tColor = YELLOW;
+		components[i].pattern = 1;
+	}
+	int frag = count / 2,
+		x0 = 425 + (834 - frag * components[0].width) / 2,
+		y0 = 525 + 40; 
+	for (int i = 0; i < frag; i++) {
+		components[i].coordinates.x = x0;
+		components[i].coordinates.y = y0;
+		x0 += (components[i].width + 5);
+	}
+	x0 = 425 + (834 - (count - frag)* components[0].width) / 2,
+	y0 += 45;
+	
+	for (int i = frag; i < count; i++) {
+		components[i].coordinates.x = x0;
+		components[i].coordinates.y = y0;
+		x0 += (components[i].width + 5);
+	}
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		drawFrame();
+		drawTaskBarButtons();
+		drawMatrix();
+		drawVertices();
+		for (int i = 0; i < count; i++)
+			for (int j = 0; j < n; j++) {
+				int v = connectedComponents[i][j];
+				if (v != -1)
+					//tu ham connectedComponents() 
+					//ta gan gia tri cho ma tran connectedComponents la -1
+					//nen o ham nay ta chi thao tac voi nhung 
+					//dinh co gia tri khac -1
+					vertices[v].highLight(YELLOW, i + 1);//mau i + 1 tuong tu nhu mau tu 1 toi 11 (voi dieu kien la MAX = 10)
+				for (int k = 0; k < n; k++)
+					if (G[v][k] || G[k][v])
+						drawLine(vertices[v], vertices[k], i + 1);
+			}
+		for (int i = 0; i < count; i++)
+			components[i].draw();
+		if (kbhit()) {
+			char key = getch();
+			if (key == KEY_ESC || key == KEY_ENTER)
+				break;	
+		}	
+		page = 1 - page;
+	}
+}
+
+int countConnectedComponents(int **connectedComponents) {
+	//setArrayTo(visited, n, false);
+	int counter = 0;
+	bool isAdded[n];//mang nay co tac dung danh dau cac dinh 
+					//da duoc them vao thanh phan lien thong truoc
+	for (int i = 0; i < n; i++)
+		//cho mang ve gia tri false
+		isAdded[i] = false, visited[i] = false;
+	for (int i = 0; i < n; i++)
+		if (!visited[i]) {
+			//neu chua tham dinh i thi duyet dfs bat dau tu dinh i
+			//dinh tham roi se duoc danh dau la true
+			//tu dinh i neu co dinh nao nam trong danh sach dinh ke
+			//voi i thi nhung dinh do duoc goi la mot thanh phan lien thong
+			//ta se luu no vao mot ma tran de tra ve ket qua
+			//nhung thanh phan lien thong cua do thi
+			DFS(i);
+			int k = 0;
+			for (int j = 0; j < n; j++)
+				if (visited[j] && !isAdded[j]) {
+					//neu dinh da duoc dfs duyet roi 
+					//va dinh do chua duoc them vao thanh phan lien thong nao
+					//thi them no vao thanh phan lien thong thu counter
+					isAdded[j] = true;
+					connectedComponents[counter][k++] = j;	
+				}
+			counter++;
+		}
+	return counter;
+}
+
+void DFS(int u) {
+	stack s;
+	s.push(u);
+	while (!s.isEmpty()) {
+		u = s.pop();
+		if (!visited[u]) {
+			visited[u] = true;
+			for (int i = 0; i < n; i++)
+				if ((G[u][i] || G[i][u]) && !visited[i]) 
+					s.push(i);
+		}
+	} 
 }
 
 bool isUndirectedGraph() {
@@ -205,20 +396,8 @@ bool isUndirectedGraph() {
 
 bool isConnectedGraph() {
 	//Kiem tra do thi co lien thong hay khong
-	for (int i = 0; i < n; i++) {
-		int LinkerCounter = 0;
-		//dem so lien
-		//ket cua moi dinh
-		for (int j = 0; j < n; j++)
-			if (G[i][j] || G[j][i])
-				LinkerCounter += 1; 
-		if (LinkerCounter == 0)
-			//neu so lien ket bang 0 thi do thi 
-			//do thi do co dinh don khong lien ket voi cac dinh con lai
-			return false;
-			break;
-	}
-	return true; 
+	if (countConnectedComponents() == 1) return true;
+	return false; 
 }
 
 void showResultEulerCycle(stack CE) {
@@ -539,13 +718,11 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 		
 	} 
 	else {
-		Vertex display[n];
-		int pathGraph[n][n];
+		int traveler[n];
 		char resultText[100] = "";
 		char weightSumText[25] = "Chieu dai duong di: ", weightSumStr[5]; 
 		resultBox.name = "";
 		itoa(dist[end], weightSumStr, 10);
-		
 		strcat(weightSumText, weightSumStr);
 		stack s;
 		//sau khi tim duoc duong di ta se truy vet duong di tu 
@@ -556,28 +733,18 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 			end = trace[end];
 		}
 		s.push(start);
-		int count = 1, v, u;
-		v = s.pop();
-		strcat(resultText, vertices[v].name);
-		strcat(resultText, " -> ");
-		display[0] = vertices[v]; 
-		while (!s.isEmpty()) {
-			//bay gio ta dung LIFO de lay nguoc lai tap dinh do 
-			//ta duoc duong di tu start toi end 
-			u = v;
+		int count = 0, v;
+		do {
 			v = s.pop();
 			strcat(resultText, vertices[v].name);
 			strcat(resultText, " -> ");
-			display[count] = vertices[v];
-			pathGraph[count][count - 1] = G[v][u];
-			pathGraph[count - 1][count] = G[u][v];
+			traveler[count] = v;
 			count++;
-		}
-		
-	
+		} while (!s.isEmpty());
 		strnDel(resultText, strlen(resultText) - 3, 3);
 		resultBox.name = resultText;
 		int page = 0;
+		bool isUGr = isUndirectedGraph();
 		//show ra man hinh
 		while (true) {
 			setactivepage(page);
@@ -594,15 +761,27 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 			outtextxy(425 + (834 - textwidth(weightSumText)) / 2, 525 + (150 - textheight(weightSumText)) / 2, weightSumText);
 			setactivepage(1);
 			setvisualpage(1);
-			display[0].highLight();
-			for (int i = 1; i < count; i++) {
-				delay(500);
-				if (pathGraph[i][i - 1] == pathGraph[i - 1][i] || !pathGraph[i][i - 1])
-					drawArrow(display[i - 1], display[i], LIGHTGREEN, pathGraph[i - 1][i]);
-				else 
-					drawCurvedArrow(display[i - 1], display[i], LIGHTGREEN, pathGraph[i - 1][i]);
-				display[i].highLight();
-			}
+			int u = trace[0], v;
+			vertices[u].highLight();
+			if (isUGr)
+				for (int i = 1; i < count; i++) {
+					u = traveler[i - 1];
+					v = traveler[i];
+					drawArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
+					delay(200);
+					vertices[v].highLight();
+				}
+			else 
+				for (int i = 1; i < count; i++) {
+					u = traveler[i - 1];
+					v = traveler[i];
+					if (!G[v][u])
+						drawArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
+					else 
+						drawCurvedArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
+					delay(200);
+					vertices[v].highLight();
+				}
 			if (kbhit()) {
 				char key = getch();
 				if (key == KEY_ESC)
@@ -815,7 +994,7 @@ void BFS() {
 }
 
 void bfsTraveler(int u) {
-	int start = u;
+//	int start = u;
 	queue q;
 	Vertex edgeVertices[n * n];
 	int trace[n * n];
@@ -1776,7 +1955,8 @@ void taskBar() {
 				break;
 			}
 			case 3: {
-				outtextxy(340, 15, "Thanh phan lien thong");
+//				outtextxy(340, 15, "Thanh phan lien thong");
+				connectedComponents();
 				break;
 			}
 			case 4: {
@@ -2052,7 +2232,7 @@ int fileTools() {
 		width = 400 - 2 * margin;
 	int y0 = 15 + height + 2 * margin,
 		x0 = 15;
-	Button fileTools[4], fileToolsHoverBar/*khung x? l� hover*/;
+	Button fileTools[4], fileToolsHoverBar/*khung x? l? hover*/;
 	fileToolsHoverBar.init(x0 + margin, y0 - margin, itemsAmount * (height + margin), width, BLACK, BLACK, 1, "");
 	fileTools[0].name = "Mo file";
 	fileTools[1].name = "Luu file";
