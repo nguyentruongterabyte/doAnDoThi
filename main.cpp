@@ -150,7 +150,7 @@ void showResultPathXY(int *trace, int *dist, int start, int end);//show ra man h
 void eulerCycle(int u);//ham tim chu trinh euler
 void showResultEulerCycle(stack CE);//show ket qua chu trinh euler ra man hinh
 bool isUndirectedGraph();//ham kiem tra do thi co vo huong khong
-bool isConnectesGraph();//ham kiem tra do thi co lien thong hay khong
+bool isConnectedGraph();//ham kiem tra do thi co lien thong hay khong
 void DFS(int u);//duyet theo chieu sau
 void connectedComponents();//thanh phan lien thong
 int countConnectedComponents();//tinh thanh phan lien thong cua do thi
@@ -326,15 +326,28 @@ void connectedComponents() {
 	int **list = create2DArray(n, n), counter;
 	set2DArrayTo(list, n, n, -1);
 	bool isUGr = isUndirectedGraph();
+	char resultText[100], counterStr[4];
 	if (isUGr) {
 		counter = countConnectedComponents(list);
-		cout << "La do thi vo huong " << counter <<  endl;
+		strcpy(resultText, "Do thi vo huong co ");
+		itoa(counter, counterStr, 10);
+		strcat(resultText, counterStr);
+		strcat(resultText, " thanh phan lien thong: ");
+		cout << resultText << endl;
 		showResultConnectedComponents(list, counter, 1);
 	}
-	else {
+	else if (isConnectedGraph()){
 		counter = countStrongConComponent(list);
-		cout << "La do thi co huong " << counter <<endl;
+		strcpy(resultText, "Do thi lien thong co huong co ");
+		itoa(counter, counterStr, 10);
+		strcat(resultText, counterStr);
+		strcat(resultText, " thanh phan lien thong manh: ");
+		cout << resultText << endl;
 		showResultConnectedComponents(list, counter, 0);
+	}
+	else {
+		strcpy(resultText, "Do thi lien thong yeu.");
+		cout << resultText << endl;
 	}
 	delete2DArray(list, n, n);
 }
@@ -400,14 +413,16 @@ void showResultConnectedComponents(int **connectedComponents, int count, bool is
 		drawAllEdges();
 		for (int i = 0; i < count; i++) {
 			for (int j = 0; j < n; j++) {
+				int v = connectedComponents[i][j];
+				if (v != -1) {
 					//tu ham connectedComponents() 
 					//ta gan gia tri cho ma tran connectedComponents la -1
 					//nen o ham nay ta chi thao tac voi nhung 
 					//dinh co gia tri khac -1
-				int v = connectedComponents[i][j];
-				if (v != -1) {
 					vertices[v].highLight(YELLOW, i + 1);//mau i + 1 tuong tu nhu mau tu 1 toi 11 (voi dieu kien la MAX = 10)
 					if (isUndirectedGraph) {
+						//neu la do thi vo huong thi ve
+						//cac duong thang khong co trong so w = 0;
 						for (int k = 0; k < n; k++)
 							if (G[v][k])
 								drawLine(vertices[v], vertices[k], i + 1, 0);
