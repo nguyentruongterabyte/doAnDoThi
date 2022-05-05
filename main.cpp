@@ -72,6 +72,7 @@ struct Button /*cau truc nut*/{
 	void changeColor(int tColor, int bColor);//doi mau nut
 };
 
+int Time;
 int n = MAX;
 Vertex vertices[MAX];
 int G[MAX][MAX];
@@ -163,9 +164,14 @@ void set2DArrayTo(Type **arr, unsigned height, unsigned width, int value);//cho 
 void drawEnterToExitText();//in ra dong "press ENTER to exit" o goc phai duoi man hinh lam viec
 void drawKeyToExitText();//in ra dong "press KEY to exit" o goc phai duoi man hinh lam viec
 						//ham nay thuong duoc dung cho cac ham khong co ket qua 
-int tarjanAlgo(bool showResult, int remove);
-void tarjanVisit(int u, int *disc, int *low, stack &s, int &count, int &components, bool callTarjanResult);
-void tarjanResult(stack &s, int end, int components);
+//int tarjanAlgo(bool showResult, int remove);
+//void tarjanVisit(int u, int *disc, int *low, stack &s, int &count, int &components, bool callTarjanResult);
+//void tarjanResult(stack &s, int end, int components);
+
+
+int min(int a, int b);
+void tarjanAlgo(int u, int disc[], int lowLink[], stack &stk, bool stkItem[], int **componentsList, int &counter);
+int countStrongConComponent(int **compnentsList);
 
 
 int main() {
@@ -203,66 +209,118 @@ void process() {
 		
 		
 		
-		if (ismouseclick(WM_MOUSEMOVE)) {
-			int x, y;
-			getmouseclick(WM_MOUSEMOVE, x, y);
-			cout << x << " " << y << endl;
-		}
+//		if (ismouseclick(WM_MOUSEMOVE)) {
+//			int x, y;
+//			getmouseclick(WM_MOUSEMOVE, x, y);
+//			cout << x << " " << y << endl;
+//		}
 	}
 	getch();
 	closegraph();
 }
 
-void tarjanResult(stack &s, int end, int components) {
-	int v;
-	do {
-		v = s.pop();
-		visited[v] = 1;
-		cout << vertices[v].name << ", ";
-	} while (v != end);
+int min(int a, int b) {
+	return (a < b) ? a: b;
 }
 
-void tarjanVisit(int u, int *disc, int *low, stack &s, int &count, int &components, bool callTarjanResult) {
-	low[u] = disc[u] = ++count;
-	s.push(u);
-	int v;
-	for (v = 0; v < n; v++)
-		if (!visited[v] && G[u][v])
-			if (disc[v] != 0)
-				low[u] = min(low[u], disc[v]);
-			else {
-				tarjanVisit(v, disc, low, s, count, components, callTarjanResult);
-				low[u] = min(low[u], low[v]);
-			}
-	if (disc[u] == low[u]) {
-		++components;
-		if (callTarjanResult)
-			tarjanResult(s, u, components);
-		else 
-			do {
-				v = s.pop();
-				visited[v] = 1;
-			} while (v != u);
+
+void tarjanAlgo(int u, int disc[], int lowLink[], stack &stk, bool stkItem[], int **componentsList, int &counter) {
+	disc[u] = lowLink[u] = ++Time;
+	stk.push(u);
+	stkItem[u] = true;
+	for (int v = 0; v < n; v++) {
+		if (G[u][v]) {	
+			if (disc[v] == -1) {
+				tarjanAlgo(v, disc, lowLink, stk, stkItem, componentsList, counter);
+				lowLink[u] = min(lowLink[u], lowLink[v]);
+			} 
+			else if (stkItem[v])
+				lowLink[u] = min(lowLink[u], disc[v]);
+		}
+	}
+	int poppedItem = 0;
+	if (lowLink[u] == disc[u]) {
+		int k = 0;
+		while (stk.get() != u) {
+			poppedItem = stk.pop();
+			componentsList[counter][k++] = poppedItem;
+			stkItem[poppedItem] = false;
+		}
+		poppedItem = stk.pop();
+		componentsList[counter][k] = poppedItem;
+		stkItem[poppedItem] = false;
+		counter++;
 	}
 }
 
-int tarjanAlgo(bool showResult, int remove) {
-	const int &NUM = n;
-	int disc[NUM];
-	int low[NUM];
-	setArrayTo(disc, NUM, 0);
-	setArrayTo(visited, NUM, 0);
-	int count(0), components(0);
-	stack s;
-	if (remove != 1) {
-		disc[remove] = 1;
-		visited[remove] = 1;
+int countStrongConComponent(int **componentsList) {
+	Time = 0;
+	int disc[n], lowLink[n], counter;
+	bool stkItem[n];
+	counter = 0;
+	stack stk;
+	for (int i = 0; i < n; i++) {
+		disc[i] = lowLink[i] = -1;
+		stkItem[i] = false;
 	}
-	for (int i = 0; i < NUM; i++)
-		if (disc[i] == 0) 
-			tarjanVisit(i, disc, low, s, count, components, showResult);
-	return components;
+	for (int i = 0; i < n; i++)
+		if (disc[i] == -1)
+			tarjanAlgo(i, disc, lowLink, stk, stkItem, componentsList, counter);
+	return counter;
 }
+
+
+
+//void tarjanResult(stack &s, int end, int components) {
+//	int v;
+//	do {
+//		v = s.pop();
+//		visited[v] = 1;
+//		cout << vertices[v].name << ", ";
+//	} while (v != end);
+//}
+
+//void tarjanVisit(int u, int *disc, int *low, stack &s, int &count, int &components, bool callTarjanResult) {
+//	low[u] = disc[u] = ++count;
+//	s.push(u);
+//	int v;
+//	for (v = 0; v < n; v++)
+//		if (!visited[v] && G[u][v])
+//			if (disc[v] != 0)
+//				low[u] = min(low[u], disc[v]);
+//			else {
+//				tarjanVisit(v, disc, low, s, count, components, callTarjanResult);
+//				low[u] = min(low[u], low[v]);
+//			}
+//	if (disc[u] == low[u]) {
+//		++components;
+//		if (callTarjanResult)
+//			tarjanResult(s, u, components);
+//		else 
+//			do {
+//				v = s.pop();
+//				visited[v] = 1;
+//			} while (v != u);
+//	}
+//}
+
+//int tarjanAlgo(bool showResult, int remove) {
+//	const int &NUM = n;
+//	int disc[NUM];
+//	int low[NUM];
+//	setArrayTo(disc, NUM, 0);
+//	setArrayTo(visited, NUM, 0);
+//	int count(0), components(0);
+//	stack s;
+//	if (remove != 1) {
+//		disc[remove] = 1;
+//		visited[remove] = 1;
+//	}
+//	for (int i = 0; i < NUM; i++)
+//		if (disc[i] == 0) 
+//			tarjanVisit(i, disc, low, s, count, components, showResult);
+//	return components;
+//}
 
 void drawKeyToExitText() {
 	char c = getcolor();
@@ -318,16 +376,23 @@ int countConnectedComponents() {
 }
 
 void connectedComponents() {
-	int **list = create2DArray(n, n);
-	set2DArrayTo(list, n, n, -1);			
-	int counter = countConnectedComponents(list);
+	int **list = create2DArray(n, n), counter;
+	set2DArrayTo(list, n, n, -1);
+	if (isUndirectedGraph()) {
+		counter = countConnectedComponents(list);
+		cout << "La do thi vo huong " << counter <<  endl;
+	}
+	else {
+		counter = countStrongConComponent(list);
+		cout << "La do thi co huong " << counter <<endl;
+	}
 	showResultConnectedComponents(list, counter);
 	delete2DArray(list, n, n);
 }
 
 void showResultConnectedComponents(int **connectedComponents, int count) {
 	int page = 0;
-	char componentsStr[n][20] = {""};
+	char componentsStr[n][30] = {""};
 	Button resultBox, xButton, components[n];
 	for (int i = 0; i < count; i++) {
 		//duyet tung thanh phan lien thong
@@ -342,6 +407,7 @@ void showResultConnectedComponents(int **connectedComponents, int count) {
 				//noi dau phay
 				strcat(componentsStr[i], ", ");
 			}
+		
 		}
 		//xoa dau phay o sau cua moi chuoi thanh phan lien thong
 		strnDel(componentsStr[i], strlen(componentsStr[i]) - 2, 2);
@@ -384,30 +450,23 @@ void showResultConnectedComponents(int **connectedComponents, int count) {
 		drawEnterToExitText();
 		for (int i = 0; i < count; i++) {
 			for (int j = 0; j < n; j++) {
-				int v = connectedComponents[i][j];
-				if (v != -1)
 					//tu ham connectedComponents() 
 					//ta gan gia tri cho ma tran connectedComponents la -1
 					//nen o ham nay ta chi thao tac voi nhung 
 					//dinh co gia tri khac -1
-					vertices[v].highLight(YELLOW, i + 1);//mau i + 1 tuong tu nhu mau tu 1 toi 11 (voi dieu kien la MAX = 10)
-				for (int k = 0; k < n; k++) {
-					if (G[v][k])
-						drawLine(vertices[v], vertices[k], i + 1, G[v][k]);
-					if (G[k][v])
-						drawLine(vertices[k], vertices[v], i + 1, G[k][v]);
-						
-				}
+					int v = connectedComponents[i][j];
+					if (v != -1)
+						vertices[v].highLight(YELLOW, i + 1);//mau i + 1 tuong tu nhu mau tu 1 toi 11 (voi dieu kien la MAX = 10)
 			}
 			components[i].draw();
 			if (components[i].isHover()) {
 				components[i].highLight();
 				//neu di chuot vao vi tri o cua thanh phan lien thong 
 				//nao thi cac dinh cua thanh phan lien thong do se duoc to sang
-				for (int j = 0; j < n; j++) {
-					int v = connectedComponents[i][j];
-					if (v != -1)
-						vertices[v].highLight(WHITE, 13);
+				for (int k = 0; k < n; k++) {
+					int u = connectedComponents[i][k];
+					if (u != -1)
+						vertices[u].highLight(WHITE, 13);
 				}
 			}
 		}
@@ -2087,7 +2146,9 @@ void taskBar() {
 			}
 			case 3: {
 //				outtextxy(340, 15, "Thanh phan lien thong");
+//				connectedComponents();
 				connectedComponents();
+//				tarjanAlgo(1, 2);
 				break;
 			}
 			case 4: {
