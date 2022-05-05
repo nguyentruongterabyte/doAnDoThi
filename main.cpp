@@ -156,7 +156,7 @@ void connectedComponents();//thanh phan lien thong
 int countConnectedComponents();//tinh thanh phan lien thong cua do thi
 int countConnectedComponents(int **connectedComponents);//tinh thanh phan lien thong cua do thi 
 														//va tra ve mang cac thanh phan lien thong cua do thi
-void showResultConnectedComponents(int **connectedComponents, int count);//show ra man hinh thanh phan lien thong cua do thi
+void showResultConnectedComponents(int **connectedComponents, int count, bool isUndirectedGraph);//show ra man hinh thanh phan lien thong cua do thi
 int** create2DArray(unsigned height, unsigned width);//tao ma tran
 void delete2DArray(int **arr, unsigned height, unsigned width);//xoa ma tran
 template <typename Type>
@@ -325,19 +325,21 @@ int countConnectedComponents() {
 void connectedComponents() {
 	int **list = create2DArray(n, n), counter;
 	set2DArrayTo(list, n, n, -1);
-	if (isUndirectedGraph()) {
+	bool isUGr = isUndirectedGraph();
+	if (isUGr) {
 		counter = countConnectedComponents(list);
 		cout << "La do thi vo huong " << counter <<  endl;
+		showResultConnectedComponents(list, counter, 1);
 	}
 	else {
 		counter = countStrongConComponent(list);
 		cout << "La do thi co huong " << counter <<endl;
+		showResultConnectedComponents(list, counter, 0);
 	}
-	showResultConnectedComponents(list, counter);
 	delete2DArray(list, n, n);
 }
 
-void showResultConnectedComponents(int **connectedComponents, int count) {
+void showResultConnectedComponents(int **connectedComponents, int count, bool isUndirectedGraph) {
 	int page = 0;
 	char componentsStr[n][30] = {""};
 	Button resultBox, xButton, components[n];
@@ -401,9 +403,26 @@ void showResultConnectedComponents(int **connectedComponents, int count) {
 					//ta gan gia tri cho ma tran connectedComponents la -1
 					//nen o ham nay ta chi thao tac voi nhung 
 					//dinh co gia tri khac -1
-					int v = connectedComponents[i][j];
-					if (v != -1)
-						vertices[v].highLight(YELLOW, i + 1);//mau i + 1 tuong tu nhu mau tu 1 toi 11 (voi dieu kien la MAX = 10)
+				int v = connectedComponents[i][j];
+				if (v != -1) {
+					vertices[v].highLight(YELLOW, i + 1);//mau i + 1 tuong tu nhu mau tu 1 toi 11 (voi dieu kien la MAX = 10)
+					if (isUndirectedGraph) {
+						for (int k = 0; k < n; k++)
+							if (G[v][k])
+								drawLine(vertices[v], vertices[k], i + 1, 0);
+						}
+					else {
+						for (int k = 0; k < n; k++) {
+							int h = connectedComponents[i][k];
+							if (h != -1 && G[v][h]) {
+								if (!G[h][v])
+									drawArrow(vertices[v], vertices[h], i + 1, G[v][h]);
+								else
+									drawCurvedArrow(vertices[v], vertices[h], i + 1, G[v][h]);	
+							}
+						}
+					}
+				}
 			}
 			components[i].draw();
 			if (components[i].isHover()) {
@@ -1097,7 +1116,7 @@ void dfsTraveler(int u) {
 			k = edgeStart.pop();
 		}	
 		if (j != k && !visited[j]) {
-			drawArrow(vertices[k], vertices[j], LIGHTGREEN, G[k][j]);
+			drawArrow(vertices[k], vertices[j], LIGHTGREEN, 0);
 			trace[count] = k;
 			trace[count + 1] = j;
 			delay(500);
@@ -1194,7 +1213,7 @@ void bfsTraveler(int u) {
 			k = edgeStart.pop();
 		}	
 		if (j != k && !visited[j]) {
-			drawArrow(vertices[k], vertices[j], LIGHTGREEN, G[k][j]);
+			drawArrow(vertices[k], vertices[j], LIGHTGREEN, 0);
 			trace[count] = k;
 			trace[count + 1] = j;
 			delay(500);
