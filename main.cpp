@@ -397,6 +397,7 @@ void showResultConnectedComponents(int **connectedComponents, int count, bool is
 		drawMatrix();
 		drawVertices();
 		drawEnterToExitText();
+		drawAllEdges();
 		for (int i = 0; i < count; i++) {
 			for (int j = 0; j < n; j++) {
 					//tu ham connectedComponents() 
