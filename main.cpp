@@ -156,7 +156,7 @@ void connectedComponents();//thanh phan lien thong
 int countConnectedComponents();//tinh thanh phan lien thong cua do thi
 int countConnectedComponents(int **connectedComponents);//tinh thanh phan lien thong cua do thi 
 														//va tra ve mang cac thanh phan lien thong cua do thi
-void showResultConnectedComponents(int **connectedComponents, int count, bool isUndirectedGraph);//show ra man hinh thanh phan lien thong cua do thi
+void showResultConnectedComponents(int **connectedComponents, int count, bool isUndirectedGraph, char *resultText);//show ra man hinh thanh phan lien thong cua do thi
 int** create2DArray(unsigned height, unsigned width);//tao ma tran
 void delete2DArray(int **arr, unsigned height, unsigned width);//xoa ma tran
 template <typename Type>
@@ -332,30 +332,31 @@ void connectedComponents() {
 		strcpy(resultText, "Do thi vo huong co ");
 		itoa(counter, counterStr, 10);
 		strcat(resultText, counterStr);
-		strcat(resultText, " thanh phan lien thong: ");
+		strcat(resultText, " thanh phan lien thong");
 		cout << resultText << endl;
-		showResultConnectedComponents(list, counter, 1);
+		showResultConnectedComponents(list, counter, 1, resultText);
 	}
 	else if (isConnectedGraph()){
 		counter = countStrongConComponent(list);
 		strcpy(resultText, "Do thi lien thong co huong co ");
 		itoa(counter, counterStr, 10);
 		strcat(resultText, counterStr);
-		strcat(resultText, " thanh phan lien thong manh: ");
+		strcat(resultText, " thanh phan lien thong manh");
 		cout << resultText << endl;
-		showResultConnectedComponents(list, counter, 0);
+		showResultConnectedComponents(list, counter, 0, resultText);
 	}
 	else {
-		strcpy(resultText, "Do thi lien thong yeu.");
+		strcpy(resultText, "Do thi lien thong yeu");
 		cout << resultText << endl;
 	}
 	delete2DArray(list, n, n);
 }
 
-void showResultConnectedComponents(int **connectedComponents, int count, bool isUndirectedGraph) {
+void showResultConnectedComponents(int **connectedComponents, int count, bool isUndirectedGraph, char *resultText) {
 	int page = 0;
 	char componentsStr[n][30] = {""};
 	Button resultBox, xButton, components[n];
+	resultBox.init(425, 525, 40, 834, YELLOW, BLACK, 1, resultText);
 	for (int i = 0; i < count; i++) {
 		//duyet tung thanh phan lien thong
 		//tuong ung voi so hang cua ma tran connectedComponents
@@ -411,6 +412,7 @@ void showResultConnectedComponents(int **connectedComponents, int count, bool is
 		drawVertices();
 		drawEnterToExitText();
 		drawAllEdges();
+		resultBox.draw();
 		for (int i = 0; i < count; i++) {
 			for (int j = 0; j < n; j++) {
 				int v = connectedComponents[i][j];
