@@ -333,21 +333,30 @@ void connectedComponents() {
 		itoa(counter, counterStr, 10);
 		strcat(resultText, counterStr);
 		strcat(resultText, " thanh phan lien thong");
-		cout << resultText << endl;
+//		cout << resultText << endl;
 		showResultConnectedComponents(list, counter, 1, resultText);
 	}
 	else if (isConnectedGraph()){
 		counter = countStrongConComponent(list);
-		strcpy(resultText, "Do thi lien thong co huong co ");
-		itoa(counter, counterStr, 10);
-		strcat(resultText, counterStr);
-		strcat(resultText, " thanh phan lien thong manh");
-		cout << resultText << endl;
+		if (counter == 1)
+			//neu counter == 1 thi suy ra day la do thi lien thong manh
+			strcpy(resultText, "Do thi nay la do thi co huong lien thong manh");
+		else {
+			strcpy(resultText, "Do thi lien thong co huong co ");
+			itoa(counter, counterStr, 10);
+			strcat(resultText, counterStr);
+			strcat(resultText, " thanh phan lien thong manh");
+//			cout << resultText << endl;
+		}
 		showResultConnectedComponents(list, counter, 0, resultText);
 	}
 	else {
-		strcpy(resultText, "Do thi lien thong yeu");
-		cout << resultText << endl;
+		counter = countConnectedComponents(list);
+		strcpy(resultText, "Do thi lien thong yeu. Bien doi do thi thanh do thi vo huong ta duoc ");
+		itoa(counter, counterStr, 10);
+		strcat(resultText, counterStr);
+		strcat(resultText, " thanh phan lien thong");
+		showResultConnectedComponents(list, counter, 1, resultText);
 	}
 	delete2DArray(list, n, n);
 }
