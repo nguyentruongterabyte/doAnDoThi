@@ -269,59 +269,6 @@ int countStrongConComponent(int **componentsList) {
 	return counter;
 }
 
-
-
-//void tarjanResult(stack &s, int end, int components) {
-//	int v;
-//	do {
-//		v = s.pop();
-//		visited[v] = 1;
-//		cout << vertices[v].name << ", ";
-//	} while (v != end);
-//}
-
-//void tarjanVisit(int u, int *disc, int *low, stack &s, int &count, int &components, bool callTarjanResult) {
-//	low[u] = disc[u] = ++count;
-//	s.push(u);
-//	int v;
-//	for (v = 0; v < n; v++)
-//		if (!visited[v] && G[u][v])
-//			if (disc[v] != 0)
-//				low[u] = min(low[u], disc[v]);
-//			else {
-//				tarjanVisit(v, disc, low, s, count, components, callTarjanResult);
-//				low[u] = min(low[u], low[v]);
-//			}
-//	if (disc[u] == low[u]) {
-//		++components;
-//		if (callTarjanResult)
-//			tarjanResult(s, u, components);
-//		else 
-//			do {
-//				v = s.pop();
-//				visited[v] = 1;
-//			} while (v != u);
-//	}
-//}
-
-//int tarjanAlgo(bool showResult, int remove) {
-//	const int &NUM = n;
-//	int disc[NUM];
-//	int low[NUM];
-//	setArrayTo(disc, NUM, 0);
-//	setArrayTo(visited, NUM, 0);
-//	int count(0), components(0);
-//	stack s;
-//	if (remove != 1) {
-//		disc[remove] = 1;
-//		visited[remove] = 1;
-//	}
-//	for (int i = 0; i < NUM; i++)
-//		if (disc[i] == 0) 
-//			tarjanVisit(i, disc, low, s, count, components, showResult);
-//	return components;
-//}
-
 void drawKeyToExitText() {
 	char c = getcolor();
 	setcolor(YELLOW);
