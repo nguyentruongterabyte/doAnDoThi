@@ -192,6 +192,7 @@ void drawKeyToExitText();//in ra dong "press KEY to exit" o goc phai duoi man hi
 
 int min(int a, int b);
 void tarjanAlgo(int u, int disc[], int lowLink[], stack &stk, bool stkItem[], int **componentsList, int &counter);//thuat toan tim thanh phan lien thong manh trong do thi co huong
+void tarjanAlgo(int u, int disc[], int lowLink[], int parent[]);//thuat toan tim canh cau
 int countStrongConComponent(int **compnentsList);//dem thanh phan lien thong manh va tim thanh phan lien thong manh
 void drawUserManualBox(char *guideStr, char *title);//ve bang huong dan su dung
 void bridgeEdges();//duyet canh cau
@@ -243,11 +244,34 @@ void process() {
 	closegraph();
 }
 
+void tarjanAlgo(int u, int disc[], int lowLink[], int parent[]) {
+	//danh dau dinh do da tham
+	visited[u] = true;
+	disc[u] = lowLink[u] = ++Time;
+	for (int i = 0; i < n; i++) {
+		if (G[u][i] && !visited[i]) {
+			parent[i] = u;
+			tarjanAlgo(i, disc, lowLink, parent);
+			lowLink[u] = min(lowLink[u], lowLink[i]);
+			if (low[i] > disc[u]) 
+				cout << vertices[u].name << vertices[i].name;
+		}
+		else if (i != parent[u])
+			lowLink[u] = min(lowLink[u], disc[i]);
+	}
+}
+
 void bridgeEdges() {
-	setArrayTo(visited, n, false);
+	Time = 0;
 	int disc[n];
 	int low[n];
 	int parent[n];
+	for (int i = 0; i < n; i++)
+		//danh dau tat ca cac dinh chua duoc tham
+		visited[i] = false;
+	for (int i = 0; i < n; i++)
+		if (!visited[i])
+			tarjanAlgo(i, disc, low, parent);
 }
 
 void drawUserManualBox(char *guideStr, char *title) {	
