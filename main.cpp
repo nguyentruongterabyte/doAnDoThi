@@ -36,37 +36,7 @@ struct Point/*cau truc diem*/ {
 	int y;
 };
 
-char guideList[10][1000] = {
-	"DOUBLE CLICK CHUOT TRAI vao vi tri ban muon tao dinh o khu vuc man hinh thao tac voi dinh -> Nhap ten dinh -> Nhan HOAN THANH (hoac nhan ENTER) -> 1 dinh moi se duoc tao.",
-	"DI CHUYEN chuot toi vi tri dinh bat dau cua canh -> CLICK CHUOT PHAI vao dinh do, mot hop thoat se hien len -> chon TAO CANH -> DI CHUYEN toi vi tri dinh thu 2 va CLICK CHUOT TRAI vao dinh do -> NHAP trong so -> nhan HOAN THANH (hoac nhan ENTER) -> 1 canh moi se duoc tao."
-//	outtextxy(340, 15, "Cach them cung");
-//				break;
-//			}
-//			case 3: {
-//				outtextxy(340, 15, "Cach sua dinh");
-//				break;
-//			}
-//			case 4: {
-//				outtextxy(340, 15, "Cach sua cung");
-//				break;
-//			}
-//			case 5: {
-//				outtextxy(340, 15, "Cach xoa dinh");
-//				break;
-//			}
-//			case 6: {
-//				outtextxy(340, 15, "Cach xoa cung");
-//				break;
-//			}
-//			case 7: {
-//				outtextxy(340, 15, "Cach di chuyen dinh");
-//				break;
-//					}
-//			case 8: {
-//				outtextxy(340, 15, "Cach di chuyen cung");
-//				break;
-//					}
-};
+
 
 struct Vertex /*cau truc dinh*/{
 	Point coordinates;
@@ -253,13 +223,13 @@ void process() {
 void drawUserManualBox(char *guideStr, char *title) {	
 	Button helpBoxFrame, titleBox;
 	char word[1000][10], rowSentences[15][1000] = {""}; 	
-	int wordCounter = 0, k, j, index = 0;
+	int wordCounter = 0, index = 0;
 	helpBoxFrame.init(20, 65, 220, 390, YELLOW, BLACK, 1, "");
 	titleBox.init(20, 65, 40, 390, YELLOW, BLACK, 1, title);
 	for (int i = 0; i < strlen(guideStr); i++) {
 		//tach tung tu cua cau huong dan ra
-		j = i;
-		k = 0;
+		int j = i;
+		int k = 0;
 		while (guideStr[j] != ' ' && j < strlen(guideStr)) {
 			word[wordCounter][k] = guideStr[j++];
 			k++;
@@ -270,17 +240,21 @@ void drawUserManualBox(char *guideStr, char *title) {
 			break;
 	}
 	
-	int i = 0;
+	int h = 0;
 	//tach huong dan ra tung dong
-	while (i < wordCounter) {
+	while (h < wordCounter) {
 		while (textwidth(rowSentences[index]) < 350) {
-			strcat(rowSentences[index], word[i++]);
+			strcat(rowSentences[index], word[h++]);
 			strcat(rowSentences[index], " ");
-			if (i >= wordCounter)
+			if (h >= wordCounter)
 				break;
 		}
+		if (h >= wordCounter)
+			break;
 		index++;
 	}
+	for (int i = 0; i < index; i++)
+		cout << rowSentences[i] << endl;
 	clearmouseclick();
 	int page = 0;
 	while (true) {
@@ -296,13 +270,13 @@ void drawUserManualBox(char *guideStr, char *title) {
 		for (int i = 0; i < index; i++) {
 			outtextxy(20 + (390 - textwidth(rowSentences[i])) / 2, 65 + 45 + i * (200 / index - textheight(rowSentences[i])), rowSentences[i]);
 		}
-		page = 1 - page;
 		if (ismouseclick(WM_LBUTTONDBLCLK))
 			break;
 		if (ismouseclick(WM_RBUTTONDOWN))
 			break;	
+		page = 1 - page;
 	}
-	
+	return;
 }
 
 
@@ -2220,6 +2194,15 @@ void drawTaskBarButtons() {
 void taskBar() {
 	int option, ad;
 	drawTaskBarButtons();
+	char guideList[20][1000] = {
+	"DOUBLE CLICK CHUOT TRAI vao vi tri ban muon tao dinh o khu vuc man hinh thao tac voi dinh -> Nhap ten dinh -> Nhan HOAN THANH (hoac nhan ENTER) -> 1 dinh moi se duoc tao.",
+	"DI CHUYEN chuot toi vi tri dinh bat dau cua canh -> CLICK CHUOT PHAI vao dinh do, mot hop thoat se hien len -> chon TAO CANH -> DI CHUYEN toi vi tri dinh thu 2 va CLICK CHUOT TRAI vao dinh do -> NHAP trong so -> nhan HOAN THANH (hoac nhan ENTER) -> 1 canh moi se duoc tao.",
+	"DI CHUYEN chuot toi vi tri dinh can sua -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon SUA TEN -> NHAP TEN dinh va nhan HOAN THANH (hoac nhan ENTER).",
+	"Giong nhu cach tao canh nhung o phan nhap trong so ta nhap vao trong so ta muon chinh sua va nhan HOAN THANH (hoac nhan ENTER). Neu muon huy sua canh, CLICK CHUOT PHAI.",
+	"DI CHUYEN chuot toi vi tri dinh can xoa -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon XOA DINH -> mot thanh thong bao hien len hoi ban co chac muon xoa dinh -> nhan CO (hoac nhan ENTER) de xoa dinh / KHONG de huy xoa.",
+	"DI CHUYEN chuot toi vi tri bat dau cua canh do -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon TAO CANH -> DI CHUYEN chuot toi vi tri cua dinh thu 2 cua canh do -> CLICK CHUOT TRAI vao dinh do -> trong phan tao trong so NHAP SO 0 -> nhan HOAN THANH (hoac nhan ENTER).",
+	"DI CHUYEN chuot toi vi tri cua dinh muon di chuyen -> NHAN GIU dinh do va KEO THA CHUOT toi vi tri can dat."
+	};
 	if (menuBar.isHover()) {//thanh menu bar thi se hien thi ra danh sach cac cong cu o duoi
 		//menuBar.highLight();
 		option = menuTools();
@@ -2292,29 +2275,30 @@ void taskBar() {
 				break;
 			}
 			case 3: {
-				outtextxy(340, 15, "Cach sua dinh");
+				drawUserManualBox(guideList[2], "Huong dan sua ten dinh");
+//				outtextxy(340, 15, "Cach sua dinh");
 				break;
 			}
 			case 4: {
-				outtextxy(340, 15, "Cach sua cung");
+				drawUserManualBox(guideList[3], "Huong dan sua trong so cung");
+//				outtextxy(340, 15, "Cach sua cung");
 				break;
 			}
 			case 5: {
-				outtextxy(340, 15, "Cach xoa dinh");
+				drawUserManualBox(guideList[4], "Huong dan xoa dinh");
+//				outtextxy(340, 15, "Cach xoa dinh");
 				break;
 			}
 			case 6: {
+				drawUserManualBox(guideList[5], "Huong dan xoa cung");
 				outtextxy(340, 15, "Cach xoa cung");
 				break;
 			}
 			case 7: {
-				outtextxy(340, 15, "Cach di chuyen dinh");
+				drawUserManualBox(guideList[6], "Huong dan di chuyen dinh");
+//				outtextxy(340, 15, "Cach di chuyen dinh");
 				break;
-					}
-			case 8: {
-				outtextxy(340, 15, "Cach di chuyen cung");
-				break;
-					}
+			}
 			default: 
 				break;
 		}
