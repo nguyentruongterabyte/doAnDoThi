@@ -31,7 +31,9 @@ char guideList[8][1000] = {
 	
 	"DI CHUYEN chuot toi vi tri bat dau cua canh do -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon TAO CANH -> DI CHUYEN chuot toi vi tri cua dinh thu 2 cua canh do -> CLICK CHUOT TRAI vao dinh do -> trong phan tao trong so NHAP SO 0 -> nhan HOAN THANH (hoac nhan ENTER).",
 	
-	"DI CHUYEN chuot toi vi tri cua dinh muon di chuyen -> NHAN GIU dinh do va KEO THA CHUOT toi vi tri can dat."
+	"DI CHUYEN chuot toi vi tri cua dinh muon di chuyen -> NHAN GIU dinh do va KEO THA CHUOT toi vi tri can dat.",
+	
+	"DI CHUYEN cac dinh nam trong mot canh thi se di chuyen canh do."
 };
 
 
@@ -193,7 +195,6 @@ void tarjanAlgo(int u, int disc[], int lowLink[], stack &stk, bool stkItem[], in
 int countStrongConComponent(int **compnentsList);//dem thanh phan lien thong manh va tim thanh phan lien thong manh
 void drawUserManualBox(char *guideStr, char *title);//ve bang huong dan su dung
 
-
 int main() {
 	initwindow(1280, 720, "Do an do thi", 50, 20);
 	setTaskBarButtons();
@@ -241,13 +242,7 @@ void process() {
 
 void drawUserManualBox(char *guideStr, char *title) {	
 	Button helpBoxFrame, titleBox;	
-	char word[100][20], rowSentences[15][1000]; 
-	//[1000][10]
-	//[15][1000] = {""}
-//	for (int i = 0; i < 15; i++)
-//		strcpy(rowSentences[i], "");
-//	for (int i = 0; i < 1000; i++)
-//		strcpy(word[i], "");
+	char word[200][10], rowSentences[15][1000] = {""}; 
 	
 	int wordCounter = 0, index = 0;
 	helpBoxFrame.init(20, 65, 220, 390, YELLOW, BLACK, 1, "");
@@ -257,30 +252,29 @@ void drawUserManualBox(char *guideStr, char *title) {
 		int j = i;
 		int k = 0;
 		while (guideStr[j] != ' ' && j < strlen(guideStr)) {
-			word[wordCounter][k] = guideStr[j++];
+			word[wordCounter][k] = guideStr[j];
 			k++;
+			j++;
 		}
+		word[wordCounter][k] = '\0';
 		wordCounter++;
 		i = j;
 		if (i >= strlen(guideStr))
 			break;
 	}
-	
 	int h = 0;
 	//tach huong dan ra tung dong
 	while (h < wordCounter) {
-		while (textwidth(rowSentences[index]) < 350) {
+		while (textwidth(rowSentences[index]) < 340) {
 			strcat(rowSentences[index], word[h++]);
 			strcat(rowSentences[index], " ");
 			if (h >= wordCounter)
 				break;
 		}
+		index++;
 		if (h >= wordCounter)
 			break;
-		index++;
 	}
-	for (int i = 0; i < index; i++)
-		cout << rowSentences[i] << endl;
 	clearmouseclick();
 	int page = 0;
 	while (true) {
@@ -294,22 +288,16 @@ void drawUserManualBox(char *guideStr, char *title) {
 		helpBoxFrame.draw();
 		titleBox.draw();
 		for (int i = 0; i < index; i++) {
-			outtextxy(20 + (390 - textwidth(rowSentences[i])) / 2, 65 + 45 + i * (200 / index - textheight(rowSentences[i])), rowSentences[i]);
+			outtextxy(20 + (390 - textwidth(rowSentences[i])) / 2, 65 + 45 + i * 30, rowSentences[i]);
 		}
 		if (ismouseclick(WM_LBUTTONDBLCLK))
 			break;
 		if (ismouseclick(WM_RBUTTONDOWN))
 			break;	
+		if (ismouseclick(WM_LBUTTONDOWN))
+			break;
 		page = 1 - page;
 	}
-//	delete2DStrArray(word, 1000, 10);
-//	delete2DStrArray(rowSentences, 15, 1000);
-//	delete word[1000];
-//	delete rowSentences[15];
-	for (int i = 0; i < 100; i++)
-		strcpy(word[i], "");
-	for (int i = 0; i < 15; i++)
-		strcpy(rowSentences[i], "");
 }
 
 
@@ -2303,44 +2291,39 @@ void taskBar() {
 		option = helpTools();
 		switch (option) {
 			case 1: {
-//				outtextxy(340, 15, "Cach them dinh");
-				//helpBox(helpStr[0]);	
 				drawUserManualBox(guideList[0], "Huong dan tao dinh");
 				break;
 			}
 			case 2: {
-//				outtextxy(340, 15, "Cach them cung");
 				drawUserManualBox(guideList[1], "Huong dan tao canh");
-				cout << guideList[0] << endl;
 				break;
 			}
 			case 3: {
 				drawUserManualBox(guideList[2], "Huong dan sua ten dinh");
-//				outtextxy(340, 15, "Cach sua dinh");
 				break;
 			}
 			case 4: {
 				drawUserManualBox(guideList[3], "Huong dan sua trong so cung");
-//				outtextxy(340, 15, "Cach sua cung");
 				break;
 			}
 			case 5: {
 				drawUserManualBox(guideList[4], "Huong dan xoa dinh");
-//				outtextxy(340, 15, "Cach xoa dinh");
 				break;
 			}
 			case 6: {
 				drawUserManualBox(guideList[5], "Huong dan xoa cung");
-				outtextxy(340, 15, "Cach xoa cung");
 				break;
 			}
 			case 7: {
 				drawUserManualBox(guideList[6], "Huong dan di chuyen dinh");
-//				outtextxy(340, 15, "Cach di chuyen dinh");
+				break;
+			}
+			case 8: {
+				drawUserManualBox(guideList[7], "Huong dan di chuyen cung");
 				break;
 			}
 			default: 
-				break;
+				return;
 		}
 	}
 	else if (fileBar.isHover()) {
@@ -2370,7 +2353,7 @@ void taskBar() {
 }
 
 int helpTools() {
-	const short itemsAmount = 7;
+	const short itemsAmount = 8;
 	int margin = 5,
 		height = 40,
 		width = (400 - 3 * margin) / 2;
