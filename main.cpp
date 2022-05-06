@@ -170,7 +170,7 @@ void eulerCycle(int u);//ham tim chu trinh euler
 void showResultEulerCycle(stack CE);//show ket qua chu trinh euler ra man hinh
 bool isUndirectedGraph();//ham kiem tra do thi co vo huong khong
 bool isConnectedGraph();//ham kiem tra do thi co lien thong hay khong
-void DFS(int u);//duyet theo chieu sau
+int DFS(int u);//duyet theo chieu sau
 void connectedComponents();//thanh phan lien thong
 int countConnectedComponents();//tinh thanh phan lien thong cua do thi
 int countConnectedComponents(int **connectedComponents);//tinh thanh phan lien thong cua do thi 
@@ -191,9 +191,10 @@ void drawKeyToExitText();//in ra dong "press KEY to exit" o goc phai duoi man hi
 
 
 int min(int a, int b);
-void tarjanAlgo(int u, int disc[], int lowLink[], stack &stk, bool stkItem[], int **componentsList, int &counter);
+void tarjanAlgo(int u, int disc[], int lowLink[], stack &stk, bool stkItem[], int **componentsList, int &counter);//thuat toan tim thanh phan lien thong manh trong do thi co huong
 int countStrongConComponent(int **compnentsList);//dem thanh phan lien thong manh va tim thanh phan lien thong manh
 void drawUserManualBox(char *guideStr, char *title);//ve bang huong dan su dung
+void bridgeEdges();//duyet canh cau
 
 int main() {
 	initwindow(1280, 720, "Do an do thi", 50, 20);
@@ -204,6 +205,8 @@ int main() {
 	loadFileStartUp();
 	process();
 }
+
+
 
 void process() {
 	Vertex vtex;
@@ -238,6 +241,13 @@ void process() {
 	}
 	getch();
 	closegraph();
+}
+
+void bridgeEdges() {
+	setArrayTo(visited, n, false);
+	int disc[n];
+	int low[n];
+	int parent[n];
 }
 
 void drawUserManualBox(char *guideStr, char *title) {	
@@ -602,7 +612,8 @@ int countConnectedComponents(int **connectedComponents) {
 	return counter;
 }
 
-void DFS(int u) {
+int DFS(int u) {
+	int counter = 0;
 	stack s;
 	s.push(u);
 	while (!s.isEmpty()) {
@@ -610,10 +621,13 @@ void DFS(int u) {
 		if (!visited[u]) {
 			visited[u] = true;
 			for (int i = 0; i < n; i++)
-				if ((G[u][i] || G[i][u]) && !visited[i]) 
+				if ((G[u][i] || G[i][u]) && !visited[i]) {
+					counter++;
 					s.push(i);
+				} 
 		}
 	} 
+	return counter;
 }
 
 bool isUndirectedGraph() {
@@ -2236,7 +2250,8 @@ void taskBar() {
 		option = menuTools();
 		switch (option) {
 			case 1: {
-				outtextxy(340, 15, "Canh cau");
+//				outtextxy(340, 15, "Canh cau");
+				bridgeEdges();
 				break;
 			}
 			case 2: {
@@ -2705,7 +2720,6 @@ void Vertex::createName() {
 						delay(50);
 					}
 			}
-			//cout << i << endl;
 		}
 		upper(name);
 		outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);
@@ -2718,8 +2732,6 @@ void Vertex::createName() {
 			cancelButton.highLight();
 		page = 1 - page;
 	}
-	
-//	this->name = name;
 	strcpy(this->name, name);
 }
 
@@ -2730,7 +2742,6 @@ void Vertex::draw() {
 	char c = getcolor();
 	setfillstyle(1, BLACK);
 	circle(this->coordinates.x, this->coordinates.y, RADIUS);
-	//pieslice(this->coordinates.x, this->coordinates.y, 0, 0, RADIUS);
 	setcolor(YELLOW);
 	outtextxy(this->coordinates.x - textwidth(this->name) / 2, this->coordinates.y - textheight(this->name) / 2, this->name);
 	if (this->isHover())
