@@ -15,6 +15,7 @@
 #pragma GCC diagnostic ignored "-Wpointer-arith"
 #define RADIUS 20
 #define MAX 11
+
 using namespace std;
 
 enum key {
@@ -175,7 +176,7 @@ int countStrongConComponent(int **compnentsList);
 
 
 int main() {
-	initwindow(1280, 720);
+	initwindow(1280, 720, "Do an do thi", 50, 20);
 	setTaskBarButtons();
 	setFrame();
 	initDefaultVertices();
@@ -398,7 +399,7 @@ void showResultConnectedComponents(int **connectedComponents, int count, bool is
 	}
 	int frag = count / 2,
 		x0 = 425 + (834 - frag * components[0].width) / 2,
-		y0 = 525 + 40; 
+		y0 = 530 + 40; 
 	for (int i = 0; i < frag; i++) {
 		components[i].coordinates.x = x0;
 		components[i].coordinates.y = y0;
@@ -874,10 +875,9 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 		
 	} 
 	else {
-		int traveler[n];
+		int traveler[n + n];
 		char resultText[100] = "";
-		char weightSumText[25] = "Chieu dai duong di: ", weightSumStr[5]; 
-		resultBox.name = "";
+		char weightSumText[30] = "Chieu dai duong di: ", weightSumStr[5]; 
 		itoa(dist[end], weightSumStr, 10);
 		strcat(weightSumText, weightSumStr);
 		stack s;
@@ -918,7 +918,7 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 			drawEnterToExitText();
 			setactivepage(1);
 			setvisualpage(1);
-			int u = trace[0], v;
+			int u = traveler[0], v;
 			vertices[u].highLight();
 			if (isUGr)
 				for (int i = 1; i < count; i++) {
@@ -1099,6 +1099,13 @@ void showResultDFS(int *trace, char *resultText, int count) {
 			drawArrow(vertices[u], vertices[v], LIGHTGREEN, 0);
 			delay(200);
 			vertices[v].highLight();
+			if (xButton.isClickLMButton())
+				return;
+			if (kbhit()) {
+				char key = getch();
+				if (key == KEY_ENTER)
+					return;
+			}
 		}
 		if (xButton.isClickLMButton())
 			break;
@@ -1196,6 +1203,13 @@ void showResultBFS(int *trace, char *resultText, int count) {
 			drawArrow(vertices[u], vertices[v], LIGHTGREEN, 0);
 			delay(200);
 			vertices[v].highLight();
+			if (xButton.isClickLMButton())
+				return;
+			if (kbhit()) {
+				char key = getch();
+				if (key == KEY_ENTER)
+					return;
+			}
 		}
 		if (xButton.isClickLMButton())
 			break;
