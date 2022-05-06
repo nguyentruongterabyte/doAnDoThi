@@ -36,7 +36,36 @@ struct Point/*cau truc diem*/ {
 	int y;
 };
 
-char *helpStr[] = {
+char guideList[10][1000] = {
+	"DOUBLE CLICK CHUOT TRAI vao vi tri ban muon tao dinh o khu vuc man hinh thao tac voi dinh -> Nhap ten dinh -> Nhan HOAN THANH (hoac nhan ENTER) -> 1 dinh moi se duoc tao.",
+	"DI CHUYEN chuot toi vi tri dinh bat dau cua canh -> CLICK CHUOT PHAI vao dinh do, mot hop thoat se hien len -> chon TAO CANH -> DI CHUYEN toi vi tri dinh thu 2 va CLICK CHUOT TRAI vao dinh do -> NHAP trong so -> nhan HOAN THANH (hoac nhan ENTER) -> 1 canh moi se duoc tao."
+//	outtextxy(340, 15, "Cach them cung");
+//				break;
+//			}
+//			case 3: {
+//				outtextxy(340, 15, "Cach sua dinh");
+//				break;
+//			}
+//			case 4: {
+//				outtextxy(340, 15, "Cach sua cung");
+//				break;
+//			}
+//			case 5: {
+//				outtextxy(340, 15, "Cach xoa dinh");
+//				break;
+//			}
+//			case 6: {
+//				outtextxy(340, 15, "Cach xoa cung");
+//				break;
+//			}
+//			case 7: {
+//				outtextxy(340, 15, "Cach di chuyen dinh");
+//				break;
+//					}
+//			case 8: {
+//				outtextxy(340, 15, "Cach di chuyen cung");
+//				break;
+//					}
 };
 
 struct Vertex /*cau truc dinh*/{
@@ -172,7 +201,8 @@ void drawKeyToExitText();//in ra dong "press KEY to exit" o goc phai duoi man hi
 
 int min(int a, int b);
 void tarjanAlgo(int u, int disc[], int lowLink[], stack &stk, bool stkItem[], int **componentsList, int &counter);
-int countStrongConComponent(int **compnentsList);
+int countStrongConComponent(int **compnentsList);//dem thanh phan lien thong manh va tim thanh phan lien thong manh
+void drawUserManualBox(char *guideStr, char *title);//ve bang huong dan su dung
 
 
 int main() {
@@ -219,6 +249,62 @@ void process() {
 	getch();
 	closegraph();
 }
+
+void drawUserManualBox(char *guideStr, char *title) {	
+	Button helpBoxFrame, titleBox;
+	char word[1000][10], rowSentences[15][1000] = {""}; 	
+	int wordCounter = 0, k, j, index = 0;
+	helpBoxFrame.init(20, 65, 220, 390, YELLOW, BLACK, 1, "");
+	titleBox.init(20, 65, 40, 390, YELLOW, BLACK, 1, title);
+	for (int i = 0; i < strlen(guideStr); i++) {
+		//tach tung tu cua cau huong dan ra
+		j = i;
+		k = 0;
+		while (guideStr[j] != ' ' && j < strlen(guideStr)) {
+			word[wordCounter][k] = guideStr[j++];
+			k++;
+		}
+		wordCounter++;
+		i = j;
+		if (i >= strlen(guideStr))
+			break;
+	}
+	
+	int i = 0;
+	//tach huong dan ra tung dong
+	while (i < wordCounter) {
+		while (textwidth(rowSentences[index]) < 350) {
+			strcat(rowSentences[index], word[i++]);
+			strcat(rowSentences[index], " ");
+			if (i >= wordCounter)
+				break;
+		}
+		index++;
+	}
+	clearmouseclick();
+	int page = 0;
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		drawFrame();
+		drawTaskBarButtons();
+		drawMatrix();
+		drawVertices();
+		drawAllEdges();
+		helpBoxFrame.draw();
+		titleBox.draw();
+		for (int i = 0; i < index; i++) {
+			outtextxy(20 + (390 - textwidth(rowSentences[i])) / 2, 65 + 45 + i * (200 / index - textheight(rowSentences[i])), rowSentences[i]);
+		}
+		page = 1 - page;
+		if (ismouseclick(WM_LBUTTONDBLCLK))
+			break;
+		if (ismouseclick(WM_RBUTTONDOWN))
+			break;	
+	}
+	
+}
+
 
 int min(int a, int b) {
 	return (a < b) ? a: b;
@@ -324,6 +410,7 @@ int countConnectedComponents() {
 }
 
 void connectedComponents() {
+	if (isEmptyVertex()) return;
 	int **list = create2DArray(n, n), counter;
 	set2DArrayTo(list, n, n, -1);
 	bool isUGr = isUndirectedGraph();
@@ -2130,12 +2217,6 @@ void drawTaskBarButtons() {
 	fileBar.draw();
 }
 
-void helpBox(char *helpStr) {
-	Button helpBoxFrame;
-	helpBoxFrame.init(20, 60, 225, 315, YELLOW, BLACK, 1, "");
-		
-}
-
 void taskBar() {
 	int option, ad;
 	drawTaskBarButtons();
@@ -2199,12 +2280,15 @@ void taskBar() {
 		option = helpTools();
 		switch (option) {
 			case 1: {
-				outtextxy(340, 15, "Cach them dinh");
-				helpBox(helpStr[0]);				
+//				outtextxy(340, 15, "Cach them dinh");
+				//helpBox(helpStr[0]);	
+				drawUserManualBox(guideList[0], "Huong dan tao dinh");
+							
 				break;
 			}
 			case 2: {
-				outtextxy(340, 15, "Cach them cung");
+//				outtextxy(340, 15, "Cach them cung");
+				drawUserManualBox(guideList[1], "Huong dan tao canh");
 				break;
 			}
 			case 3: {
@@ -2262,7 +2346,7 @@ void taskBar() {
 }
 
 int helpTools() {
-	const short itemsAmount = 8;
+	const short itemsAmount = 7;
 	int margin = 5,
 		height = 40,
 		width = (400 - 3 * margin) / 2;
@@ -2270,12 +2354,12 @@ int helpTools() {
 		y0 = 15 + height + 2 * margin;
 	Button helpTools[8], helpToolsHoverBar /*khung de xu ly hover*/;
 	helpToolsHoverBar.init(x0 + margin, y0 - margin, (height + margin) * itemsAmount / 2, 2 * width, BLACK, BLACK, 1, "");
-	helpTools[0].name = "Cach them dinh";
-	helpTools[1].name = "Cach them cung";
+	helpTools[0].name = "Cach tao dinh";
+	helpTools[1].name = "Cach tao canh";
 	helpTools[2].name = "Cach sua dinh";
-	helpTools[3].name = "Cach sua cung";
+	helpTools[3].name = "Cach sua canh";
 	helpTools[4].name = "Cach xoa dinh";
-	helpTools[5].name = "Cach xoa cung";
+	helpTools[5].name = "Cach xoa canh";
 	helpTools[6].name = "Cach di chuyen dinh";
 	helpTools[7].name = "Cach di chuyen cung";
 	for (int i = 0; i < itemsAmount; i++) {
