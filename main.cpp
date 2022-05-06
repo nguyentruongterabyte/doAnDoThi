@@ -253,8 +253,8 @@ void tarjanAlgo(int u, int disc[], int lowLink[], int parent[]) {
 			parent[i] = u;
 			tarjanAlgo(i, disc, lowLink, parent);
 			lowLink[u] = min(lowLink[u], lowLink[i]);
-			if (low[i] > disc[u]) 
-				cout << vertices[u].name << vertices[i].name;
+			if (lowLink[i] > disc[u]) 
+				cout << vertices[u].name << vertices[i].name << endl;
 		}
 		else if (i != parent[u])
 			lowLink[u] = min(lowLink[u], disc[i]);
@@ -330,6 +330,11 @@ void drawUserManualBox(char *guideStr, char *title) {
 			break;	
 		if (ismouseclick(WM_LBUTTONDOWN))
 			break;
+		if (kbhit()) {
+			char key = getch();
+			if (key == KEY_ENTER)
+				break;
+		}
 		page = 1 - page;
 	}
 }
