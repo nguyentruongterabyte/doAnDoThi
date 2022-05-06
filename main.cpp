@@ -18,6 +18,23 @@
 
 using namespace std;
 
+char guideList[8][1000] = {
+	"DOUBLE CLICK CHUOT TRAI vao vi tri ban muon tao dinh o khu vuc man hinh thao tac voi dinh -> Nhap ten dinh -> Nhan HOAN THANH (hoac nhan ENTER) -> 1 dinh moi se duoc tao.",
+
+	"DI CHUYEN chuot toi vi tri dinh bat dau cua canh -> CLICK CHUOT PHAI vao dinh do, mot hop thoat se hien len -> chon TAO CANH -> DI CHUYEN toi vi tri dinh thu 2 va CLICK CHUOT TRAI vao dinh do -> NHAP trong so -> nhan HOAN THANH (hoac nhan ENTER) -> 1 canh moi se duoc tao.",
+
+	"DI CHUYEN chuot toi vi tri dinh can sua -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon SUA TEN -> NHAP TEN dinh va nhan HOAN THANH (hoac nhan ENTER).",
+
+	"Giong nhu cach tao canh nhung o phan nhap trong so ta nhap vao trong so ta muon chinh sua va nhan HOAN THANH (hoac nhan ENTER). Neu muon huy sua canh, CLICK CHUOT PHAI.",
+	
+	"DI CHUYEN chuot toi vi tri dinh can xoa -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon XOA DINH -> mot thanh thong bao hien len hoi ban co chac muon xoa dinh -> nhan CO (hoac nhan ENTER) de xoa dinh / KHONG de huy xoa.",
+	
+	"DI CHUYEN chuot toi vi tri bat dau cua canh do -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon TAO CANH -> DI CHUYEN chuot toi vi tri cua dinh thu 2 cua canh do -> CLICK CHUOT TRAI vao dinh do -> trong phan tao trong so NHAP SO 0 -> nhan HOAN THANH (hoac nhan ENTER).",
+	
+	"DI CHUYEN chuot toi vi tri cua dinh muon di chuyen -> NHAN GIU dinh do va KEO THA CHUOT toi vi tri can dat."
+};
+
+
 enum key {
 	KEY_BACKSPACE = 8,
 	KEY_ESC = 27,
@@ -158,7 +175,9 @@ int countConnectedComponents(int **connectedComponents);//tinh thanh phan lien t
 														//va tra ve mang cac thanh phan lien thong cua do thi
 void showResultConnectedComponents(int **connectedComponents, int count, bool isUndirectedGraph, char *resultText);//show ra man hinh thanh phan lien thong cua do thi
 int** create2DArray(unsigned height, unsigned width);//tao ma tran
+char** create2DStrArray(unsigned height, unsigned width);
 void delete2DArray(int **arr, unsigned height, unsigned width);//xoa ma tran
+void delete2DStrArray(char **arr, unsigned height, unsigned width);
 template <typename Type>
 void set2DArrayTo(Type **arr, unsigned height, unsigned width, int value);//cho tat ca cac gia tri cua ma tran ve mot gia tri nao do
 void drawEnterToExitText();//in ra dong "press ENTER to exit" o goc phai duoi man hinh lam viec
@@ -221,8 +240,15 @@ void process() {
 }
 
 void drawUserManualBox(char *guideStr, char *title) {	
-	Button helpBoxFrame, titleBox;
-	char word[1000][10], rowSentences[15][1000] = {""}; 	
+	Button helpBoxFrame, titleBox;	
+	char word[100][20], rowSentences[15][1000]; 
+	//[1000][10]
+	//[15][1000] = {""}
+//	for (int i = 0; i < 15; i++)
+//		strcpy(rowSentences[i], "");
+//	for (int i = 0; i < 1000; i++)
+//		strcpy(word[i], "");
+	
 	int wordCounter = 0, index = 0;
 	helpBoxFrame.init(20, 65, 220, 390, YELLOW, BLACK, 1, "");
 	titleBox.init(20, 65, 40, 390, YELLOW, BLACK, 1, title);
@@ -276,7 +302,14 @@ void drawUserManualBox(char *guideStr, char *title) {
 			break;	
 		page = 1 - page;
 	}
-	return;
+//	delete2DStrArray(word, 1000, 10);
+//	delete2DStrArray(rowSentences, 15, 1000);
+//	delete word[1000];
+//	delete rowSentences[15];
+	for (int i = 0; i < 100; i++)
+		strcpy(word[i], "");
+	for (int i = 0; i < 15; i++)
+		strcpy(rowSentences[i], "");
 }
 
 
@@ -358,6 +391,12 @@ void delete2DArray(int **arr, unsigned height, unsigned width) {
 	arr = 0;
 }
 
+void delete2DStrArray(char **arr, unsigned height, unsigned width) {
+	for (int h = 0; h < height; h++)
+		delete []arr[h];
+	delete []arr;
+}
+
 int** create2DArray(unsigned height, unsigned width) {
     int** array2D = 0;
     array2D = new int*[height];//tao bien ma tran
@@ -370,6 +409,15 @@ int** create2DArray(unsigned height, unsigned width) {
             array2D[h][w] = 0;
     }
     return array2D;
+}
+
+char** create2DStrArray(unsigned height, unsigned width) {
+	char** array2DStr;
+	array2DStr = new char*[height];
+	for (int h = 0; h < height; h++) {
+		array2DStr[h] = new char[width];
+	}
+	return array2DStr;
 }
 
 int countConnectedComponents() {
@@ -2194,15 +2242,7 @@ void drawTaskBarButtons() {
 void taskBar() {
 	int option, ad;
 	drawTaskBarButtons();
-	char guideList[20][1000] = {
-	"DOUBLE CLICK CHUOT TRAI vao vi tri ban muon tao dinh o khu vuc man hinh thao tac voi dinh -> Nhap ten dinh -> Nhan HOAN THANH (hoac nhan ENTER) -> 1 dinh moi se duoc tao.",
-	"DI CHUYEN chuot toi vi tri dinh bat dau cua canh -> CLICK CHUOT PHAI vao dinh do, mot hop thoat se hien len -> chon TAO CANH -> DI CHUYEN toi vi tri dinh thu 2 va CLICK CHUOT TRAI vao dinh do -> NHAP trong so -> nhan HOAN THANH (hoac nhan ENTER) -> 1 canh moi se duoc tao.",
-	"DI CHUYEN chuot toi vi tri dinh can sua -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon SUA TEN -> NHAP TEN dinh va nhan HOAN THANH (hoac nhan ENTER).",
-	"Giong nhu cach tao canh nhung o phan nhap trong so ta nhap vao trong so ta muon chinh sua va nhan HOAN THANH (hoac nhan ENTER). Neu muon huy sua canh, CLICK CHUOT PHAI.",
-	"DI CHUYEN chuot toi vi tri dinh can xoa -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon XOA DINH -> mot thanh thong bao hien len hoi ban co chac muon xoa dinh -> nhan CO (hoac nhan ENTER) de xoa dinh / KHONG de huy xoa.",
-	"DI CHUYEN chuot toi vi tri bat dau cua canh do -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon TAO CANH -> DI CHUYEN chuot toi vi tri cua dinh thu 2 cua canh do -> CLICK CHUOT TRAI vao dinh do -> trong phan tao trong so NHAP SO 0 -> nhan HOAN THANH (hoac nhan ENTER).",
-	"DI CHUYEN chuot toi vi tri cua dinh muon di chuyen -> NHAN GIU dinh do va KEO THA CHUOT toi vi tri can dat."
-	};
+	
 	if (menuBar.isHover()) {//thanh menu bar thi se hien thi ra danh sach cac cong cu o duoi
 		//menuBar.highLight();
 		option = menuTools();
@@ -2266,12 +2306,12 @@ void taskBar() {
 //				outtextxy(340, 15, "Cach them dinh");
 				//helpBox(helpStr[0]);	
 				drawUserManualBox(guideList[0], "Huong dan tao dinh");
-							
 				break;
 			}
 			case 2: {
 //				outtextxy(340, 15, "Cach them cung");
 				drawUserManualBox(guideList[1], "Huong dan tao canh");
+				cout << guideList[0] << endl;
 				break;
 			}
 			case 3: {
