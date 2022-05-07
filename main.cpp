@@ -186,13 +186,16 @@ void drawEnterToExitText();//in ra dong "press ENTER to exit" o goc phai duoi ma
 void drawKeyToExitText();//in ra dong "press KEY to exit" o goc phai duoi man hinh lam viec
 						//ham nay thuong duoc dung cho cac ham khong co ket qua 
 int min(int a, int b);
-void tarjanAlgo(int u, int disc[], int lowLink[], stack &stk, bool stkItem[], int **componentsList, int &counter);//thuat toan tim thanh phan lien thong manh trong do thi co huong
-void bridgeUtil(int u, int disc[], int lowLink[], int parent[], int &counter, int *trace, int &index);//thuat toan tim canh cau
+void tarjanAlgo(int u, int *disc, int *lowLink, stack &stk, bool *stkItem, int **componentsList, int &counter);//thuat toan tim thanh phan lien thong manh trong do thi co huong
+void bridgeUtil(int u, int *disc, int *lowLink, int *parent, int &counter, int *trace, int &index);//thuat toan tim canh cau
 int countStrongConComponent(int **compnentsList);//dem thanh phan lien thong manh va tim thanh phan lien thong manh
 void drawUserManualBox(char *guideStr, char *title);//ve bang huong dan su dung
 void bridgeEdges();//duyet canh cau
 void showResultBridgeEdge(int *trace, int counter);//show ket qua tim canh cau ra man hinh
-void showEmptyVertex();
+void showEmptyVertex();//show man hinh khong co canh nao ca
+void cutVertices();//dinh tru
+void cutVerticesUtil(int u, int *disc,int *lowLink, int parent, bool *isCutVertex);//thuat toan tim dinh tru
+void showResultCutVertices(bool *isCutVertex, int counter);//show ra man hinh ket qua dinh tru
 
 int main() {
 	initwindow(1280, 720, "Do an do thi", 50, 20);
@@ -203,8 +206,6 @@ int main() {
 	loadFileStartUp();
 	process();
 }
-
-
 
 void process() {
 	Vertex vtex;
@@ -239,6 +240,102 @@ void process() {
 	}
 	getch();
 	closegraph();
+}
+
+void showResultCutVertices(bool *isCutVertex, int counter) {
+	char resultText[100];
+	Button resultBox, xButton;
+	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
+	if (counter == 0)
+		strcpy(resultText, "Do thi khong co dinh tru.");
+	else {
+		strcpy(resultText, "Do thi co ");
+		char counterStr[4];
+		itoa(counter, counterStr, 10);
+		strcat(resultText, counterStr);
+		strcat(resultText, " dinh tru: ");
+		for (int i = 0; i < n; i++)
+			if (isCutVertex[i]) {
+				strcat(resultText, "dinh ");
+				strcat(resultText, vertices[i].name);
+				strcat(resultText, ", ");
+			}
+		strnDel(resultText, strlen(resultText) - 2, 2);
+	}
+	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, resultText);
+	int page = 0;
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		drawFrame();
+		drawTaskBarButtons();
+		drawVertices();
+		drawAllEdges();
+		drawMatrix();
+		resultBox.draw();
+		xButton.draw();
+		drawEnterToExitText();
+		for (int i = 0; i < n; i++)
+			if (isCutVertex[i])
+				vertices[i].highLight(YELLOW, LIGHTBLUE);
+		if (kbhit()) {
+			char key = getch();
+			if (key == KEY_ENTER)
+				break;
+		}
+		if (xButton.isClickLMButton())
+			break;
+		page = 1 - page;
+	}
+}
+
+void cutVertices() {
+	if (isEmptyVertex()) {
+		showEmptyVertex();
+		return;
+	}
+	int disc[n] = {0};//luu tru so lan tham cua cac dinh da tham
+	int low[n];
+	int par = -1;
+	int counter = 0;
+	bool isCutVertex[n] = {false};
+	setArrayTo(visited, n, false);
+	Time = 0;
+	for (int i = 0; i < n; i++)
+		if (!visited[i])
+			cutVerticesUtil(i, disc, low, par, isCutVertex);
+	for (int i = 0; i < n; i++)
+		if (isCutVertex[i])
+			counter++;
+	showResultCutVertices(isCutVertex, counter);
+}
+
+void cutVerticesUtil(int u, int *disc, int *lowLink, int parent, bool *isCutVertex) {
+	//dem so luong con trong cay DFS
+	int children = 0;
+	//danh dau dinh u da tham
+	visited[u] = true;
+	disc[u] = lowLink[u] = ++Time;
+	for (int v = 0; v < n; v++) {
+		if (G[u][v]) {
+			//neu v chua duoc tham, dat no thanh con cua u trong cay DFS va lap lai cho no
+			if (!visited[v]) {
+				children++;
+				cutVerticesUtil(v, disc, lowLink, u, isCutVertex);
+				//Kiem tra xem cay con bat nguon tu v có ket noi v0i mot trong các goc cua u hay khong
+				lowLink[u] = min(lowLink[u], lowLink[v]);
+				//neu u khong phai la goc va lowLink[v] >= disc[u]
+				if (parent != -1 && lowLink[v] >= disc[u])
+					isCutVertex[u] = true;
+			}
+			else if (v != parent)
+				//cap nhat gia tri lowLink[u] cho lenh goi ham parent
+				lowLink[u] = min(lowLink[u], disc[v]);
+		}
+	}
+	//neu u la goc cua cay DFS va co hon 2 con
+	if (parent == -1 && children > 1)
+		isCutVertex[u] = true;
 }
 
 void showEmptyVertex()  {
@@ -277,7 +374,6 @@ void showEmptyVertex()  {
 			break;
 		}
 	}
-
 }
 
 void showResultBridgeEdge(int *trace, int counter) {
@@ -1122,7 +1218,8 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 			drawKeyToExitText();
 			if (kbhit()) 
 				break;
-			clearmouseclick();
+			if (xButton.isClickLMButton())
+				break;
 			char timeCountdownStr[4];
 			itoa(15 - timeCount, timeCountdownStr, 10);
 			outtextxy(425 + (834 - textwidth(str)) / 2 + textwidth(str) - textwidth(timeCountdownStr) - textwidth("s]"), 525 + (100 - textheight(timeCountdownStr)) / 2, timeCountdownStr);
@@ -1220,6 +1317,7 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
  			page = 1 - page;
 		}
 	}
+	clearmouseclick();
 }
  
 int minDistance(int *dist, bool *sptSet) {
@@ -1401,7 +1499,7 @@ void dfsTraveler(int u) {
 			strcat(resultText, " -> ");
 			visited[u] = 1;//danh dau no da tham
 			for (int i = n - 1; i >= 0; i--)
-				if ((G[u][i] || G[i][u]) && !visited[i]) {
+				if (G[u][i] && !visited[i]) {
 					s.push(i);//them no vao hang doi
 					edgeStart.push(u);
 				}//neu dinh chua duyet va ke voi dinh u	
@@ -1508,7 +1606,7 @@ void bfsTraveler(int u) {
 			strcat(resultText, " -> ");
 			visited[u] = 1;//danh dau no da tham
 			for (int i = 0; i < n; i++)
-				if ((G[u][i] || G[i][u]) && !visited[i]) {
+				if (G[u][i] && !visited[i]) {
 					q.push(i);//them no vao ngan xep
 					edgeStart.push(u);
 				}//neu dinh chua duyet va ke voi dinh u	
@@ -2422,7 +2520,8 @@ void taskBar() {
 				break;
 			}
 			case 2: {
-				outtextxy(340, 15, "Dinh tru");
+//				outtextxy(340, 15, "Dinh tru");
+				cutVertices();
 				break;
 			}
 			case 3: {
