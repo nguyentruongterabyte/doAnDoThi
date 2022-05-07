@@ -911,6 +911,7 @@ void showResultEulerCycle(stack CE, char *resultText) {
 		drawVertices();
 		drawAllEdges();
 		drawEnterToExitText();
+		drawMatrix();
 		resultBox.draw();
 		xButton.draw();
 		outtextxy(425 + (834 - textwidth(resultText)) / 2, 535, resultText);
@@ -3094,9 +3095,15 @@ void loadFileStartUp() {
 			input >> vertices[i].name;
 		}
 		for (int i = 0; i < n; i++) 
-			for (int j = 0; j < n; j++)
+			for (int j = 0; j < n; j++) {
 				input >> G[i][j];
+				if (G[i][j] == -1) {
+					n = 0;
+					return;
+				}
+			}
 	} else {
+		n = 0;
 		FILE * newFile = fopen("filesInProgram//startUpFile.txt", "a");
 		fprintf(newFile, "%d", 0);
 		fclose(newFile);
