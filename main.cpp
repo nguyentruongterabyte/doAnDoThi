@@ -8,6 +8,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <Windows.h>
 #include "include/stack.hpp"
 #include "include/queue.hpp"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
@@ -196,6 +197,7 @@ void showEmptyVertex();//show man hinh khong co canh nao ca
 void cutVertices();//dinh tru
 void cutVerticesUtil(int u, int *disc,int *lowLink, int parent, bool *isCutVertex);//thuat toan tim dinh tru
 void showResultCutVertices(bool *isCutVertex, int counter);//show ra man hinh ket qua dinh tru
+void openFile();
 
 int main() {
 	initwindow(1280, 720, "Do an do thi", 50, 20);
@@ -240,6 +242,14 @@ void process() {
 	}
 	getch();
 	closegraph();
+}
+
+void openFile() {
+	STARTUPINFO startInfo = {0};
+	PROCESS_INFORMATION processInfo = {};
+	BOOL bSucces = CreateProcess(TEXT("C:\\Windows\\explorer.exe"), NULL, NULL, NULL, FALSE, NULL, NULL,
+		NULL, &startInfo, &processInfo);
+	 
 }
 
 void showResultCutVertices(bool *isCutVertex, int counter) {
@@ -2632,7 +2642,8 @@ void taskBar() {
 		option = fileTools();
 		switch(option) {
 			case 1: {
-				outtextxy(340, 15, "Mo file");
+//				outtextxy(340, 15, "Mo file");
+				openFile();
 				break;
 			}
 			case 2: {
