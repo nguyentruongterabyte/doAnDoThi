@@ -192,7 +192,7 @@ int countStrongConComponent(int **compnentsList);//dem thanh phan lien thong man
 void drawUserManualBox(char *guideStr, char *title);//ve bang huong dan su dung
 void bridgeEdges();//duyet canh cau
 void showResultBridgeEdge(int *trace, int counter);//show ket qua tim canh cau ra man hinh
-
+void showEmptyVertex();
 
 int main() {
 	initwindow(1280, 720, "Do an do thi", 50, 20);
@@ -239,6 +239,45 @@ void process() {
 	}
 	getch();
 	closegraph();
+}
+
+void showEmptyVertex()  {
+	Point center;
+	Button emptyBox;
+//	char emptyStr[25];
+//	strcpy(emptyStr, "Chua co dinh nao ca!");
+	center.x = (W_LEFT + W_RIGHT) / 2;
+	center.y = (W_TOP + W_BOTTOM) / 2;
+	emptyBox.init(center.x - 200 / 2, center.y - 80 / 2, 80, 200, YELLOW, BLACK, 1, "Chua co dinh nao ca!");
+	int page = 0, startTime, endTime, timeCount;
+	time_t now = time(0);
+	tm *ltm = localtime(&now);
+	startTime =ltm->tm_hour * 3600 + ltm->tm_min * 60 + ltm->tm_sec;
+	char c = getcolor();
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		now = time(0);
+		ltm = localtime(&now);
+		endTime = ltm->tm_hour * 3600 + ltm->tm_min * 60 + ltm->tm_sec;
+		timeCount = endTime - startTime;
+		if (timeCount >= 3)
+			break;
+		drawFrame();
+		drawTaskBarButtons();
+		setlinestyle(SOLID_LINE, 1, 3);
+		setcolor(LIGHTRED);	
+		line(W_RIGHT, W_TOP, W_LEFT, W_BOTTOM);	
+		setlinestyle(SOLID_LINE, 1, 1);
+		setcolor(c);
+		emptyBox.draw();
+		page = 1 - page;
+		if (ismouseclick(WM_LBUTTONDOWN) || ismouseclick(WM_RBUTTONDOWN) || ismouseclick(WM_LBUTTONDBLCLK)) {
+			clearmouseclick();
+			break;
+		}
+	}
+
 }
 
 void showResultBridgeEdge(int *trace, int counter) {
@@ -325,8 +364,10 @@ void bridgeUtil(int u, int disc[], int lowLink[], int parent[], int &counter, in
 }
 
 void bridgeEdges() {
-	if (isEmptyVertex()) 
-		return;
+	if (isEmptyVertex()) {
+		showEmptyVertex();
+		return;	
+	}
 	Time = 0;
 	int counter = 0;
 	int index = 0;
@@ -528,7 +569,10 @@ int countConnectedComponents() {
 }
 
 void connectedComponents() {
-	if (isEmptyVertex()) return;
+	if (isEmptyVertex()) {
+		showEmptyVertex();
+		return;	
+	}
 	int **list = create2DArray(n, n), counter;
 	set2DArrayTo(list, n, n, -1);
 	bool isUGr = isUndirectedGraph();
@@ -831,8 +875,10 @@ void showResultEulerCycle(stack CE) {
 }
 
 void eulerCycle() {
-	if (isEmptyVertex())
-		return;
+	if (isEmptyVertex()) {
+		showEmptyVertex();
+		return;	
+	}
 	Button resultBox, xButton;
 	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
 	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
@@ -1216,10 +1262,13 @@ void dijkstra(int start, int end) {
 }
 
 void pathXY() {
+	if (isEmptyVertex()) {
+		showEmptyVertex();
+		return;		
+	}
+//	if (n < 2) return;
 	Button instruction;
 	instruction.init(425, 525, 40, 834, YELLOW, BLACK, 1, "Chon dinh ket thuc");
-	if (isEmptyVertex()) return;
-	if (n < 2) return;
 	int start, end;
 	start = chooseVertex("Chon dinh bat dau");
 	end = start;
@@ -1273,7 +1322,10 @@ void setArrayTo(Type *arr, int num, int value) {
 }
 
 void DFS() {
-	if (isEmptyVertex()) return;
+	if (isEmptyVertex()) {
+		showEmptyVertex();
+		return;	
+	}
 	int start = chooseVertex("Chon dinh bat dau duyet theo chieu sau (DFS)");
 	if (start != -1) {
 		setArrayTo(visited, n, 0);
@@ -1377,7 +1429,10 @@ void dfsTraveler(int u) {
 }
 
 void BFS() {
-	if (isEmptyVertex()) return;
+	if (isEmptyVertex()) {
+		showEmptyVertex();
+		return;
+	}
 	int start = chooseVertex("Chon dinh bat dau duyet theo chieu rong (BFS)");
 	if (start != -1) {
 		setArrayTo(visited, n, 0);
