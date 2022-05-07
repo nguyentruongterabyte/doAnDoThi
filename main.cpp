@@ -185,17 +185,14 @@ void set2DArrayTo(Type **arr, unsigned height, unsigned width, int value);//cho 
 void drawEnterToExitText();//in ra dong "press ENTER to exit" o goc phai duoi man hinh lam viec
 void drawKeyToExitText();//in ra dong "press KEY to exit" o goc phai duoi man hinh lam viec
 						//ham nay thuong duoc dung cho cac ham khong co ket qua 
-//int tarjanAlgo(bool showResult, int remove);
-//void tarjanVisit(int u, int *disc, int *low, stack &s, int &count, int &components, bool callTarjanResult);
-//void tarjanResult(stack &s, int end, int components);
-
-
 int min(int a, int b);
 void tarjanAlgo(int u, int disc[], int lowLink[], stack &stk, bool stkItem[], int **componentsList, int &counter);//thuat toan tim thanh phan lien thong manh trong do thi co huong
-void tarjanAlgo(int u, int disc[], int lowLink[], int parent[]);//thuat toan tim canh cau
+void bridgeUtil(int u, int disc[], int lowLink[], int parent[], int &counter, int *trace, int &index);//thuat toan tim canh cau
 int countStrongConComponent(int **compnentsList);//dem thanh phan lien thong manh va tim thanh phan lien thong manh
 void drawUserManualBox(char *guideStr, char *title);//ve bang huong dan su dung
 void bridgeEdges();//duyet canh cau
+void showResultBridgeEdge(int *trace, int counter);//show ket qua tim canh cau ra man hinh
+
 
 int main() {
 	initwindow(1280, 720, "Do an do thi", 50, 20);
@@ -244,25 +241,96 @@ void process() {
 	closegraph();
 }
 
-void tarjanAlgo(int u, int disc[], int lowLink[], int parent[]) {
+void showResultBridgeEdge(int *trace, int counter) {
+	char resultText[100];
+	Button resultBox, xButton;
+	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
+	if (counter == 0)
+		strcpy(resultText, "Do thi nay khong co canh cau");
+	else {
+		strcpy(resultText, "Do thi co ");
+		char counterStr[4];
+		itoa(counter, counterStr, 10);
+		strcat(resultText, counterStr);
+		strcat(resultText, " canh cau: ");
+		for (int i = 0; i < counter * 2; i += 2) {
+			int u = trace[i];
+			int v = trace[i + 1];
+			strcat(resultText, vertices[u].name);
+			strcat(resultText, vertices[v].name);
+			strcat(resultText, ", ");
+		}
+		strnDel(resultText, strlen(resultText) - 2, 2);
+	}
+	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, resultText);
+//	cout << resultText << endl;
+	int page = 0;
+	bool isUDGr = isUndirectedGraph(); 
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		drawFrame();
+		drawTaskBarButtons();
+		drawMatrix();
+		drawVertices();
+		drawAllEdges();
+		drawEnterToExitText();
+		resultBox.draw();
+		xButton.draw();
+		for (int i = 0; i < counter * 2; i += 2) {
+			int u = trace[i];
+			int v = trace[i + 1];
+			if (isUDGr) {
+				drawLine(vertices[u], vertices[v], LIGHTGREEN, 0);
+			} else {
+				if (!G[v][u])
+					drawArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
+				else 
+					drawCurvedArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
+			}
+		}
+		if (kbhit()) {
+			char key = getch();
+			if (key == KEY_ENTER)
+				break;
+		}
+		if (xButton.isClickLMButton())
+			break;
+		page = 1 - page;
+	}
+	clearmouseclick();
+}
+
+void bridgeUtil(int u, int disc[], int lowLink[], int parent[], int &counter, int *trace, int &index) {
 	//danh dau dinh do da tham
 	visited[u] = true;
 	disc[u] = lowLink[u] = ++Time;
 	for (int i = 0; i < n; i++) {
-		if (G[u][i] && !visited[i]) {
+		if (G[u][i] || G[i][u]) {
+			if (!visited[i]) {
 			parent[i] = u;
-			tarjanAlgo(i, disc, lowLink, parent);
+			bridgeUtil(i, disc, lowLink, parent, counter, trace, index);
 			lowLink[u] = min(lowLink[u], lowLink[i]);
-			if (lowLink[i] > disc[u]) 
-				cout << vertices[u].name << vertices[i].name << endl;
+				if (lowLink[i] > disc[u]) {
+					counter++;
+					trace[index] = u;
+					trace[index + 1] = i;
+					index += 2;
+				} 
+			}
+			else if (i != parent[u])
+				lowLink[u] = min(lowLink[u], disc[i]);
 		}
-		else if (i != parent[u])
-			lowLink[u] = min(lowLink[u], disc[i]);
 	}
 }
 
 void bridgeEdges() {
+	if (isEmptyVertex()) 
+		return;
 	Time = 0;
+	int counter = 0;
+	int index = 0;
+	int trace[n + n];//mang luu cac he so cua dinh
 	int disc[n];
 	int low[n];
 	int parent[n];
@@ -271,7 +339,8 @@ void bridgeEdges() {
 		visited[i] = false;
 	for (int i = 0; i < n; i++)
 		if (!visited[i])
-			tarjanAlgo(i, disc, low, parent);
+			bridgeUtil(i, disc, low, parent, counter, trace, index);
+	showResultBridgeEdge(trace, counter);	
 }
 
 void drawUserManualBox(char *guideStr, char *title) {	
@@ -762,6 +831,8 @@ void showResultEulerCycle(stack CE) {
 }
 
 void eulerCycle() {
+	if (isEmptyVertex())
+		return;
 	Button resultBox, xButton;
 	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
 	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
@@ -791,8 +862,7 @@ void eulerCycle() {
 		}
 	}
 	
-	if (isEmptyVertex())
-		return;
+	
 	bool isUGr = isUndirectedGraph();
 	if (isUGr) {
 		//neu la do thi vo huong
@@ -1822,11 +1892,12 @@ void drawArrow(Vertex u, Vertex v, int color, int w) {
 void drawMatrix() {
 	Point center;
 	int squareEdge = 30;
-	Button square, vertexButton[MAX];
+	Button square, vertexButton[MAX], matrxHoverFrame;
 	square.init(0, 0, squareEdge, squareEdge, BLACK, BLACK, 1, "");
 	//bien center de ghi toa do can giua cua khung ma tran
 	center.x = 15 + 400 / 2;
 	center.y = 304 + 400 / 2;
+	matrxHoverFrame.init(center.x - squareEdge * n / 2 - squareEdge / 2, center.y - squareEdge * n / 2, (n + 1) * squareEdge,  (n + 1) * squareEdge, BLACK, BLACK, 1, "");
 	int x0 = center.x - n * squareEdge / 2 + squareEdge / 2;
 	int y0 = center.y - n * squareEdge / 2 + squareEdge;
 	for (int i = 0; i < n; i++) {//ve khung ma tran trong so va in ra gia tri cua ma tran trong so
@@ -1839,8 +1910,11 @@ void drawMatrix() {
 			square.init(x0, y0, squareEdge, squareEdge, WHITE, BLACK, 1, numText);
 			//square.highLight();
 			square.draw();
-			if (square.isHover()) 
-				square.highLight();
+			if (square.isHover()) {
+				square.highLight(YELLOW, LIGHTBLUE);
+				vertices[i].highLight(YELLOW, LIGHTBLUE);
+				vertices[j].highLight(YELLOW, LIGHTBLUE);
+			} 
  			x0 += squareEdge;
 		}
 		x0 = x;
@@ -1849,6 +1923,7 @@ void drawMatrix() {
 	x0 = center.x - squareEdge * n / 2 - squareEdge / 2;
 	y0 = center.y - squareEdge * n / 2;
 	int y = y0;
+//	matrxHoverFrame.draw();
 	if (!isEmptyVertex()) {
 		square.coordinates.x = x0;
 		square.coordinates.y = y0;
@@ -1860,6 +1935,10 @@ void drawMatrix() {
 		vertexButton[i].coordinates.x = x0;
 		vertexButton[i].coordinates.y = y0;
 		vertexButton[i].draw();
+		int y = mousey();
+		if (y >= vertexButton[i].coordinates.y && y <= vertexButton[i].coordinates.y + vertexButton[i].height
+		&& matrxHoverFrame.isHover())
+			vertexButton[i].highLight(YELLOW, LIGHTBLUE);
 	}
 	y0 = y;
 	for (int i = 0; i < n; i++) {
@@ -1867,6 +1946,10 @@ void drawMatrix() {
 		vertexButton[i].coordinates.x = x0;
 		vertexButton[i].coordinates.y = y0;
 		vertexButton[i].draw();
+		int x = mousex();
+		if (x >= vertexButton[i].coordinates.x && x <= vertexButton[i].coordinates.x + vertexButton[i].width
+		&& matrxHoverFrame.isHover())
+			vertexButton[i].highLight(YELLOW, LIGHTBLUE);
 	}
 }
 
