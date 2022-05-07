@@ -9,6 +9,8 @@
 #include <math.h>
 #include <time.h>
 #include <Windows.h>
+#include <dirent.h>
+#include <sys\stat.h>
 #include "include/stack.hpp"
 #include "include/queue.hpp"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
@@ -125,7 +127,7 @@ void drawVertices();
 void initDefaultVertices();//khi goi ham nay toa do cua cac dinh se tu dong la x = -1, y = -1
 void loadFileStartUp();//khi tat chuong trinh, 
 					  //file nay se co chuc nang luu lai thong tin dinh canh cho lan chay tiep theo
-void saveFileStartUp();//khi tao hay xoa dinh, file nay se co tac dung cap nhat lai nhung gi chung ta thao tac
+void saveFileStartUp();//khi tao hay x oa dinh, file nay se co tac dung cap nhat lai nhung gi chung ta thao tac
 void addVertexToList(Vertex vtex);//ham nay giup chung ta them mot dinh vua tao vao danh sach dinh
 void clearAllVertices();//ham nay cho phep xoa tat ca cac dinh va cung dang hien thi tren man hinh
 bool drawYesNoBar(char *question);//ham nay dung de xac nhan truoc khi lam gi do
@@ -198,8 +200,10 @@ void cutVertices();//dinh tru
 void cutVerticesUtil(int u, int *disc,int *lowLink, int parent, bool *isCutVertex);//thuat toan tim dinh tru
 void showResultCutVertices(bool *isCutVertex, int counter);//show ra man hinh ket qua dinh tru
 void openFile();
+void SetWindowSize(SHORT width, SHORT height);
 
 int main() {
+//	SetWindowSize(0, 0);
 	initwindow(1280, 720, "Do an do thi", 50, 20);
 	setTaskBarButtons();
 	setFrame();
@@ -244,12 +248,35 @@ void process() {
 	closegraph();
 }
 
+void SetWindowSize(SHORT width, SHORT height) {
+    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    SMALL_RECT WindowSize;
+    WindowSize.Top = 0;
+    WindowSize.Left = 0;
+    WindowSize.Right = width;
+    WindowSize.Bottom = height;
+    SetConsoleWindowInfo(hStdout, 1, &WindowSize);
+}
+
 void openFile() {
-	STARTUPINFO startInfo = {0};
-	PROCESS_INFORMATION processInfo = {};
-	BOOL bSucces = CreateProcess(TEXT("C:\\Windows\\explorer.exe"), NULL, NULL, NULL, FALSE, NULL, NULL,
-		NULL, &startInfo, &processInfo);
-	 
+	char fileName[30][100] = {""};
+	int index = 0;
+	struct dirent *d;
+	struct stat dst;
+	DIR *dr;
+	char path[30] = "filesInProgram";
+	char signal[3] = "\\"; 
+	dr = opendir(path);
+	if (dr != NULL) {
+		for (d = readdir(dr); d != NULL; d = readdir(dr)) {
+			if (strlen(d->d_name) >= 5)
+				strcpy(fileName[index++], d->d_name);
+		}
+		closedir(dr);
+	}
+	for (int i = 0; i < index; i++) {
+		cout << fileName[i] << endl;
+	}
 }
 
 void showResultCutVertices(bool *isCutVertex, int counter) {
@@ -332,7 +359,7 @@ void cutVerticesUtil(int u, int *disc, int *lowLink, int parent, bool *isCutVert
 			if (!visited[v]) {
 				children++;
 				cutVerticesUtil(v, disc, lowLink, u, isCutVertex);
-				//Kiem tra xem cay con bat nguon tu v có ket noi v0i mot trong các goc cua u hay khong
+				//Kiem tra xem cay con bat nguon tu v c? ket noi v0i mot trong c?c goc cua u hay khong
 				lowLink[u] = min(lowLink[u], lowLink[v]);
 				//neu u khong phai la goc va lowLink[v] >= disc[u]
 				if (parent != -1 && lowLink[v] >= disc[u])
