@@ -200,7 +200,7 @@ void cutVertices();//dinh tru
 void cutVerticesUtil(int u, int *disc,int *lowLink, int parent, bool *isCutVertex);//thuat toan tim dinh tru
 void showResultCutVertices(bool *isCutVertex, int counter);//show ra man hinh ket qua dinh tru
 void openFile();
-void SetWindowSize(SHORT width, SHORT height);
+void loadFile(char *fileName);
 
 int main() {
 //	SetWindowSize(0, 0);
@@ -248,14 +248,40 @@ void process() {
 	closegraph();
 }
 
-void SetWindowSize(SHORT width, SHORT height) {
-    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-    SMALL_RECT WindowSize;
-    WindowSize.Top = 0;
-    WindowSize.Left = 0;
-    WindowSize.Right = width;
-    WindowSize.Bottom = height;
-    SetConsoleWindowInfo(hStdout, 1, &WindowSize);
+void loadFile(char *fileName) {
+	char path[100] = "filesInProgram//";
+	strcat(path, fileName);
+	ifstream input (path);
+	if (input.is_open()) {
+		input >> n;
+		for (int i = 0; i < n; i++) {
+			input >> vertices[i].coordinates.x >> vertices[i].coordinates.y;
+			vertices[i].name = new char[3];
+			input >> vertices[i].name;
+			if (strcmp(vertices[i].name, "") == 0) {
+				n = 0;
+				input.close();
+				return;
+			}
+			
+		}
+		for (int i = 0; i < n; i++) 
+			for (int j = 0; j < n; j++) {
+				input >> G[i][j];
+				if (G[i][j] == -1) {
+					n = 0;
+					input.close();
+					return;
+				}
+			}
+	} else {
+		n = 0;
+		FILE * newFile = fopen("filesInProgram//startUpFile.txt", "a");
+		fprintf(newFile, "%d", 0);
+		fclose(newFile);
+	}
+ 
+	input.close();
 }
 
 void openFile() {
@@ -265,17 +291,63 @@ void openFile() {
 	struct stat dst;
 	DIR *dr;
 	char path[30] = "filesInProgram";
-	char signal[3] = "\\"; 
 	dr = opendir(path);
 	if (dr != NULL) {
-		for (d = readdir(dr); d != NULL; d = readdir(dr)) {
-			if (strlen(d->d_name) >= 5)
+		for (d = readdir(dr); d != NULL; d = readdir(dr)) 
+			if (strlen(d->d_name) >= 5 && strcmp(d->d_name, "startUpFile.txt") != 0)
 				strcpy(fileName[index++], d->d_name);
-		}
 		closedir(dr);
 	}
-	for (int i = 0; i < index; i++) {
-		cout << fileName[i] << endl;
+	if (index) {
+		int x0 = W_LEFT + 5, y0 = W_TOP + 50;
+		Button fileButton[index];
+		int yTmp = y0;
+		for (int i = 0; i < index; i++) {
+			fileButton[i].init(x0, y0, 40, 200, WHITE, BLACK, 1, fileName[i]);
+			y0 += 45;
+			if (i == 9) {
+				x0 += 205;
+				y0 = yTmp;
+			}
+		}
+		
+		int page = 0, x = -1, y = -1;
+		while (true) {
+			setactivepage(page);
+			setvisualpage(1 - page);
+			drawFrame();
+			drawTaskBarButtons();
+			drawMatrix();
+			drawVertices();
+			drawAllEdges();
+			if (ismouseclick(WM_LBUTTONDOWN)) {
+				getmouseclick(WM_LBUTTONDOWN, x, y);
+				clearmouseclick(WM_LBUTTONDOWN);
+			}
+			for (int i = 0; i < index; i++) {
+				fileButton[i].draw();
+				if (fileButton[i].isHover())
+					fileButton[i].highLight(LIGHTBLUE, YELLOW);
+				if (x >= fileButton[i].coordinates.x && x <= fileButton[i].coordinates.x + fileButton[i].width
+				&& y >= fileButton[i].coordinates.y && y <= fileButton[i].coordinates.y + fileButton[i].height) {
+					bool confirm = drawYesNoBar("Ban co muon load file nay?");
+					if (confirm) {
+						loadFile(fileName[i]);
+						cout << n;
+						return;
+					}
+					else 
+						return openFile();
+				}
+					
+			}
+			if (kbhit()) {
+				char key = getch();
+				if (key == KEY_ENTER)
+					break;
+			}
+			page = 1 - page;
+		}
 	}
 }
 
@@ -2474,8 +2546,10 @@ void strnDel(char s[], int pos, int count) {
 
 bool Button::isClickLMButton() {
 	int x, y;
-	getmouseclick(WM_LBUTTONDOWN, x, y);
-	clearmouseclick(WM_LBUTTONDOWN);
+	if (ismouseclick(WM_LBUTTONDOWN)) {
+		getmouseclick(WM_LBUTTONDOWN, x, y);
+		clearmouseclick(WM_LBUTTONDOWN);
+	}
 	if (x >= this->coordinates.x && x <= this->coordinates.x + this->width
 	&& y >= this->coordinates.y && y <= this->coordinates.y + this->height)
 		return 1;
@@ -3149,12 +3223,18 @@ void loadFileStartUp() {
 			input >> vertices[i].coordinates.x >> vertices[i].coordinates.y;
 			vertices[i].name = new char[3];
 			input >> vertices[i].name;
+			if (strcmp(vertices[i].name, "") == 0) {
+				n = 0;
+				input.close();
+				return;
+			}
 		}
 		for (int i = 0; i < n; i++) 
 			for (int j = 0; j < n; j++) {
 				input >> G[i][j];
 				if (G[i][j] == -1) {
 					n = 0;
+					input.close();
 					return;
 				}
 			}
