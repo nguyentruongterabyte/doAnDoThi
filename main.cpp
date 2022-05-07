@@ -993,15 +993,14 @@ void eulerCycle() {
 			drawTaskBarButtons();
 			resultBox.draw();
 			xButton.draw();
-			clearmouseclick();
 			drawKeyToExitText();
-//			ESCButton.draw();
 			if (xButton.isClickLMButton())
 				return;
 			if (kbhit()) {
 				getch();
 				return;
 			}
+			clearmouseclick();
 			page = 1 - page;
 		}
 	}
@@ -1045,7 +1044,6 @@ void eulerCycle() {
 				setactivepage(page);
 				setvisualpage(1 - page);
 				resultBox.draw();
-//				ESCButton.draw();
 				xButton.draw();
 				drawKeyToExitText();
 				taskBarFrame.draw();
@@ -1054,7 +1052,6 @@ void eulerCycle() {
 					return;
 				if (xButton.isClickLMButton())
 					return;
-				clearmouseclick();
 				page = 1 - page;
 			}
 		}
@@ -1267,8 +1264,6 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 			drawAllEdges();
 			resultBox.draw();
 			xButton.draw();
-//			ESCButton.draw();
-			clearmouseclick();
 			outtextxy(425 + (834 - textwidth(weightSumText)) / 2, 525 + (150 - textheight(weightSumText)) / 2, weightSumText);
 			drawEnterToExitText();
 			setactivepage(1);
@@ -1319,7 +1314,6 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
  			page = 1 - page;
 		}
 	}
-	clearmouseclick();
 }
  
 int minDistance(int *dist, bool *sptSet) {
@@ -1397,8 +1391,12 @@ void pathXY() {
 					end = i;
 				}
 			}
+			clearmouseclick(WM_LBUTTONDOWN);
 		}
-		clearmouseclick();
+		if (ismouseclick(WM_RBUTTONDOWN))
+			clearmouseclick(WM_RBUTTONDOWN);
+		if (ismouseclick(WM_LBUTTONDBLCLK))
+			clearmouseclick(WM_LBUTTONDBLCLK);
 		page = 1 - page;
 	}
 	dijkstra(start, end);
@@ -1476,7 +1474,7 @@ void showResultDFS(int *trace, char *resultText, int count) {
 			if (key == KEY_ENTER)
 				break;
 		}
-		clearmouseclick();
+		//clearmouseclick();
 		page = 1 - page;
 	}
 }
@@ -1492,7 +1490,12 @@ void dfsTraveler(int u) {
 	setactivepage(1);
 	setvisualpage(1);
 	while (!s.isEmpty()) {
-		clearmouseclick();
+		if (ismouseclick(WM_LBUTTONDOWN))
+			clearmouseclick(WM_LBUTTONDOWN);
+		if (ismouseclick(WM_RBUTTONDOWN))
+			clearmouseclick(WM_RBUTTONDOWN);
+		if (ismouseclick(WM_LBUTTONDBLCLK))
+			clearmouseclick(WM_LBUTTONDBLCLK);
 		drawEnterToExitText();
 		u = s.pop();//lay dinh o tren ngan xep va xoa no ra khoi danh sach
 		if (!visited[u]) {//neu dinh do chua duoc tham
@@ -1583,7 +1586,6 @@ void showResultBFS(int *trace, char *resultText, int count) {
 			if (key == KEY_ENTER)
 				break;
 		}
-		clearmouseclick();
 		page = 1 - page;
 	}
 }
@@ -1599,7 +1601,12 @@ void bfsTraveler(int u) {
 	setactivepage(1);
 	setvisualpage(1);
 	while (!q.isEmpty()) {
-		clearmouseclick();
+		if (ismouseclick(WM_LBUTTONDOWN))
+			clearmouseclick(WM_LBUTTONDOWN);
+		if (ismouseclick(WM_RBUTTONDOWN))
+			clearmouseclick(WM_RBUTTONDOWN);
+		if (ismouseclick(WM_LBUTTONDBLCLK))
+			clearmouseclick(WM_LBUTTONDBLCLK);
 		drawEnterToExitText();
 		u = q.pop();//lay dinh o tren hang doi va xoa no ra khoi danh sach
 		if (!visited[u]) {//neu dinh do chua duoc tham
@@ -1688,7 +1695,7 @@ int enterWeight() {
 		delay(50);
 		drawFrame();
 		drawVertices();
-		drawMatrix();
+		//drawMatrix();
 		drawAllEdges();
 		drawTaskBarButtons();
 		frame.draw();
@@ -1797,8 +1804,10 @@ void addEdge(int startPos) {
 		}
 		if (ismouseclick(WM_LBUTTONDBLCLK))
 			clearmouseclick(WM_LBUTTONDBLCLK);
-		if (ismouseclick(WM_RBUTTONDOWN))
+		if (ismouseclick(WM_RBUTTONDOWN)) {
+			clearmouseclick(WM_RBUTTONDOWN);
 			break;
+		}
 		if (ismouseclick(WM_LBUTTONDOWN)) {//click chuot trai vao cac dinh con lai
 			bool checked = false;								//-> nhap trong so -> tao canh
 			int xL, yL;
@@ -1813,14 +1822,13 @@ void addEdge(int startPos) {
 					checked = true;
 				}
 			}
+			clearmouseclick(WM_LBUTTONDOWN);
 			if (checked)
 				break;
 		}
 		page = 1 - page;
 	}
 	saveFileStartUp();
-	clearmouseclick(WM_RBUTTONDOWN);
-	clearmouseclick(WM_LBUTTONDOWN);
 }
 
 void drawCurvedArrow2(Vertex u, Vertex v, int color, int w) {
@@ -2055,6 +2063,11 @@ void drawMatrix() {
 	matrxHoverFrame.init(center.x - squareEdge * n / 2 - squareEdge / 2, center.y - squareEdge * n / 2, (n + 1) * squareEdge,  (n + 1) * squareEdge, BLACK, BLACK, 1, "");
 	int x0 = center.x - n * squareEdge / 2 + squareEdge / 2;
 	int y0 = center.y - n * squareEdge / 2 + squareEdge;
+	int xDL = -1, yDL = -1;
+	if (ismouseclick(WM_RBUTTONDBLCLK)) {
+		getmouseclick(WM_RBUTTONDBLCLK, xDL, yDL);
+		clearmouseclick(WM_RBUTTONDBLCLK);
+	}
 	for (int i = 0; i < n; i++) {//ve khung ma tran trong so va in ra gia tri cua ma tran trong so
 		int x = x0;//su dung bien x de luu gia tri ban dau cua x0
 		vertexButton[i].init(0, 0, squareEdge, squareEdge, YELLOW, BLUE, 1, vertices[i].name);
@@ -2070,6 +2083,11 @@ void drawMatrix() {
 				vertices[i].highLight(YELLOW, LIGHTBLUE);
 				vertices[j].highLight(YELLOW, LIGHTBLUE);
 			} 
+			if (i != j && 
+			xDL >= square.coordinates.x && xDL <= square.coordinates.x + square.width
+			&& yDL >= square.coordinates.y && yDL <= square.coordinates.y + square.height)
+				G[i][j] = enterWeight();
+			
  			x0 += squareEdge;
 		}
 		x0 = x;
@@ -2168,9 +2186,9 @@ void moveVertex() {
 			}
 		}
 	}
-	saveFileStartUp();
 	clearmouseclick(WM_LBUTTONDOWN);
 	clearmouseclick(WM_LBUTTONUP);
+	saveFileStartUp();
 }
 
 void Vertex::changeName() {
