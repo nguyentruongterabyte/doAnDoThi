@@ -167,7 +167,7 @@ int minDistance(int *dist, bool *sptSet);// mot ham tien ich de tim dinh voi gia
 										 //tu tap hop cac dinh chua duoc bao gom trong cay duong dan ngan nhat
 void showResultPathXY(int *trace, int *dist, int start, int end);//show ra man hinh duong di ngan nhat tu x toi y
 void eulerCycle(int u);//ham tim chu trinh euler
-void showResultEulerCycle(stack CE);//show ket qua chu trinh euler ra man hinh
+void showResultEulerCycle(stack CE, char * resultText);//show ket qua chu trinh euler ra man hinh
 bool isUndirectedGraph();//ham kiem tra do thi co vo huong khong
 bool isConnectedGraph();//ham kiem tra do thi co lien thong hay khong
 int DFS(int u);//duyet theo chieu sau
@@ -883,7 +883,7 @@ bool isConnectedGraph() {
 	return false; 
 }
 
-void showResultEulerCycle(stack CE) {
+void showResultEulerCycle(stack CE, char *resultText) {
 	Button resultBox, xButton;
 	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
 	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
@@ -912,8 +912,9 @@ void showResultEulerCycle(stack CE) {
 		drawAllEdges();
 		drawEnterToExitText();
 		resultBox.draw();
-		vertices[trace[0]].highLight();
 		xButton.draw();
+		outtextxy(425 + (834 - textwidth(resultText)) / 2, 535, resultText);
+		vertices[trace[0]].highLight();
 		setactivepage(1);
 		setvisualpage(1);
 		if (isUGr) {
@@ -1093,7 +1094,7 @@ void eulerCycle() {
 					st.pop();
 				}
 			}
-			showResultEulerCycle(CE);
+			showResultEulerCycle(CE, "Do thi co hai dinh bac le nen chi co duong di Euler. Khong co chu trinh Euler");
 			return;
 		}
 	}
@@ -1179,7 +1180,7 @@ void eulerCycle() {
 			st.pop();
 		}
 	}
-	showResultEulerCycle(CE);
+	showResultEulerCycle(CE, "Chu trinh Euler");
 }
 
 void showResultPathXY(int *trace, int *dist, int start, int end) {
