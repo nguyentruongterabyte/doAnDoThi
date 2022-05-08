@@ -17,7 +17,7 @@
 #pragma GCC diagnostic ignored "-Wconversion-null"
 #pragma GCC diagnostic ignored "-Wpointer-arith"
 #define RADIUS 20
-#define MAX 11
+#define MAX 20 
 
 using namespace std;
 
@@ -300,7 +300,7 @@ void openFile() {
 	}
 	if (index) {
 		int x0 = W_LEFT + 5, y0 = W_TOP + 50;
-		Button fileButton[index];
+		Button fileButton[index], fileBoxHover;
 		int yTmp = y0;
 		for (int i = 0; i < index; i++) {
 			fileButton[i].init(x0, y0, 40, 200, WHITE, BLACK, 1, fileName[i]);
@@ -333,7 +333,6 @@ void openFile() {
 					bool confirm = drawYesNoBar("Ban co muon load file nay?");
 					if (confirm) {
 						loadFile(fileName[i]);
-						cout << n;
 						return;
 					}
 					else 
@@ -426,7 +425,7 @@ void cutVerticesUtil(int u, int *disc, int *lowLink, int parent, bool *isCutVert
 	visited[u] = true;
 	disc[u] = lowLink[u] = ++Time;
 	for (int v = 0; v < n; v++) {
-		if (G[u][v]) {
+		if (G[u][v] || G[v][u]) {
 			//neu v chua duoc tham, dat no thanh con cua u trong cay DFS va lap lai cho no
 			if (!visited[v]) {
 				children++;
@@ -1561,9 +1560,9 @@ void showResultDFS(int *trace, char *resultText, int count) {
 		drawEnterToExitText();
 		setactivepage(1);
 		setvisualpage(1);
-		for (int i = 0; i < count; i += 2) {
-			int u = trace[i];
-			int v = trace[i + 1];
+		for (int i = 1; i < count; i += 2) {
+			int u = trace[i - 1];
+			int v = trace[i];
 			vertices[u].highLight();
 			drawArrow(vertices[u], vertices[v], LIGHTGREEN, 0);
 			delay(200);
@@ -1593,18 +1592,12 @@ void dfsTraveler(int u) {
 	stack s;
 	int trace[n * n];
 	stack edgeStart;
-	int count = 0;
-	char resultText[100] = "";
+	int count = 1;
+	char resultText[150] = "";
 	s.push(u);
 	setactivepage(1);
 	setvisualpage(1);
 	while (!s.isEmpty()) {
-		if (ismouseclick(WM_LBUTTONDOWN))
-			clearmouseclick(WM_LBUTTONDOWN);
-		if (ismouseclick(WM_RBUTTONDOWN))
-			clearmouseclick(WM_RBUTTONDOWN);
-		if (ismouseclick(WM_LBUTTONDBLCLK))
-			clearmouseclick(WM_LBUTTONDBLCLK);
 		drawEnterToExitText();
 		u = s.pop();//lay dinh o tren ngan xep va xoa no ra khoi danh sach
 		if (!visited[u]) {//neu dinh do chua duoc tham
@@ -1618,17 +1611,20 @@ void dfsTraveler(int u) {
 					edgeStart.push(u);
 				}//neu dinh chua duyet va ke voi dinh u	
 		}
-		int k = edgeStart.pop();
-		int j = s.get();
-		while (!G[k][j] && !edgeStart.isEmpty()) {
+		int k = -1, j = -1;
+		if (!edgeStart.isEmpty())
+			k = edgeStart.pop();
+		if (!s.isEmpty())
+			j = s.get();
+		while (!G[k][j] && !s.isEmpty() && !edgeStart.isEmpty()) {
 			k = edgeStart.pop();
 		}	
-		if (j != k && !visited[j]) {
+		if (k != -1 && j != -1 && j != k && !visited[j]) {
 			drawArrow(vertices[k], vertices[j], LIGHTGREEN, 0);
-			trace[count] = k;
-			trace[count + 1] = j;
-			delay(500);
+			trace[count - 1] = k;
+			trace[count] = j;
 			count += 2;
+			delay(200);
 		}
 		if (kbhit()) {
 			char key = getch();
@@ -1673,9 +1669,9 @@ void showResultBFS(int *trace, char *resultText, int count) {
 		drawEnterToExitText();
 		setactivepage(1);
 		setvisualpage(1);
-		for (int i = 0; i < count; i += 2) {
-			int u = trace[i];
-			int v = trace[i + 1];
+		for (int i = 1; i < count; i += 2) {
+			int u = trace[i - 1];
+			int v = trace[i];
 			vertices[u].highLight();
 			drawArrow(vertices[u], vertices[v], LIGHTGREEN, 0);
 			delay(200);
@@ -1704,18 +1700,12 @@ void bfsTraveler(int u) {
 	queue q;
 	int trace[n * n];
 	queue edgeStart;
-	int count = 0;
-	char resultText[100] = "";
+	int count = 1;
+	char resultText[150] = "";
 	q.push(u);
 	setactivepage(1);
 	setvisualpage(1);
 	while (!q.isEmpty()) {
-		if (ismouseclick(WM_LBUTTONDOWN))
-			clearmouseclick(WM_LBUTTONDOWN);
-		if (ismouseclick(WM_RBUTTONDOWN))
-			clearmouseclick(WM_RBUTTONDOWN);
-		if (ismouseclick(WM_LBUTTONDBLCLK))
-			clearmouseclick(WM_LBUTTONDBLCLK);
 		drawEnterToExitText();
 		u = q.pop();//lay dinh o tren hang doi va xoa no ra khoi danh sach
 		if (!visited[u]) {//neu dinh do chua duoc tham
@@ -1729,17 +1719,20 @@ void bfsTraveler(int u) {
 					edgeStart.push(u);
 				}//neu dinh chua duyet va ke voi dinh u	
 		}
-		int k = edgeStart.pop();
-		int j = q.get();
-		while (!G[k][j] && !edgeStart.isEmpty()) {
+		int k = -1, j = -1;
+		if (!edgeStart.isEmpty())
+			k = edgeStart.pop();
+		if (!q.isEmpty())
+			j = q.get();
+		while (!G[k][j] && !q.isEmpty() && !edgeStart.isEmpty()) {
 			k = edgeStart.pop();
 		}	
-		if (j != k && !visited[j]) {
+		if (k != -1 && j != -1 && j != k && !visited[j]) {
 			drawArrow(vertices[k], vertices[j], LIGHTGREEN, 0);
-			trace[count] = k;
-			trace[count + 1] = j;
-			delay(500);
+			trace[count - 1] = k;
+			trace[count] = j;
 			count += 2;
+			delay(200);
 		}
 		if (kbhit()) {
 			char key = getch();
@@ -2163,7 +2156,7 @@ void drawArrow(Vertex u, Vertex v, int color, int w) {
 
 void drawMatrix() {
 	Point center;
-	int squareEdge = 30;
+	int squareEdge = n < 12 ? 30 : n < 15 ? 25 : n < 18 ? 20 : 18;
 	Button square, vertexButton[MAX], matrxHoverFrame;
 	square.init(0, 0, squareEdge, squareEdge, BLACK, BLACK, 1, "");
 	//bien center de ghi toa do can giua cua khung ma tran
