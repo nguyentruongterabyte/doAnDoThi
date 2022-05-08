@@ -327,7 +327,7 @@ void openFile() {
 			for (int i = 0; i < index; i++) {
 				fileButton[i].draw();
 				if (fileButton[i].isHover())
-					fileButton[i].highLight(LIGHTBLUE, YELLOW);
+					fileButton[i].highLight(LIGHTBLUE, BLACK);
 				if (x >= fileButton[i].coordinates.x && x <= fileButton[i].coordinates.x + fileButton[i].width
 				&& y >= fileButton[i].coordinates.y && y <= fileButton[i].coordinates.y + fileButton[i].height) {
 					bool confirm = drawYesNoBar("Ban co muon load file nay?");
@@ -338,7 +338,16 @@ void openFile() {
 					else 
 						return openFile();
 				}
-					
+				if (fileButton[i].isHover() && kbhit()) {
+					char key = getch();
+					if (key == KEY_ENTER) {
+						bool confirm = drawYesNoBar("Ban co muon load file nay?");
+						if (confirm) {
+							loadFile(fileName[i]);
+							return;
+						}
+					}
+				}	
 			}
 			if (kbhit()) {
 				char key = getch();
@@ -425,7 +434,7 @@ void cutVerticesUtil(int u, int *disc, int *lowLink, int parent, bool *isCutVert
 	visited[u] = true;
 	disc[u] = lowLink[u] = ++Time;
 	for (int v = 0; v < n; v++) {
-		if (G[u][v] || G[v][u]) {
+		if (G[u][v]) {
 			//neu v chua duoc tham, dat no thanh con cua u trong cay DFS va lap lai cho no
 			if (!visited[v]) {
 				children++;
