@@ -23,19 +23,12 @@ using namespace std;
 
 char guideList[8][1000] = {
 	"DOUBLE CLICK CHUOT TRAI vao vi tri ban muon tao dinh o khu vuc man hinh thao tac voi dinh -> Nhap ten dinh -> Nhan HOAN THANH (hoac nhan ENTER) -> 1 dinh moi se duoc tao.",
-
 	"DI CHUYEN chuot toi vi tri dinh bat dau cua canh -> CLICK CHUOT PHAI vao dinh do, mot hop thoat se hien len -> chon TAO CANH -> DI CHUYEN toi vi tri dinh thu 2 va CLICK CHUOT TRAI vao dinh do -> NHAP trong so -> nhan HOAN THANH (hoac nhan ENTER) -> 1 canh moi se duoc tao.",
-
 	"DI CHUYEN chuot toi vi tri dinh can sua -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon SUA TEN -> NHAP TEN dinh va nhan HOAN THANH (hoac nhan ENTER).",
-
 	"Giong nhu cach tao canh nhung o phan nhap trong so ta nhap vao trong so ta muon chinh sua va nhan HOAN THANH (hoac nhan ENTER). Neu muon huy sua canh, CLICK CHUOT PHAI.",
-	
 	"DI CHUYEN chuot toi vi tri dinh can xoa -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon XOA DINH -> mot thanh thong bao hien len hoi ban co chac muon xoa dinh -> nhan CO (hoac nhan ENTER) de xoa dinh / KHONG de huy xoa.",
-	
 	"DI CHUYEN chuot toi vi tri bat dau cua canh do -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon TAO CANH -> DI CHUYEN chuot toi vi tri cua dinh thu 2 cua canh do -> CLICK CHUOT TRAI vao dinh do -> trong phan tao trong so NHAP SO 0 -> nhan HOAN THANH (hoac nhan ENTER).",
-	
 	"DI CHUYEN chuot toi vi tri cua dinh muon di chuyen -> NHAN GIU dinh do va KEO THA CHUOT toi vi tri can dat.",
-	
 	"DI CHUYEN cac dinh nam trong mot canh thi se di chuyen canh do."
 };
 
