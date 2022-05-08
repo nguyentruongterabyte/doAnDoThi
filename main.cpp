@@ -2331,6 +2331,7 @@ void drawArrow(Vertex u, Vertex v, int color, int w) {
 }
 
 void drawMatrix() {
+	if (isEmptyVertex()) return;
 	Point center;
 	int squareEdge = n < 12 ? 30 : n < 15 ? 25 : n < 18 ? 20 : 18;
 	Button square, vertexButton[MAX], matrxHoverFrame;
