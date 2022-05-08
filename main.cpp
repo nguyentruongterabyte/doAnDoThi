@@ -201,6 +201,12 @@ void cutVerticesUtil(int u, int *disc,int *lowLink, int parent, bool *isCutVerte
 void showResultCutVertices(bool *isCutVertex, int counter);//show ra man hinh ket qua dinh tru
 void openFile();
 void loadFile(char *fileName);
+void showResultHamiltonCycle(int *path);//show ket qua chu trinh hamilton ra man hinh
+bool isSafe(int v, int *path, int pos);//mot chuc nang tien ich de kiem tra xem dinh v co the 
+										//duoc them vao chi muc pos trong chu ky Hamilton duoc xay dung cho den nay
+										//(duoc luu tru trong path[])
+bool hamCycleUtil(int *path, int pos);//mot chuc nang tien ich de quy de giai quyet van de chu trinh euler
+bool hamCycle();
 
 int main() {
 //	SetWindowSize(0, 0);
@@ -246,6 +252,93 @@ void process() {
 	}
 	getch();
 	closegraph();
+}
+
+bool isSafe(int v, int *path, int pos) {
+	//kiem tra xem dinh nay co ke voi dinh da them truoc do khong
+	if (!G[path[pos - 1]][v])
+		return false;
+	//kiem tra xem dinh da duoc bao gom chua
+	for (int i = 0; i < pos; i++)
+		if (path[i] == v)
+			return false;
+	return true;
+}
+
+bool hamCycleUtil(int *path, int pos) {
+	//neu tat ca cac dinh la bao gom trong chu trinh Hamilton
+	if (pos == n) {
+		//va neu co mot canh tu dinh bao gom dinh cuoi cung den dinh dau tien 
+		if (G[path[pos - 1]][path[0]] == 1)
+			return true;
+		else 
+			return false;
+	}
+	//hay thu cac dinh khac nhau nhu mot dinh co kha nang tiep theo 
+	//trong chu trinh Hamilton. Khong bao gom 0 vi da bao gom dinh 0 
+	//lam diem bat dau trong hamCycle()
+	for (int v = 1; v < n; v++) {
+		//kiem tra xem co the them dinh nay vao chu trinh Hamilton hay khong
+		if (isSafe(v, path, pos)) {
+			path[pos] = v;
+			//lap lai de xay dung phan con lai cua duong di
+			if (hamCycleUtil(path, pos + 1) == true)
+				return true;
+			//neu dinh them v khong dan den duong di, loai bo no
+			path[pos] = -1;
+		}
+	}
+	//neu khong co dinh nao co the duoc
+	//them vao chu ky Hamilton duoc xay dung
+	//cho den hien tai thi tra ve false
+	return false;
+}
+
+bool hamCycle() {
+	int *path = new int[n];
+	for (int i = 0; i < n; i++)
+		path[i] = -1;
+	//dat dinh 0 la dinh dau tien trong duong di
+	//Neu co mot chu trinh Hamilton
+	//thi duong di co the la bat dau tu diem bat ky 
+	//diem nao cua chu ky vi do thi la vo huong
+	path[0] = 0;
+	if (hamCycleUtil(path, 1) == false) {
+		cout << "\nKhong ton tai duong di";
+		return false;
+	}
+	showResultHamiltonCycle(path);
+	return true;
+}
+
+void showResultHamiltonCycle(int *path) {
+	cout << "Ton tai duong di:"
+			"\n";
+	for (int i = 0; i < n; i++)
+		cout << path[i] << " ";
+	cout << path[0] << " ";
+	cout << endl;
+	int page = 0;
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		drawFrame();
+//		delay(100);
+		drawTaskBarButtons();
+		drawMatrix();
+		drawVertices();
+		drawAllEdges();
+		vertices[0].highLight();
+		setactivepage(1);
+		setvisualpage(1);
+		for (int i = 1; i < n; i++) {
+			drawArrow(vertices[path[i - 1]], vertices[path[i]], LIGHTGREEN, 0);
+			delay(500);
+			vertices[path[i]].highLight();
+		} 
+		drawArrow(vertices[path[n - 1]], vertices[path[0]], LIGHTGREEN, 0);
+		page = 1 - page;
+	}
 }
 
 void loadFile(char *fileName) {
@@ -300,17 +393,18 @@ void openFile() {
 	}
 	if (index) {
 		int x0 = W_LEFT + 5, y0 = W_TOP + 50;
-		Button fileButton[index], fileBoxHover;
+		int column = 1;
+		Button fileButton[index];
 		int yTmp = y0;
 		for (int i = 0; i < index; i++) {
 			fileButton[i].init(x0, y0, 40, 200, WHITE, BLACK, 1, fileName[i]);
 			y0 += 45;
-			if (i == 9) {
+			if (i + 1 == 10 * column) {
 				x0 += 205;
 				y0 = yTmp;
+				column++;
 			}
 		}
-		
 		int page = 0, x = -1, y = -1;
 		while (true) {
 			setactivepage(page);
@@ -327,7 +421,7 @@ void openFile() {
 			for (int i = 0; i < index; i++) {
 				fileButton[i].draw();
 				if (fileButton[i].isHover())
-					fileButton[i].highLight(LIGHTBLUE, BLACK);
+					fileButton[i].highLight(YELLOW, BLACK);
 				if (x >= fileButton[i].coordinates.x && x <= fileButton[i].coordinates.x + fileButton[i].width
 				&& y >= fileButton[i].coordinates.y && y <= fileButton[i].coordinates.y + fileButton[i].height) {
 					bool confirm = drawYesNoBar("Ban co muon load file nay?");
@@ -338,6 +432,7 @@ void openFile() {
 					else 
 						return openFile();
 				}
+				
 				if (fileButton[i].isHover() && kbhit()) {
 					char key = getch();
 					if (key == KEY_ENTER) {
@@ -347,7 +442,7 @@ void openFile() {
 							return;
 						}
 					}
-				}	
+				}					
 			}
 			if (kbhit()) {
 				char key = getch();
@@ -434,7 +529,7 @@ void cutVerticesUtil(int u, int *disc, int *lowLink, int parent, bool *isCutVert
 	visited[u] = true;
 	disc[u] = lowLink[u] = ++Time;
 	for (int v = 0; v < n; v++) {
-		if (G[u][v]) {
+		if (G[u][v] || G[v][u]) {
 			//neu v chua duoc tham, dat no thanh con cua u trong cay DFS va lap lai cho no
 			if (!visited[v]) {
 				children++;
@@ -2693,7 +2788,8 @@ void taskBar() {
 				break;
 			}
 			case 10: {
-				outtextxy(340, 15, "Hamliton");
+//				outtextxy(340, 15, "Hamliton");
+				hamCycle();
 				break;
 			}
 			default:
