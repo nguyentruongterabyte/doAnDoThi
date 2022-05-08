@@ -2,8 +2,16 @@
 
 void showWelcome();
 void setUserTextStyle();
+void showLoadingBox(int x, int y, char *loadContent);
 
-void setUserTextStyle() {
+
+
+void showLoading() {
+	Button percentBox;
+//	percentBox.init()
+}
+
+void showLoadingBox(int x, int y, char *loadContent) {
 	settextstyle(11, 0, 2);
 }
 
