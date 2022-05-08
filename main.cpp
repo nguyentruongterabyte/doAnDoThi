@@ -202,11 +202,11 @@ void showResultCutVertices(bool *isCutVertex, int counter);//show ra man hinh ke
 void openFile();
 void loadFile(char *fileName);
 void showResultHamiltonCycle(int *path);//show ket qua chu trinh hamilton ra man hinh
-bool isSafe(int v, int *path, int pos);//mot chuc nang tien ich de kiem tra xem dinh v co the 
-										//duoc them vao chi muc pos trong chu ky Hamilton duoc xay dung cho den nay
-										//(duoc luu tru trong path[])
-bool hamCycleUtil(int *path, int pos);//mot chuc nang tien ich de quy de giai quyet van de chu trinh euler
-bool hamCycle();
+bool isSafe(int v, int *path, int pos);
+bool hamCycleUtil(int v, int *path, int pos);//mot chuc nang tien ich de quy de giai quyet van de chu trinh Hamilton
+void hamCycle();
+void showNoResult(char *resultStr);
+//void showResultText(char *resultStr);
 
 int main() {
 //	SetWindowSize(0, 0);
@@ -254,7 +254,36 @@ void process() {
 	closegraph();
 }
 
+void showNoResult(char *resultStr) {
+	int page = 0;
+	Button resultBox, xButton;
+	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
+	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, resultStr);
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		drawFrame();
+		drawTaskBarButtons();
+		drawMatrix();
+		drawVertices();
+		drawAllEdges();
+		resultBox.draw();
+		drawKeyToExitText();
+		xButton.draw();
+		if (xButton.isClickLMButton())
+			break;
+		if (kbhit()) {
+			char key = getch();
+			break;
+		}
+		page = 1 - page;
+	}
+}
+
 bool isSafe(int v, int *path, int pos) {
+	//mot chuc nang tien ich de kiem tra xem dinh v co the 
+	//duoc them vao chi muc pos trong chu ky Hamilton duoc xay dung cho den nay
+	//(duoc luu tru trong path[])
 	//kiem tra xem dinh nay co ke voi dinh da them truoc do khong
 	if (!G[path[pos - 1]][v])
 		return false;
@@ -265,11 +294,11 @@ bool isSafe(int v, int *path, int pos) {
 	return true;
 }
 
-bool hamCycleUtil(int *path, int pos) {
+bool hamCycleUtil(int v, int *path, int pos) {
 	//neu tat ca cac dinh la bao gom trong chu trinh Hamilton
 	if (pos == n) {
 		//va neu co mot canh tu dinh bao gom dinh cuoi cung den dinh dau tien 
-		if (G[path[pos - 1]][path[0]] == 1)
+		if (G[path[pos - 1]][path[v]])
 			return true;
 		else 
 			return false;
@@ -277,12 +306,12 @@ bool hamCycleUtil(int *path, int pos) {
 	//hay thu cac dinh khac nhau nhu mot dinh co kha nang tiep theo 
 	//trong chu trinh Hamilton. Khong bao gom 0 vi da bao gom dinh 0 
 	//lam diem bat dau trong hamCycle()
-	for (int v = 1; v < n; v++) {
+	for (int u = 0; u < n; u++) {
 		//kiem tra xem co the them dinh nay vao chu trinh Hamilton hay khong
-		if (isSafe(v, path, pos)) {
-			path[pos] = v;
+		if (isSafe(u, path, pos) && v != u) {
+			path[pos] = u;
 			//lap lai de xay dung phan con lai cua duong di
-			if (hamCycleUtil(path, pos + 1) == true)
+			if (hamCycleUtil(v, path, pos + 1) == true)
 				return true;
 			//neu dinh them v khong dan den duong di, loai bo no
 			path[pos] = -1;
@@ -294,7 +323,11 @@ bool hamCycleUtil(int *path, int pos) {
 	return false;
 }
 
-bool hamCycle() {
+void hamCycle() {
+	if (isEmptyVertex()) {
+		showEmptyVertex();
+		return;
+	}
 	int *path = new int[n];
 	for (int i = 0; i < n; i++)
 		path[i] = -1;
@@ -303,40 +336,74 @@ bool hamCycle() {
 	//thi duong di co the la bat dau tu diem bat ky 
 	//diem nao cua chu ky vi do thi la vo huong
 	path[0] = 0;
-	if (hamCycleUtil(path, 1) == false) {
-		cout << "\nKhong ton tai duong di";
-		return false;
+	if (hamCycleUtil(0, path, 1) == false) {
+		showNoResult("Do thi khong ton tai chu trinh Hamilton.");
+		return;
 	}
+	int v = chooseVertex("Chon dinh bat dau chu trinh Hamilton");
+	int index;
+	for (index = 0; index < n; index++)
+		if (path[index] == v) {
+			break;
+		}
+	int *subPath = new int[index];
+	for (int i = 0; i < index; i++) 
+		subPath[i] = path[i];
+	for (int i = index; i < n; i++)
+		path[i - index] = path[i];
+	for (int i = n - index; i < n; i++)
+		path[i] = subPath[i - n + index];
 	showResultHamiltonCycle(path);
-	return true;
 }
 
 void showResultHamiltonCycle(int *path) {
-	cout << "Ton tai duong di:"
-			"\n";
-	for (int i = 0; i < n; i++)
-		cout << path[i] << " ";
-	cout << path[0] << " ";
-	cout << endl;
+	
+	char resultStr[200] = "";
+	Button resultBox, xButton;
+	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
+	for (int i = 0; i < n; i++) {
+		strcat(resultStr, vertices[path[i]].name);
+		strcat(resultStr, " -> ");
+	}
+	strcat(resultStr, vertices[path[0]].name);
+	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, resultStr);	
 	int page = 0;
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
 		drawFrame();
-//		delay(100);
 		drawTaskBarButtons();
 		drawMatrix();
 		drawVertices();
 		drawAllEdges();
-		vertices[0].highLight();
+		resultBox.draw();
+		drawEnterToExitText();
+		xButton.draw();
 		setactivepage(1);
 		setvisualpage(1);
+		vertices[path[0]].highLight();
 		for (int i = 1; i < n; i++) {
 			drawArrow(vertices[path[i - 1]], vertices[path[i]], LIGHTGREEN, 0);
-			delay(500);
+			delay(200);
 			vertices[path[i]].highLight();
+			if (xButton.isClickLMButton())
+				return;
+			if (kbhit()) {
+				char key = getch();
+				if (key == KEY_ENTER)
+					return;
+			}
 		} 
 		drawArrow(vertices[path[n - 1]], vertices[path[0]], LIGHTGREEN, 0);
+		setactivepage(page);
+		setvisualpage(1 - page);
+		if (xButton.isClickLMButton())
+			break;
+		if (kbhit()) {
+			char key = getch();
+			if (key == KEY_ENTER)
+				break;
+		}
 		page = 1 - page;
 	}
 }
