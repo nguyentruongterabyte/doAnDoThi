@@ -207,20 +207,19 @@ bool isSafe(int v, int *path, int pos);
 bool hamCycleUtil(int v, int *path, int pos);//mot chuc nang tien ich de quy de giai quyet van de chu trinh Hamilton
 void hamCycle();
 void showNoResult(char *resultStr);
-//void showResultText(char *resultStr);
+void showLoadingBox(int x, int y, int width, int height, char *loadContent);
+void showWelcome();
+void setUserTextStyle();
 
 int main() {
-//	SetWindowSize(0, 0);
 	initwindow(1280, 720, "Do an do thi", 50, 20);
-//	settextstyle(0, 0, );
-	
-	settextstyle(11, 0, 2);
-
+	setUserTextStyle();
 	setTaskBarButtons();
 	setFrame();
 	initDefaultVertices();
 	initEditTools();
 	loadFileStartUp();
+	showWelcome();
 	process();
 }
 
@@ -450,6 +449,7 @@ void loadFile(char *fileName) {
 }
 
 void openFile() {
+	clearmouseclick();
 	char fileName[30][100] = {""};
 	int index = 0;
 	struct dirent *d;
@@ -3525,4 +3525,87 @@ bool isEmptyVertex() {
 	if (n == 0)
 		return 1;
 	return 0;
+}
+
+void setUserTextStyle() {
+	settextstyle(11, 0, 2);
+}
+
+void showWelcome() {
+	settextstyle(0, 0, 10);
+	char c = getcolor();
+	setcolor(YELLOW);
+	for (int i = 0; i < 200; i++) {
+		outtextxy((1280 - textwidth("WELCOME")) / 2, (720 - textheight("WELCOME")) / 2, "WELCOME");
+		delay(10);
+	}
+	cleardevice();
+	for (int i = 0; i < 20; i++) {
+		outtextxy((1280 - textwidth("ELCOME")) / 2, (720 - textheight("ELCOME")) / 2, "ELCOME");
+		delay(10);
+	}
+	cleardevice();
+	
+	for (int i = 0; i < 20; i++) {
+		outtextxy((1280 - textwidth("LCOME")) / 2, (720 - textheight("LCOME")) / 2, "LCOME");
+		delay(10);
+	}
+	cleardevice();
+	for (int i = 0; i < 20; i++) {
+		outtextxy((1280 - textwidth("COME")) / 2, (720 - textheight("COME")) / 2, "COME");
+		delay(10);
+	}
+	cleardevice();
+	for (int i = 0; i < 20; i++) {
+		outtextxy((1280 - textwidth("OME")) / 2, (720 - textheight("OME")) / 2, "OME");
+		delay(10);
+	}
+	cleardevice();
+	for (int i = 0; i < 20; i++) {
+		outtextxy((1280 - textwidth("ME")) / 2, (720 - textheight("ME")) / 2, "ME");
+		delay(10);
+	}
+	cleardevice();
+	for (int i = 0; i < 20; i++) {
+		outtextxy((1280 - textwidth("E")) / 2, (720 - textheight("E")) / 2, "E");
+		delay(10);
+	}
+	cleardevice();
+	for (int i = 0; i < 20; i++) {
+		outtextxy((1280 - textwidth("E")) / 2, (720 - textheight("E")) / 2, "E");
+		delay(10);
+	}
+	cleardevice();
+	for (int i = 0; i < 20; i++) {
+		outtextxy((1280 - textwidth("ME")) / 2, (720 - textheight("ME")) / 2, "ME");
+		delay(10);
+	}
+	cleardevice();
+	for (int i = 0; i < 20; i++) {
+		outtextxy((1280 - textwidth("OME")) / 2, (720 - textheight("OME")) / 2, "OME");
+		delay(10);
+	}
+	cleardevice();
+	for (int i = 0; i < 20; i++) {
+		outtextxy((1280 - textwidth("COME")) / 2, (720 - textheight("COME")) / 2, "COME");
+		delay(10);
+	}
+	cleardevice();
+	for (int i = 0; i < 20; i++) {
+		outtextxy((1280 - textwidth("OME")) / 2, (720 - textheight("OME")) / 2, "OME");
+		delay(10);
+	}
+	cleardevice();
+	for (int i = 0; i < 20; i++) {
+		outtextxy((1280 - textwidth("ME")) / 2, (720 - textheight("ME")) / 2, "ME");
+		delay(10);
+	}
+	cleardevice();
+	for (int i = 0; i < 20; i++) {
+		outtextxy((1280 - textwidth("E")) / 2, (720 - textheight("E")) / 2, "E");
+		delay(10);
+	}
+	cleardevice();
+	setUserTextStyle();
+	setcolor(c);
 }
