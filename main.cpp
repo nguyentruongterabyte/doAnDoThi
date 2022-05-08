@@ -10,7 +10,7 @@
 #include <time.h>
 #include <Windows.h>
 #include <dirent.h>
-#include <sys\stat.h>
+#include <sys/stat.h>
 #include "include/stack.hpp"
 #include "include/queue.hpp"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
@@ -111,7 +111,8 @@ Button menuBar/*thanh menu*/,
 		deleteButton/*Nut xoa dinh*/,
 		editNameButton/*Nut sua ten dinh*/,
 		addEdgeButton/*Nut tao canh*/,
-		ESCButton;
+		ESCButton, 
+		matrixButton;
 
 void process();
 void helpBox(char *helpStr);
@@ -211,6 +212,10 @@ void showNoResult(char *resultStr);
 int main() {
 //	SetWindowSize(0, 0);
 	initwindow(1280, 720, "Do an do thi", 50, 20);
+//	settextstyle(0, 0, );
+	
+	settextstyle(11, 0, 2);
+
 	setTaskBarButtons();
 	setFrame();
 	initDefaultVertices();
@@ -244,11 +249,11 @@ void process() {
 		
 		
 		
-//		if (ismouseclick(WM_MOUSEMOVE)) {
-//			int x, y;
-//			getmouseclick(WM_MOUSEMOVE, x, y);
-//			cout << x << " " << y << endl;
-//		}
+		if (ismouseclick(WM_MOUSEMOVE)) {
+			int x, y;
+			getmouseclick(WM_MOUSEMOVE, x, y);
+			cout << x << " " << y << endl;
+		}
 	}
 	getch();
 	closegraph();
@@ -2330,6 +2335,7 @@ void drawMatrix() {
 	int squareEdge = n < 12 ? 30 : n < 15 ? 25 : n < 18 ? 20 : 18;
 	Button square, vertexButton[MAX], matrxHoverFrame;
 	square.init(0, 0, squareEdge, squareEdge, BLACK, BLACK, 1, "");
+	matrixButton.draw();
 	//bien center de ghi toa do can giua cua khung ma tran
 	center.x = 15 + 400 / 2;
 	center.y = 304 + 400 / 2;
@@ -2793,6 +2799,7 @@ void setTaskBarButtons() {
 	helpBar.init(xH, yH, height, width, YELLOW, LIGHTBLUE, 9, "HELP");
 	fileBar.init(xF, yF, height, width, YELLOW, LIGHTBLUE, 9, "FILE");
 	ESCButton.init(425, 660, 40, 100, YELLOW, BLACK, 1, "ESC | Thoat");
+	matrixButton.init(15, 295, 25, 400, YELLOW, BLACK, 1, "Ma tran trong so");
 }
 
 void drawTaskBarButtons() {
