@@ -251,12 +251,102 @@ void process() {
 }
 
 void saveFile() {
-	
+	char fileName[41][100] = {""};
+	int index = 0;
+	struct dirent *d;
+	struct stat dst;
+	DIR *dr;
+	char path[30] = "filesInProgram";
+	dr = opendir(path);
+	if (dr != NULL) {
+		for (d = readdir(dr); d != NULL; d = readdir(dr)) 
+			if (strlen(d->d_name) >= 5 && strcmp(d->d_name, "startUpFile.txt") != 0)
+				strcpy(fileName[index++], d->d_name);
+		closedir(dr);	
+	}
+	if (index) {
+		int x0 = W_LEFT + 5, y0 = W_TOP + 50;
+		int column = 1;
+		Button fileButton[index], displayBox, xButton;
+		displayBox.init(x0, y0 - 45, 40, 0, LIGHTBLUE, BLACK, 1, "Chon file muon luu do thi");
+		xButton.init(0, y0 - 45, 40, 40, WHITE, RED, 1, "x");
+		int yTmp = y0;
+		for (int i = 0; i < index; i++) {
+			fileButton[i].init(x0, y0, 40, 200, WHITE, BLACK, 1, fileName[i]);
+			y0 += 45;
+			if (i + 1 == 10 * column) {
+				x0 += 205;
+				y0 = yTmp;
+				column++;
+			}
+		}
+		displayBox.width = (index / 10 + (index % 10 ? 1 : 0)) * 205 - 5;
+		xButton.coordinates.x = displayBox.coordinates.x + displayBox.width - 40;
+		int page = 0, x = -1, y = -1;
+		while (true) {
+			setactivepage(page);
+			setvisualpage(1 - page);
+			drawFrame();
+			drawTaskBarButtons();
+			drawMatrix();
+			drawVertices();
+			drawAllEdges();
+			displayBox.draw();
+			xButton.draw();
+			delay(10);
+			if (xButton.isHover())
+				xButton.highLight(WHITE, LIGHTRED);
+			if (ismouseclick(WM_LBUTTONDOWN)) {
+				getmouseclick(WM_LBUTTONDOWN, x, y);
+				clearmouseclick(WM_LBUTTONDOWN);
+			}
+			if (x >= xButton.coordinates.x && x <= xButton.coordinates.x + xButton.width
+			&& y >= xButton.coordinates.y && y <= xButton.coordinates.y + xButton.height)
+				break;
+			for (int i = 0; i < index; i++) {
+				fileButton[i].draw();
+				if (fileButton[i].isHover())
+					fileButton[i].highLight(LIGHTBLUE, BLACK);
+				if (x >= fileButton[i].coordinates.x && x <= fileButton[i].coordinates.x + fileButton[i].width
+				&& y >= fileButton[i].coordinates.y && y <= fileButton[i].coordinates.y + fileButton[i].height) {
+					bool confirm = drawYesNoBar("Ban co muon luu do thi vao file nay?");
+					if (confirm) {
+						confirm = drawYesNoBar("Du lieu file cu se bi mat. Tiep tuc");
+						if (confirm) {
+							char fileSaveName[60];
+							strcpy(fileSaveName, "fileInProgram//");
+							strcat(fileSaveName, fileButton[i].name);
+							fstream output;
+							output.open(fileSaveName, ios::out);
+							output << n;
+							for (int k = 0; k < n; k++) 
+								output << vertices[k].coordinates.x << " " 
+									<< vertices[k].coordinates.y << " "
+									<< vertices[k].name << endl;
+							for (int k = 0; k < n; k++) {
+								for (int j = 0; j < n; j++)
+									output << G[k][j] << " ";
+								output << endl; 
+							} 
+							output.close();
+							return saveFile();
+						}
+						else 
+							return saveFile();
+					} 
+					else 
+						return saveFile();
+				}
+			}
+			clearmouseclick();
+			page = 1 - page;
+		}
+	}
 }
 
 void deleteFile() {
-	clearmouseclick();
-	char fileName[30][100] = {""};
+//	clearmouseclick();
+	char fileName[41][100] = {""};
 	int index = 0;
 	struct dirent *d;
 	struct stat dst;
@@ -298,6 +388,7 @@ void deleteFile() {
 			drawAllEdges();
 			displayBox.draw();
 			xButton.draw();
+			delay(10);
 			if (xButton.isHover())
 				xButton.highLight(WHITE, LIGHTRED);
 			if (ismouseclick(WM_LBUTTONDOWN)) {
@@ -671,7 +762,7 @@ void loadFile(char *fileName) {
 }
 
 void openFile() {
-	clearmouseclick();
+//	clearmouseclick();
 	char fileName[41][100] = {""};
 	int index = 0;
 	struct dirent *d;
@@ -718,6 +809,7 @@ void openFile() {
 			drawAllEdges();
 			displayBox.draw();
 			xButton.draw();
+			delay(10);
 			if (xButton.isHover())
 				xButton.highLight(WHITE, LIGHTRED);
 			if (ismouseclick(WM_LBUTTONDOWN)) {
@@ -3170,7 +3262,8 @@ void taskBar() {
 				break;
 			}
 			case 2: {
-				outtextxy(340, 15, "Luu file");
+//				outtextxy(340, 15, "Luu file");
+				saveFile();
 				break;
 			}
 			case 3: {
@@ -3856,6 +3949,6 @@ void showWelcome() {
 		delay(10);
 	}
 	cleardevice();
-	setUserTextStyle();
 	setcolor(c);
+	setUserTextStyle();
 }
