@@ -200,9 +200,12 @@ bool isSafe(int v, int *path, int pos);
 bool hamCycleUtil(int v, int *path, int pos);//mot chuc nang tien ich de quy de giai quyet van de chu trinh Hamilton
 void hamCycle();
 void showNoResult(char *resultStr);
-void showLoadingBox(int x, int y, int width, int height, char *loadContent);
+//void showLoadingBox(int x, int y, int width, int height, char *loadContent);
 void showWelcome();
 void setUserTextStyle();
+void addFile();
+void deleteFile();
+//char *enterFileName();
 
 int main() {
 	initwindow(1280, 720, "Do an do thi", 50, 20);
@@ -212,7 +215,7 @@ int main() {
 	initDefaultVertices();
 	initEditTools();
 	loadFileStartUp();
-	showWelcome();
+	//showWelcome();
 	process();
 }
 
@@ -249,6 +252,195 @@ void process() {
 	}
 	getch();
 	closegraph();
+}
+
+void deleteFile() {
+	clearmouseclick();
+	char fileName[30][100] = {""};
+	int index = 0;
+	struct dirent *d;
+	struct stat dst;
+	DIR *dr;
+	char path[30] = "filesInProgram";
+	dr = opendir(path);
+	if (dr != NULL) {
+		for (d = readdir(dr); d != NULL; d = readdir(dr)) 
+			if (strlen(d->d_name) >= 5 && strcmp(d->d_name, "startUpFile.txt") != 0)
+				strcpy(fileName[index++], d->d_name);
+		closedir(dr);	
+	}
+	if (index) {
+		int x0 = W_LEFT + 5, y0 = W_TOP + 50;
+		int column = 1;
+		Button fileButton[index], displayBox, xButton;
+		displayBox.init(x0, y0 - 45, 40, 0, LIGHTRED, BLACK, 1, "Chon file muon xoa");
+		xButton.init(0, y0 - 45, 40, 40, WHITE, RED, 1, "x");
+		int yTmp = y0;
+		for (int i = 0; i < index; i++) {
+			fileButton[i].init(x0, y0, 40, 200, WHITE, BLACK, 1, fileName[i]);
+			y0 += 45;
+			if (i + 1 == 10 * column) {
+				x0 += 205;
+				y0 = yTmp;
+				column++;
+			}
+		}
+		displayBox.width = (index / 10 + (index % 10 ? 1 : 0)) * 205 - 5;
+		xButton.coordinates.x = displayBox.coordinates.x + displayBox.width - 40;
+		int page = 0, x = -1, y = -1;
+		while (true) {
+			setactivepage(page);
+			setvisualpage(1 - page);
+			drawFrame();
+			drawTaskBarButtons();
+			drawMatrix();
+			drawVertices();
+			drawAllEdges();
+			displayBox.draw();
+			xButton.draw();
+			if (xButton.isHover())
+				xButton.highLight(WHITE, LIGHTRED);
+			if (ismouseclick(WM_LBUTTONDOWN)) {
+				getmouseclick(WM_LBUTTONDOWN, x, y);
+				clearmouseclick(WM_LBUTTONDOWN);
+			}
+			if (x >= xButton.coordinates.x && x <= xButton.coordinates.x + xButton.width 
+			&& y >= xButton.coordinates.y && y <= xButton.coordinates.y + xButton.height)
+				break;
+			for (int i = 0; i < index; i++) {
+				fileButton[i].draw();
+				if (fileButton[i].isHover())
+					fileButton[i].highLight(LIGHTBLUE, LIGHTRED);
+				if (x >= fileButton[i].coordinates.x && x <= fileButton[i].coordinates.x + fileButton[i].width
+				&& y >= fileButton[i].coordinates.y && y <= fileButton[i].coordinates.y + fileButton[i].height) {
+					bool confirm = drawYesNoBar("Ban chac muon xoa file nay?");
+					if (confirm) {
+						confirm = drawYesNoBar("Du lieu se bi mat! tiep tuc");
+						if (confirm) {
+							char fileDeleteName[100] = "filesInProgram\\";
+							strcat(fileDeleteName, fileButton[i].name);
+							DeleteFile(fileDeleteName);
+							return;
+						} else 
+							return deleteFile();
+					}
+					else 
+						return deleteFile();
+				}	
+			}
+			if (kbhit()) {
+				char key = getch();
+				if (key == KEY_ENTER)
+					break;
+			}
+			page = 1 - page;
+		}
+	}
+}
+
+void addFile() {
+//	char *fileName = enterFileName();
+	int margin = 5;
+	int height = 275 - 3 * margin - 40;
+	int width = 400 - 2 * margin;
+	char name[31] = "";
+	char request[] = "Nhap ten file";
+	int i = 0, x, y;
+	int page = 0;
+	Button frame, finishButton, cancelButton, enterNameBar;
+	frame.init(15 + margin, 15 + 2 * margin + 40, height, width, YELLOW, DARKGRAY, 1, "");
+	finishButton.init(15 + 2 * margin, 275 - margin - 30, 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HOAN THANH");
+	cancelButton.init(15 + 3 * margin + (width - 3 * margin) / 2,275 - margin - 30, 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HUY");
+	enterNameBar.init(15 + 2 * margin, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50, 40, (width - 2 * margin), YELLOW, BLACK, 9, "");
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		delay(10);
+		drawFrame();
+		drawVertices();
+		//drawMatrix();
+		drawAllEdges();
+		drawTaskBarButtons();
+		frame.draw();
+		finishButton.draw();
+		cancelButton.draw();
+		enterNameBar.draw();
+		if (ismouseclick(WM_LBUTTONDOWN))
+			getmouseclick(WM_LBUTTONDOWN, x, y);
+		if (strcmp(name, "") == 0) 
+			outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+		if (finishButton.isHover())
+			finishButton.highLight();
+		if (cancelButton.isHover())	
+			cancelButton.highLight();
+		if (strcmp(name, "") != 0
+		&& x >= finishButton.coordinates.x && x <= finishButton.coordinates.x + finishButton.width
+		&& y >= finishButton.coordinates.y && y <= finishButton.coordinates.y + finishButton.height)
+			break;
+		if (x >= cancelButton.coordinates.x && x <= cancelButton.coordinates.x + cancelButton.width
+		&& y >= cancelButton.coordinates.y && y <= cancelButton.coordinates.y + cancelButton.height) 
+			break;
+		if (ismouseclick(WM_LBUTTONDOWN)) {
+			int x, y;
+			getmouseclick(WM_LBUTTONDOWN, x, y);
+			if (x >= finishButton.coordinates.x && x <= finishButton.coordinates.x + finishButton.width
+			&& y >= finishButton.coordinates.y && y <= finishButton.coordinates.y + finishButton.height
+			&& strcmp(name, "") != 0)
+				break; 
+		}
+		if (kbhit()) {
+			char key = getch();
+			if (key >= 'A' && key <= 'z')
+				if (i < 30) {
+					name[i] = key;
+					i++;
+				}
+			if (i > 30)
+				i = 30;
+			if (key == KEY_BACKSPACE) {
+				strnDel(name, i - 1, 1);
+				i--;
+			}
+			if (i < 0)
+				i = 0;
+			if (strcmp(name, "") != 0 && key == 13)
+				break;
+			if (strcmp(name, "") == 0 && key == 13) {
+				frame.highLight(WHITE, RED);
+				enterNameBar.draw();
+				finishButton.draw();
+				cancelButton.draw();
+				delay(50);
+			}
+		}
+		outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);
+		if (i < 30 && strcmp(name, "") != 0)
+				outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2 + textwidth(name), 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, "_");
+		page = 1 - page;
+	}
+	if (strcmp(name, "") != 0) {
+		bool comfirm = drawYesNoBar("Ban co muon luu do thi vao file?");
+		if (comfirm) {
+			char fileName[100] = "filesInProgram//";
+			strcat(fileName, name);
+			strcat(fileName, ".txt");
+			fstream output;
+			output.open(fileName, ios::out);
+			output << n << endl;
+			for (int i = 0; i < n; i++) {
+				output << vertices[i].coordinates.x << " "
+					 << vertices[i].coordinates.y << " "
+					 << vertices[i].name << endl;
+			}
+			for (int i = 0; i < n; i++) {
+				for (int j = 0; j < n; j++) {
+					output << G[i][j] << " ";
+				}
+				output << endl;
+			}
+			output.close();
+		}
+	}
 }
 
 void showNoResult(char *resultStr) {
@@ -443,23 +635,28 @@ void loadFile(char *fileName) {
 
 void openFile() {
 	clearmouseclick();
-	char fileName[30][100] = {""};
+	char fileName[41][100] = {""};
 	int index = 0;
 	struct dirent *d;
 	struct stat dst;
 	DIR *dr;
-	char path[30] = "filesInProgram";
+	char path[60] = "filesInProgram";
 	dr = opendir(path);
 	if (dr != NULL) {
-		for (d = readdir(dr); d != NULL; d = readdir(dr)) 
+		for (d = readdir(dr); d != NULL; d = readdir(dr)) {
 			if (strlen(d->d_name) >= 5 && strcmp(d->d_name, "startUpFile.txt") != 0)
 				strcpy(fileName[index++], d->d_name);
-		closedir(dr);
+			if (index > 40)
+				break;
+		}
+		closedir(dr);	
 	}
 	if (index) {
 		int x0 = W_LEFT + 5, y0 = W_TOP + 50;
 		int column = 1;
-		Button fileButton[index];
+		Button fileButton[index], addFileButton, displayBox, xButton;
+		displayBox.init(x0, y0 - 45, 40, 0, YELLOW, BLACK, 1, "Danh sach file (path: filesInProgram)");
+		xButton.init(0, y0 - 45, 40, 40, WHITE, RED, 1, "x");
 		int yTmp = y0;
 		for (int i = 0; i < index; i++) {
 			fileButton[i].init(x0, y0, 40, 200, WHITE, BLACK, 1, fileName[i]);
@@ -470,6 +667,9 @@ void openFile() {
 				column++;
 			}
 		}
+		addFileButton.init(x0, y0, 40, 200, WHITE, BLACK, 1, "+");
+		displayBox.width = x0 + 200 - displayBox.coordinates.x; 
+		xButton.coordinates.x = displayBox.coordinates.x + displayBox.width - 40;  
 		int page = 0, x = -1, y = -1;
 		while (true) {
 			setactivepage(page);
@@ -479,9 +679,26 @@ void openFile() {
 			drawMatrix();
 			drawVertices();
 			drawAllEdges();
+			displayBox.draw();
+			xButton.draw();
+			if (xButton.isHover())
+				xButton.highLight(WHITE, LIGHTRED);
 			if (ismouseclick(WM_LBUTTONDOWN)) {
 				getmouseclick(WM_LBUTTONDOWN, x, y);
 				clearmouseclick(WM_LBUTTONDOWN);
+			}
+			if (x >= xButton.coordinates.x && x <= xButton.coordinates.x + xButton.width
+			&& y >= xButton.coordinates.y && y <= xButton.coordinates.y + xButton.height)
+				break;
+			if (index < 40) {
+				addFileButton.draw();
+				if (addFileButton.isHover())
+					addFileButton.highLight(YELLOW, BLACK);
+				if (x >= addFileButton.coordinates.x && x <= addFileButton.coordinates.x + addFileButton.width 
+				&& y >= addFileButton.coordinates.y && y <= addFileButton.coordinates.y + addFileButton.height) {
+					addFile();
+					return;
+				}
 			}
 			for (int i = 0; i < index; i++) {
 				fileButton[i].draw();
@@ -2918,7 +3135,8 @@ void taskBar() {
 				break;
 			}
 			case 3: {
-				outtextxy(340, 15, "Xoa do thi trong file");
+//				outtextxy(340, 15, "Xoa do thi trong file");
+				deleteFile();
 				break;
 			}
 			case 4: {
@@ -3105,7 +3323,7 @@ int fileTools() {
 	fileToolsHoverBar.init(x0 + margin, y0 - margin, itemsAmount * (height + margin), width, BLACK, BLACK, 1, "");
 	fileTools[0].name = "Mo file";
 	fileTools[1].name = "Luu file";
-	fileTools[2].name = "Xoa do thi trong file";
+	fileTools[2].name = "Xoa file";
 	fileTools[3].name = "Xoa do thi tren man hinh";
 	for (int i = 0; i < itemsAmount; i++) {
 		fileTools[i].tColor = YELLOW;
