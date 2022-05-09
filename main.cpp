@@ -320,7 +320,7 @@ void deleteFile() {
 							char fileDeleteName[100] = "filesInProgram\\";
 							strcat(fileDeleteName, fileButton[i].name);
 							DeleteFile(fileDeleteName);
-							return;
+							return deleteFile();
 						} else 
 							return deleteFile();
 					}
@@ -339,7 +339,7 @@ void deleteFile() {
 }
 
 void addFile() {
-//	char *fileName = enterFileName();
+	clearmouseclick();
 	int margin = 5;
 	int height = 275 - 3 * margin - 40;
 	int width = 400 - 2 * margin;
@@ -347,6 +347,22 @@ void addFile() {
 	char request[] = "Nhap ten file";
 	int i = 0, x, y;
 	int page = 0;
+	char fileName[41][100] = {""};
+	int index = 0;
+	struct dirent *d;
+	struct stat dst;
+	DIR *dr;
+	char path[60] = "filesInProgram";
+	dr = opendir(path);
+	if (dr != NULL) {
+		for (d = readdir(dr); d != NULL; d = readdir(dr)) {
+			if (strlen(d->d_name) >= 5 && strcmp(d->d_name, "startUpFile.txt") != 0)
+				strcpy(fileName[index++], d->d_name);
+			if (index > 40)
+				break;
+		}
+		closedir(dr);	
+	}
 	Button frame, finishButton, cancelButton, enterNameBar;
 	frame.init(15 + margin, 15 + 2 * margin + 40, height, width, YELLOW, DARKGRAY, 1, "");
 	finishButton.init(15 + 2 * margin, 275 - margin - 30, 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HOAN THANH");
@@ -365,6 +381,20 @@ void addFile() {
 		finishButton.draw();
 		cancelButton.draw();
 		enterNameBar.draw();
+		bool isNamesake = false;
+		char nameTemp[35];
+		strcpy(nameTemp, name);
+		strcat(nameTemp, ".txt");
+		for (int j = 0; j < index; j++)  
+			if (strcmp(fileName[j], nameTemp) == 0) {
+				isNamesake = true;
+				break;
+			}
+		if (isNamesake) {
+			char existFileText[25];
+			strcpy(existFileText, "Ten file da ton tai!");
+			outtextxy(frame.coordinates.x + (frame.width - textwidth(existFileText)) / 2, frame.coordinates.y + 25, existFileText);
+		}
 		if (ismouseclick(WM_LBUTTONDOWN))
 			getmouseclick(WM_LBUTTONDOWN, x, y);
 		if (strcmp(name, "") == 0) 
@@ -373,13 +403,13 @@ void addFile() {
 			finishButton.highLight();
 		if (cancelButton.isHover())	
 			cancelButton.highLight();
-		if (strcmp(name, "") != 0
+		if (strcmp(name, "") != 0 && !isNamesake
 		&& x >= finishButton.coordinates.x && x <= finishButton.coordinates.x + finishButton.width
 		&& y >= finishButton.coordinates.y && y <= finishButton.coordinates.y + finishButton.height)
 			break;
 		if (x >= cancelButton.coordinates.x && x <= cancelButton.coordinates.x + cancelButton.width
 		&& y >= cancelButton.coordinates.y && y <= cancelButton.coordinates.y + cancelButton.height) 
-			break;
+			return openFile();
 		if (ismouseclick(WM_LBUTTONDOWN)) {
 			int x, y;
 			getmouseclick(WM_LBUTTONDOWN, x, y);
@@ -390,7 +420,7 @@ void addFile() {
 		}
 		if (kbhit()) {
 			char key = getch();
-			if (key >= 'A' && key <= 'z')
+			if ((key >= 'A' && key <= 'z') || (key >= '1' && key <= '9'))
 				if (i < 30) {
 					name[i] = key;
 					i++;
@@ -403,9 +433,9 @@ void addFile() {
 			}
 			if (i < 0)
 				i = 0;
-			if (strcmp(name, "") != 0 && key == 13)
+			if (strcmp(name, "") != 0 && key == KEY_ENTER && !isNamesake)
 				break;
-			if (strcmp(name, "") == 0 && key == 13) {
+			if (strcmp(name, "") == 0 && key == KEY_ENTER) {
 				frame.highLight(WHITE, RED);
 				enterNameBar.draw();
 				finishButton.draw();
@@ -419,11 +449,11 @@ void addFile() {
 		page = 1 - page;
 	}
 	if (strcmp(name, "") != 0) {
-		bool comfirm = drawYesNoBar("Ban co muon luu do thi vao file?");
+		char fileName[100] = "filesInProgram//";
+		strcat(fileName, name);
+		strcat(fileName, ".txt");
+		bool comfirm = drawYesNoBar("Luu do thi hien tai vao file?");
 		if (comfirm) {
-			char fileName[100] = "filesInProgram//";
-			strcat(fileName, name);
-			strcat(fileName, ".txt");
 			fstream output;
 			output.open(fileName, ios::out);
 			output << n << endl;
@@ -439,6 +469,12 @@ void addFile() {
 				output << endl;
 			}
 			output.close();
+		}
+		else {
+			fstream output;
+			output.open(fileName, ios::out);
+			output << 0;
+			output.close();	
 		}
 	}
 }
@@ -697,7 +733,7 @@ void openFile() {
 				if (x >= addFileButton.coordinates.x && x <= addFileButton.coordinates.x + addFileButton.width 
 				&& y >= addFileButton.coordinates.y && y <= addFileButton.coordinates.y + addFileButton.height) {
 					addFile();
-					return;
+					return openFile();
 				}
 			}
 			for (int i = 0; i < index; i++) {
