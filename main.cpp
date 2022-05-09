@@ -204,6 +204,7 @@ void showWelcome();
 void setUserTextStyle();
 void addFile();
 void deleteFile();
+void saveFile();
 
 int main() {
 	initwindow(1280, 720, "Do an do thi", 50, 20);
@@ -247,6 +248,10 @@ void process() {
 	}
 	getch();
 	closegraph();
+}
+
+void saveFile() {
+	
 }
 
 void deleteFile() {
@@ -2689,7 +2694,7 @@ void moveVertex() {
 							vertices[i].coordinates.x = x;
 							vertices[i].coordinates.y = y;
 						}
-						if (x < W_LEFT + RADIUS && y >= 20 + RADIUS && y <= W_BOTTOM - RADIUS) {
+						if (x < W_LEFT + RADIUS && y >= W_TOP + RADIUS && y <= W_BOTTOM - RADIUS) {
 							vertices[i].coordinates.x = W_LEFT + RADIUS;
 							vertices[i].coordinates.y = y;
 						}
@@ -3073,29 +3078,22 @@ void taskBar() {
 		option = menuTools();
 		switch (option) {
 			case 1: {
-//				outtextxy(340, 15, "Canh cau");
 				bridgeEdges();
 				break;
 			}
 			case 2: {
-//				outtextxy(340, 15, "Dinh tru");
 				cutVertices();
 				break;
 			}
 			case 3: {
-//				outtextxy(340, 15, "Thanh phan lien thong");
-//				connectedComponents();
 				connectedComponents();
-//				tarjanAlgo(1, 2);
 				break;
 			}
 			case 4: {
-//				outtextxy(340, 15, "DFS");
 				DFS();
 				break;
 			}
 			case 5: {
-//				outtextxy(340, 15, "Euler");
 				eulerCycle();
 				break;
 			}
@@ -3104,12 +3102,10 @@ void taskBar() {
 				break;
 			}
 			case 7: {
-//				outtextxy(340, 15, "Tim duong di ngan nhat");
 				pathXY();
 				break;
 			}
 			case 8: {
-//				outtextxy(340, 15, "BFS");
 				BFS();
 				break;
 			}
@@ -3118,7 +3114,6 @@ void taskBar() {
 				break;
 			}
 			case 10: {
-//				outtextxy(340, 15, "Hamliton");
 				hamCycle();
 				break;
 			}
@@ -3171,7 +3166,6 @@ void taskBar() {
 		option = fileTools();
 		switch(option) {
 			case 1: {
-//				outtextxy(340, 15, "Mo file");
 				openFile();
 				break;
 			}
@@ -3180,7 +3174,6 @@ void taskBar() {
 				break;
 			}
 			case 3: {
-//				outtextxy(340, 15, "Xoa do thi trong file");
 				deleteFile();
 				break;
 			}
