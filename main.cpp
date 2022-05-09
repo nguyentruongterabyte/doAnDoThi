@@ -200,12 +200,10 @@ bool isSafe(int v, int *path, int pos);
 bool hamCycleUtil(int v, int *path, int pos);//mot chuc nang tien ich de quy de giai quyet van de chu trinh Hamilton
 void hamCycle();
 void showNoResult(char *resultStr);
-//void showLoadingBox(int x, int y, int width, int height, char *loadContent);
 void showWelcome();
 void setUserTextStyle();
 void addFile();
 void deleteFile();
-//char *enterFileName();
 
 int main() {
 	initwindow(1280, 720, "Do an do thi", 50, 20);
@@ -215,7 +213,7 @@ int main() {
 	initDefaultVertices();
 	initEditTools();
 	loadFileStartUp();
-	//showWelcome();
+	showWelcome();
 	process();
 }
 
@@ -241,14 +239,11 @@ void process() {
 		editVertex();
 		drawAllEdges();
 		page = 1 - page;
-		
-		
-		
-		if (ismouseclick(WM_MOUSEMOVE)) {
-			int x, y;
-			getmouseclick(WM_MOUSEMOVE, x, y);
-			cout << x << " " << y << endl;
-		}
+//		if (ismouseclick(WM_MOUSEMOVE)) {
+//			int x, y;
+//			getmouseclick(WM_MOUSEMOVE, x, y);
+//			cout << x << " " << y << endl;
+//		}
 	}
 	getch();
 	closegraph();
@@ -333,6 +328,7 @@ void deleteFile() {
 				if (key == KEY_ENTER)
 					break;
 			}
+			clearmouseclick();
 			page = 1 - page;
 		}
 	}
@@ -727,14 +723,26 @@ void openFile() {
 			&& y >= xButton.coordinates.y && y <= xButton.coordinates.y + xButton.height)
 				break;
 			if (index < 40) {
+				settextstyle(1, 0, 4);
 				addFileButton.draw();
-				if (addFileButton.isHover())
+				setUserTextStyle();
+				char tmpAddName[2] = "+";
+				if (addFileButton.isHover()) {
+					addFileButton.name = "Tao file moi";
 					addFileButton.highLight(YELLOW, BLACK);
+				}
+				addFileButton.name = tmpAddName;
 				if (x >= addFileButton.coordinates.x && x <= addFileButton.coordinates.x + addFileButton.width 
 				&& y >= addFileButton.coordinates.y && y <= addFileButton.coordinates.y + addFileButton.height) {
-					addFile();
-					return openFile();
+					bool confirm = drawYesNoBar("Ban muon tao 1 file moi?");
+					if (confirm) {
+						addFile();
+						return openFile();
+					}
+					else 
+						return openFile();
 				}
+
 			}
 			for (int i = 0; i < index; i++) {
 				fileButton[i].draw();
@@ -750,7 +758,6 @@ void openFile() {
 					else 
 						return openFile();
 				}
-				
 				if (fileButton[i].isHover() && kbhit()) {
 					char key = getch();
 					if (key == KEY_ENTER) {
@@ -767,9 +774,11 @@ void openFile() {
 				if (key == KEY_ENTER)
 					break;
 			}
+			clearmouseclick();
 			page = 1 - page;
 		}
 	}
+	setUserTextStyle();
 }
 
 void showResultCutVertices(bool *isCutVertex, int counter) {
@@ -2264,9 +2273,9 @@ int enterWeight() {
 			}
 			if (i < 0)
 				i = 0;
-			if (strcmp(weightStr, "") != 0 && key == 13)
+			if (strcmp(weightStr, "") != 0 && key == KEY_ENTER)
 				break;
-			if (strcmp(weightStr, "") == 0 && key == 13) {
+			if (strcmp(weightStr, "") == 0 && key == KEY_ENTER) {
 				frame.highLight(WHITE, RED);
 				enterWeightBar.draw();
 				finishButton.draw();
@@ -2276,11 +2285,11 @@ int enterWeight() {
 		}
 		outtextxy(15 + (400 - width) / 2 + (width - textwidth(weightStr)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(weightStr)) / 2, weightStr);
 		if (i < 3 && strcmp(weightStr, "") != 0)
-				outtextxy(15 + (400 - width) / 2 + (width - textwidth(weightStr)) / 2 + textwidth(weightStr), 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(weightStr)) / 2, "_");
+			outtextxy(15 + (400 - width) / 2 + (width - textwidth(weightStr)) / 2 + textwidth(weightStr), 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(weightStr)) / 2, "_");
 		
 		page = 1 - page;
 	}
-	return atoi(weightStr);
+	return atoi(weightStr);//itoa
 }
 
 void addEdge(int startPos) {
@@ -2674,29 +2683,29 @@ void moveVertex() {
 								if ((x - xB) * (x - xB) + (y - yB) * (y - yB) <= 4 * RADIUS * RADIUS)
 									check = 1;
 							}
-						if (x >= 425 + RADIUS && x <= 1259 - RADIUS
-						&& y >= 20 + RADIUS && y <= 520 - RADIUS && !check) {
+						if (x >= W_LEFT + RADIUS && x <= W_RIGHT - RADIUS
+						&& y >= W_TOP + RADIUS && y <= W_BOTTOM - RADIUS && !check) {
 							//neu nam trong pham vi bang dieu khien thi moi duoc di chuyen 
 							vertices[i].coordinates.x = x;
 							vertices[i].coordinates.y = y;
 						}
-						if (x < 435 + RADIUS && y >= 20 + RADIUS && y <= 520 - RADIUS) {
-							vertices[i].coordinates.x = 425 + RADIUS;
+						if (x < W_LEFT + RADIUS && y >= 20 + RADIUS && y <= W_BOTTOM - RADIUS) {
+							vertices[i].coordinates.x = W_LEFT + RADIUS;
 							vertices[i].coordinates.y = y;
 						}
-						if (x > 1259 - RADIUS && y >= 20 + RADIUS && y <= 520 - RADIUS) {
-							vertices[i].coordinates.x = 1259 - RADIUS;
+						if (x > W_RIGHT - RADIUS && y >= W_TOP + RADIUS && y <= W_BOTTOM - RADIUS) {
+							vertices[i].coordinates.x = W_RIGHT - RADIUS;
 							vertices[i].coordinates.y = y;
 						}
-						if (x >= 425 + RADIUS && x <= 1259 - RADIUS
-						&& y < 20 + RADIUS) {
+						if (x >= W_LEFT + RADIUS && x <= W_RIGHT - RADIUS
+						&& y < W_TOP + RADIUS) {
 							vertices[i].coordinates.x = x;
-							vertices[i].coordinates.y = 20 + RADIUS;
+							vertices[i].coordinates.y = W_TOP + RADIUS;
 						}
-						if (x >= 425 + RADIUS && x <= 1259 - RADIUS
-						&& y > 520 - RADIUS) {
+						if (x >= W_LEFT + RADIUS && x <= W_RIGHT - RADIUS
+						&& y > W_BOTTOM - RADIUS) {
 							vertices[i].coordinates.x = x;
-							vertices[i].coordinates.y = 520 - RADIUS;
+							vertices[i].coordinates.y = W_BOTTOM - RADIUS;
 						}
 					}					
 					drawFrame();
@@ -3043,7 +3052,7 @@ void setTaskBarButtons() {
 	xH = xM + margin + width, yH = yM;
 	xF = xH + margin + width, yF = yH;
 	menuBar.init(xM, yM, height, width, YELLOW, LIGHTBLUE, 9, "MENU");
-	helpBar.init(xH, yH, height, width, YELLOW, LIGHTBLUE, 9, "HELP");
+	helpBar.init(xH, yH, height, width, YELLOW, LIGHTBLUE, 9, "TRO GIUP");
 	fileBar.init(xF, yF, height, width, YELLOW, LIGHTBLUE, 9, "FILE");
 	ESCButton.init(425, 660, 40, 100, YELLOW, BLACK, 1, "ESC | Thoat");
 	matrixButton.init(15, 295, 25, 400, YELLOW, BLACK, 1, "Ma tran trong so");
