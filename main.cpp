@@ -238,6 +238,7 @@ void process() {
 			vtex.create();
 			addVertexToList(vtex);
 		}
+		drawTaskBarButtons();
 		drawVertices();
 		drawMatrix();
 		taskBar();
@@ -308,9 +309,14 @@ void showSuccessfullyBox(char * successContent) {
 	Button successBox;
 	successBox.init((W_LEFT + W_RIGHT - 400) / 2, (W_TOP + W_BOTTOM - 200) / 2, 200, 400, YELLOW, BLACK, 1, successContent);
 	int page = 0;
-	for (int i = 0; i < 150; i++) {
+	for (int i = 0; i < 50; i++) {
 		setactivepage(page);
 		setvisualpage(1 - page);
+		drawFrame();
+		drawTaskBarButtons();
+		drawMatrix();
+		drawVertices();
+		drawAllEdges();
 		successBox.draw();
 		delay(10);
 		page = 1 - page;
@@ -918,20 +924,7 @@ void openFile() {
 				&& y >= fileButton[i].coordinates.y && y <= fileButton[i].coordinates.y + fileButton[i].height) {
 					bool confirm = drawYesNoBar("Ban co muon load file nay?");
 					if (confirm) {
-							loadFile(fileName[i]);
-						int page = 0;
-						for (int k = 0; k < 30; k++) {
-							setactivepage(page);
-							setvisualpage(1 - page);
-							drawFrame();
-							drawTaskBarButtons();
-							drawMatrix();
-							drawVertices();
-							drawAllEdges();
-							delay(10);
-							page = 1 - page;
-						}
-						
+						loadFile(fileName[i]);
 						if (n == 0)
 							showSuccessfullyBox("Ops! File nay khong co gi!");
 						else
@@ -2667,16 +2660,16 @@ void drawAllEdges() {
 		for (int i = 0; i < n; i++) 
 			for(int j = 0; j < n; j++)
 				if (G[i][j]) 
-					drawLine(vertices[i], vertices[j], CYAN, 0);
+					drawLine(vertices[i], vertices[j], LIGHTRED, 0);
 	}
 	else {
 		for (int i = 0; i < n; i++) 
 			for(int j = 0; j < n; j++)
 				if (G[i][j]) {
 					if (!G[j][i])
-						drawArrow(vertices[i], vertices[j], CYAN, G[i][j]);
+						drawArrow(vertices[i], vertices[j], LIGHTRED, G[i][j]);
 					else 
-						drawCurvedArrow(vertices[i], vertices[j], CYAN, G[i][j]);
+						drawCurvedArrow(vertices[i], vertices[j], LIGHTRED, G[i][j]);
 				} 
 	}
 }
