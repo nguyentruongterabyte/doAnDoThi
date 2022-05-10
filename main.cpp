@@ -866,6 +866,9 @@ void openFile() {
 					bool confirm = drawYesNoBar("Ban co muon load file nay?");
 					if (confirm) {
 						loadFile(fileName[i]);
+						drawMatrix();
+						drawVertices();
+						drawAllEdges();
 						if (n == 0)
 							showSuccessfullyBox("Ops! File nay khong co gi!");
 						else
