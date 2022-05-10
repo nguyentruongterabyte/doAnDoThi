@@ -21,7 +21,7 @@
 
 using namespace std;
 
-char guideList[8][1000] = {
+char guideList[8][500] = {
 	"DOUBLE CLICK CHUOT TRAI vao vi tri ban muon tao dinh o khu vuc man hinh thao tac voi dinh -> Nhap ten dinh -> Nhan HOAN THANH (hoac nhan ENTER) -> 1 dinh moi se duoc tao.",
 	"DI CHUYEN chuot toi vi tri dinh bat dau cua canh -> CLICK CHUOT PHAI vao dinh do, mot hop thoat se hien len -> chon TAO CANH -> DI CHUYEN toi vi tri dinh thu 2 va CLICK CHUOT TRAI vao dinh do -> NHAP trong so -> nhan HOAN THANH (hoac nhan ENTER) -> 1 canh moi se duoc tao.",
 	"DI CHUYEN chuot toi vi tri dinh can sua -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon SUA TEN -> NHAP TEN dinh va nhan HOAN THANH (hoac nhan ENTER).",
@@ -80,7 +80,7 @@ struct Button /*cau truc nut*/{
 	void init(short x, short y, short height, short width, short tColor, short bColor, short pattern, char* content);//x, y, height, width, content
 	void draw();//Ve nut
 	void highLight();//To sang nut (doi mau theo kieu mac dinh)
-	void normal();//Dua nut tro ve hinh dang ban dau
+ 	void normal();//Dua nut tro ve hinh dang ban dau
 	void highLight(int tColor, int bColor);//To sang nut voi mau chu va mau nen 
 	bool isHover();//Kiem tra xem ta co di chuyen chuot toi nut do hay khong
 	bool isClickLMButton();//Kiem tra xem chuot trai co click vao o hay khong
@@ -205,6 +205,7 @@ void setUserTextStyle();
 void addFile();
 void deleteFile();
 void saveFile();
+void showSuccessfullyBox(char * successContent);
 
 int main() {
 	initwindow(1280, 720, "Do an do thi", 50, 20);
@@ -224,7 +225,7 @@ void process() {
 	while (true) {	
 		setactivepage(page);
 		setvisualpage(1 - page);
-		delay(10);
+		//delay(10);
 		vtex.defaultVtex();
 		setfillstyle(10, GREEN);
 		bar(1, 1, 1279, 719);
@@ -248,6 +249,19 @@ void process() {
 	}
 	getch();
 	closegraph();
+}
+
+void showSuccessfullyBox(char * successContent) {
+	Button successBox;
+	successBox.init((W_LEFT + W_RIGHT - 400) / 2, (W_TOP + W_BOTTOM - 200) / 2, 200, 400, YELLOW, BLACK, 1, successContent);
+	int page = 0;
+	for (int i = 0; i < 150; i++) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		successBox.draw();
+		delay(10);
+		page = 1 - page;
+	}
 }
 
 void saveFile() {
@@ -411,6 +425,7 @@ void deleteFile() {
 							char fileDeleteName[100] = "filesInProgram\\";
 							strcat(fileDeleteName, fileButton[i].name);
 							DeleteFile(fileDeleteName);
+							showSuccessfullyBox("Xoa file thanh cong!");
 							return deleteFile();
 						} else 
 							return deleteFile();
@@ -834,6 +849,7 @@ void openFile() {
 					bool confirm = drawYesNoBar("Ban muon tao 1 file moi?");
 					if (confirm) {
 						addFile();
+						showSuccessfullyBox("Them file thanh cong!");
 						return openFile();
 					}
 					else 
@@ -850,6 +866,10 @@ void openFile() {
 					bool confirm = drawYesNoBar("Ban co muon load file nay?");
 					if (confirm) {
 						loadFile(fileName[i]);
+						if (n == 0)
+							showSuccessfullyBox("Ops! File nay khong co gi!");
+						else
+							showSuccessfullyBox("Load file thanh cong!");
 						return;
 					}
 					else 
@@ -1348,6 +1368,7 @@ void showResultConnectedComponents(int **connectedComponents, int count, bool is
 	char componentsStr[n][30] = {""};
 	Button resultBox, xButton, components[n];
 	resultBox.init(425, 525, 40, 834, YELLOW, BLACK, 1, resultText);
+	xButton.init(resultBox.coordinates.x + resultBox.width - 40, resultBox.coordinates.y + resultBox.height - 40, 40, 40, WHITE, RED, 1, "x");
 	for (int i = 0; i < count; i++) {
 		//duyet tung thanh phan lien thong
 		//tuong ung voi so hang cua ma tran connectedComponents
@@ -1404,6 +1425,9 @@ void showResultConnectedComponents(int **connectedComponents, int count, bool is
 		drawEnterToExitText();
 		drawAllEdges();
 		resultBox.draw();
+		xButton.draw();
+		if (xButton.isClickLMButton())
+			break;
 		for (int i = 0; i < count; i++) {
 			for (int j = 0; j < n; j++) {
 				int v = connectedComponents[i][j];
@@ -1447,9 +1471,10 @@ void showResultConnectedComponents(int **connectedComponents, int count, bool is
 		}
 		if (kbhit()) {
 			char key = getch();
-			if (key == KEY_ESC || key == KEY_ENTER)
+			if (key == KEY_ENTER)
 				break;	
-		}	
+		}
+		clearmouseclick();	
 		page = 1 - page;
 	}
 }
