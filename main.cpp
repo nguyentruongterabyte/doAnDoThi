@@ -206,6 +206,8 @@ void addFile();
 void deleteFile();
 void saveFile();
 void showSuccessfullyBox(char * successContent);
+void drawGraphInAllFiles();
+bool isFileText(char *fileName);
 
 int main() {
 	initwindow(1280, 720, "Do an do thi", 50, 20);
@@ -216,6 +218,7 @@ int main() {
 	initEditTools();
 	loadFileStartUp();
 	showWelcome();
+	drawGraphInAllFiles();
 	process();
 }
 
@@ -251,6 +254,56 @@ void process() {
 	closegraph();
 }
 
+bool isFileText(char *fileName) {
+	char tail[5];
+	strcpy(tail, ".txt");
+	int len = strlen(fileName);
+	if (fileName[len - 1] != 't') return false;
+	if (fileName[len - 2] != 'x') return false;
+	if (fileName[len - 3] != 't') return false;
+	if (fileName[len - 4] != '.') return false;
+	return true;
+}
+
+void drawGraphInAllFiles() {
+	char fileName[41][100] = {""};
+	int index = 0;
+	struct dirent *d;
+	struct stat dst;
+	DIR *dr;
+	char path[60] = "filesInProgram";
+	dr = opendir(path);
+	if (dr != NULL) {
+		for (d = readdir(dr); d != NULL; d = readdir(dr)) {
+			if (strlen(d->d_name) >= 5 && strcmp(d->d_name, "startUpFile.txt") != 0 && isFileText(d->d_name))
+				strcpy(fileName[index++], d->d_name);
+			if (index > 40)
+				break;
+		}
+		closedir(dr);	
+	}
+	if (index == 0) return;
+	int page = 0, i = 0;
+	while (!ismouseclick(WM_LBUTTONDOWN) 
+		&& !ismouseclick(WM_RBUTTONDOWN) 
+		&& !ismouseclick(WM_LBUTTONDBLCLK) 
+		&& !ismouseclick(WM_RBUTTONDBLCLK)
+	) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		loadFile(fileName[i]);
+		drawFrame();
+		drawTaskBarButtons();
+		drawVertices();
+		drawAllEdges(i % 15 + 1);
+		i++;
+		if (i >= index)
+			i = 0;
+		page = 1 - page;
+		delay(1000);
+	} 
+}
+
 void showSuccessfullyBox(char * successContent) {
 	Button successBox;
 	successBox.init((W_LEFT + W_RIGHT - 400) / 2, (W_TOP + W_BOTTOM - 200) / 2, 200, 400, YELLOW, BLACK, 1, successContent);
@@ -274,7 +327,7 @@ void saveFile() {
 	dr = opendir(path);
 	if (dr != NULL) {
 		for (d = readdir(dr); d != NULL; d = readdir(dr)) 
-			if (strlen(d->d_name) >= 5 && strcmp(d->d_name, "startUpFile.txt") != 0)
+			if (strlen(d->d_name) >= 5 && strcmp(d->d_name, "startUpFile.txt") != 0 && isFileText(d->d_name))
 				strcpy(fileName[index++], d->d_name);
 		closedir(dr);	
 	}
@@ -369,7 +422,7 @@ void deleteFile() {
 	dr = opendir(path);
 	if (dr != NULL) {
 		for (d = readdir(dr); d != NULL; d = readdir(dr)) 
-			if (strlen(d->d_name) >= 5 && strcmp(d->d_name, "startUpFile.txt") != 0)
+			if (strlen(d->d_name) >= 5 && strcmp(d->d_name, "startUpFile.txt") != 0 && isFileText(d->d_name))
 				strcpy(fileName[index++], d->d_name);
 		closedir(dr);	
 	}
@@ -463,7 +516,7 @@ void addFile() {
 	dr = opendir(path);
 	if (dr != NULL) {
 		for (d = readdir(dr); d != NULL; d = readdir(dr)) {
-			if (strlen(d->d_name) >= 5 && strcmp(d->d_name, "startUpFile.txt") != 0)
+			if (strlen(d->d_name) >= 5 && strcmp(d->d_name, "startUpFile.txt") != 0 && isFileText(d->d_name))
 				strcpy(fileName[index++], d->d_name);
 			if (index > 40)
 				break;
@@ -787,7 +840,7 @@ void openFile() {
 	dr = opendir(path);
 	if (dr != NULL) {
 		for (d = readdir(dr); d != NULL; d = readdir(dr)) {
-			if (strlen(d->d_name) >= 5 && strcmp(d->d_name, "startUpFile.txt") != 0)
+			if (strlen(d->d_name) >= 5 && strcmp(d->d_name, "startUpFile.txt") != 0 && isFileText(d->d_name))
 				strcpy(fileName[index++], d->d_name);
 			if (index > 40)
 				break;
@@ -865,10 +918,20 @@ void openFile() {
 				&& y >= fileButton[i].coordinates.y && y <= fileButton[i].coordinates.y + fileButton[i].height) {
 					bool confirm = drawYesNoBar("Ban co muon load file nay?");
 					if (confirm) {
-						loadFile(fileName[i]);
-						drawMatrix();
-						drawVertices();
-						drawAllEdges();
+							loadFile(fileName[i]);
+						int page = 0;
+						for (int k = 0; k < 30; k++) {
+							setactivepage(page);
+							setvisualpage(1 - page);
+							drawFrame();
+							drawTaskBarButtons();
+							drawMatrix();
+							drawVertices();
+							drawAllEdges();
+							delay(10);
+							page = 1 - page;
+						}
+						
 						if (n == 0)
 							showSuccessfullyBox("Ops! File nay khong co gi!");
 						else
@@ -2604,16 +2667,16 @@ void drawAllEdges() {
 		for (int i = 0; i < n; i++) 
 			for(int j = 0; j < n; j++)
 				if (G[i][j]) 
-					drawLine(vertices[i], vertices[j], MAGENTA, 0);
+					drawLine(vertices[i], vertices[j], CYAN, 0);
 	}
 	else {
 		for (int i = 0; i < n; i++) 
 			for(int j = 0; j < n; j++)
 				if (G[i][j]) {
 					if (!G[j][i])
-						drawArrow(vertices[i], vertices[j], MAGENTA, G[i][j]);
+						drawArrow(vertices[i], vertices[j], CYAN, G[i][j]);
 					else 
-						drawCurvedArrow(vertices[i], vertices[j], MAGENTA, G[i][j]);
+						drawCurvedArrow(vertices[i], vertices[j], CYAN, G[i][j]);
 				} 
 	}
 }
