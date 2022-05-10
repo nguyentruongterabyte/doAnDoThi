@@ -217,8 +217,8 @@ int main() {
 	initDefaultVertices();
 	initEditTools();
 	loadFileStartUp();
-	showWelcome();
-	drawGraphInAllFiles();
+	//showWelcome();
+	//drawGraphInAllFiles();
 	process();
 }
 
@@ -228,6 +228,7 @@ void process() {
 	while (true) {	
 		setactivepage(page);
 		setvisualpage(1 - page);
+		cleardevice();
 		//delay(10);
 		vtex.defaultVtex();
 		setfillstyle(10, GREEN);
@@ -303,13 +304,14 @@ void drawGraphInAllFiles() {
 		page = 1 - page;
 		delay(1000);
 	} 
+	cleardevice();
 }
 
 void showSuccessfullyBox(char * successContent) {
 	Button successBox;
 	successBox.init((W_LEFT + W_RIGHT - 400) / 2, (W_TOP + W_BOTTOM - 200) / 2, 200, 400, YELLOW, BLACK, 1, successContent);
 	int page = 0;
-	for (int i = 0; i < 50; i++) {
+	for (int i = 0; i < 3; i++) {
 		setactivepage(page);
 		setvisualpage(1 - page);
 		drawFrame();
@@ -318,9 +320,10 @@ void showSuccessfullyBox(char * successContent) {
 		drawVertices();
 		drawAllEdges();
 		successBox.draw();
-		delay(10);
+		delay(100);
 		page = 1 - page;
-	}
+	}	
+	//delay(100);
 }
 
 void saveFile() {
@@ -2801,8 +2804,12 @@ void drawMatrix() {
 			} 
 			if (i != j && 
 			xDL >= square.coordinates.x && xDL <= square.coordinates.x + square.width
-			&& yDL >= square.coordinates.y && yDL <= square.coordinates.y + square.height)
+			&& yDL >= square.coordinates.y && yDL <= square.coordinates.y + square.height) {
+				int tmpGij = G[i][j];
 				G[i][j] = enterWeight();
+				if (!G[i][j])
+					G[i][j] = tmpGij;
+			}
 			
  			x0 += squareEdge;
 		}
