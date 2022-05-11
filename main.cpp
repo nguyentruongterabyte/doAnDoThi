@@ -103,8 +103,7 @@ Button menuBar/*thanh menu*/,
 		editFrame/*khung hien thi cac cong cu sua ten va xoa dinh*/,
 		deleteButton/*Nut xoa dinh*/,
 		editNameButton/*Nut sua ten dinh*/,
-		addEdgeButton/*Nut tao canh*/,
-		ESCButton, 
+		addEdgeButton/*Nut tao canh*/, 
 		matrixButton;
 
 void process();
@@ -257,6 +256,14 @@ void process() {
 			int x, y;
 			getmouseclick(WM_MOUSEMOVE, x, y);
 			cout << x << " " << y << endl;
+		}
+		if (kbhit()) {
+			char key= getch();
+			if (key == KEY_ESC) {
+				bool confirm = drawYesNoBar("Thoat chuong trinh?");
+				if (confirm)
+					return;
+			}
 		}
 	}
 	getch();
@@ -2325,7 +2332,6 @@ void showResultDFS(int *trace, char *resultText, int count) {
 		drawAllEdges();
 		drawTaskBarButtons();
 		drawMatrix();
-		ESCButton.draw();
 		resultBox.draw();
 		xButton.draw();
 		outtextxy(430, 525 + (100 - textheight("Ket qua thuat toan DFS:")) / 2, "Ket qua thuat toan DFS:");
@@ -2434,7 +2440,6 @@ void showResultBFS(int *trace, char *resultText, int count) {
 		drawAllEdges();
 		drawTaskBarButtons();
 		drawMatrix();
-		ESCButton.draw();
 		resultBox.draw();
 		xButton.draw();
 		outtextxy(430, 525 + (100 - textheight("Ket qua thuat toan BFS:")) / 2, "Ket qua thuat toan BFS:");
@@ -3399,7 +3404,6 @@ void setTaskBarButtons() {
 	menuBar.init(xM, yM, height, width, YELLOW, LIGHTBLUE, 9, "MENU");
 	helpBar.init(xH, yH, height, width, YELLOW, LIGHTBLUE, 9, "TRO GIUP");
 	fileBar.init(xF, yF, height, width, YELLOW, LIGHTBLUE, 9, "FILE");
-	ESCButton.init(425, 660, 40, 100, YELLOW, BLACK, 1, "ESC | Thoat");
 	matrixButton.init(15, 295, 25, 400, YELLOW, BLACK, 1, "Ma tran trong so");
 }
 
