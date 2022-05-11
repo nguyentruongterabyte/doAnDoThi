@@ -198,7 +198,10 @@ void loadFile(char *fileName);
 void showResultHamiltonCycle(int *path);//show ket qua chu trinh hamilton ra man hinh
 bool isSafe(int v, int *path, int pos);
 bool hamCycleUtil(int v, int *path, int pos);//mot chuc nang tien ich de quy de giai quyet van de chu trinh Hamilton
-void hamCycle();
+void hamCycle();//Hamilton
+void knotVertices();//tim dinh that
+bool dfsToCheckKnot(int start, int end, int remove);//ham nay giup kiem tra xem lieu co ton tai duong di giua hai dinh khong 
+void showResultKnotVertices(int start, int end, int trace, int counter);//show dinh that tu a toi b len man hinh
 void showNoResult(char *resultStr);
 void showWelcome();
 void setUserTextStyle();
@@ -208,6 +211,7 @@ void saveFile();
 void showSuccessfullyBox(char * successContent);
 void drawGraphInAllFiles();
 bool isFileText(char *fileName);
+void drawEmptySymbol();
 
 int main() {
 	initwindow(1280, 720, "Do an do thi", 50, 20);
@@ -217,8 +221,11 @@ int main() {
 	initDefaultVertices();
 	initEditTools();
 	loadFileStartUp();
-	//showWelcome();
-	//drawGraphInAllFiles();
+	char c = getcolor();
+	showWelcome();
+	setcolor(c);
+	setUserTextStyle();
+
 	process();
 }
 
@@ -246,19 +253,172 @@ void process() {
 		editVertex();
 		drawAllEdges();
 		page = 1 - page;
-//		if (ismouseclick(WM_MOUSEMOVE)) {
-//			int x, y;
-//			getmouseclick(WM_MOUSEMOVE, x, y);
-//			cout << x << " " << y << endl;
-//		}
+		if (ismouseclick(WM_MOUSEMOVE)) {
+			int x, y;
+			getmouseclick(WM_MOUSEMOVE, x, y);
+			cout << x << " " << y << endl;
+		}
 	}
 	getch();
 	closegraph();
 }
 
+void drawEmptySymbol() {
+	char c = getcolor();
+	setfillstyle(1, WHITE);
+	pieslice(15 + 400 / 2, 295 + 400 / 2, 0, 360, 180);
+	setfillstyle(1, c);
+	setfillstyle(1, CYAN);
+	pieslice(15 + 400 / 2, 295 + 400 / 2, 0, 360, 160);
+	setfillstyle(1, c);
+	setcolor(CYAN);
+	line(15 + 400 / 2, 295 + 400 / 2 - 1, 15 + 400 / 2 + 160, 295 + 400 / 2 - 1);
+	setcolor(c);
+//	drawpoly()
+	int arr[] = {360, 335, 375, 350, 65, 655, 50, 640, 360, 335};
+//	adjacencyMatrixFrame.init(15, 295, 409, 400, 0, 3, 1, "");
+	setfillstyle(1, WHITE);
+	fillpoly(5, arr);
+	setfillstyle(1, c);
+}
+
+void showResultKnotVertices(int start, int end, int * trace, int counter) {
+	Button resultBox, xButton;
+	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
+	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
+	char resultText[100] = "";
+	if (counter == 0) {
+		strcat(resultText, "Khong co dinh that giua dinh ");
+		strcat(resultText, vertices[start].name);
+		strcat(resultText, " va dinh ");
+		strcat(resultText, vertices[end].name);
+		strcat(resultText, " vi chung co duong di truc tiep.");
+	} else {
+		char counterStr[3];
+		itoa(counter, counterStr, 10);
+		strcat(resultText, "Co ");
+		strcat(resultText, counterStr);
+		strcat(resultText, " dinh that giua dinh ");
+		strcat(resultText, vertices[start].name);
+		strcat(resultText, " va dinh ");
+		strcat(resultText, vertices[end].name);
+		strcat(resultText, ": ");
+		for (int i = 0; i < counter; i++) {
+			strcat(resultText, "dinh ");
+			strcat(resultText, vertices[trace[i]].name);
+			strcat(resultText, ", ");
+		}
+		strnDel(resultText, strlen(resultText) - 2, 2);
+	}
+	resultBox.name = resultText;
+	int page = 0;
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		drawFrame();
+		drawTaskBarButtons();
+		drawMatrix();
+		drawVertices();
+		drawAllEdges();
+		drawEnterToExitText();
+		resultBox.draw();
+		xButton.draw();
+		if (xButton.isClickLMButton())
+			break;
+		if (kbhit()) {
+			char key = getch();
+			if (key == KEY_ENTER);
+				break;
+		}
+		vertices[start].highLight();
+		for (int i = 0; i < counter; i++) {
+			vertices[trace[i]].highLight(YELLOW, GREEN);
+		}
+		vertices[end].highLight();
+		page = 1 - page;
+	}
+}
+
+bool dfsToCheckKnot(int start, int end, int remove) {
+	setArrayTo(visited, n, false);
+	stack s;
+	s.push(start);
+	visited[start] = true;
+	int numTraver = 0;
+	while (!s.isEmpty()) {
+		start = s.pop();
+		if (start == end) return true;
+		++numTraver;
+		for (int i = 0; i < n; i++) 
+			if (!visited[i] && G[start][i] && i != remove && start != remove) {
+				visited[i] = true;
+				s.push(i);
+			}
+	}
+	return numTraver == n;
+}
+
+void knotVertices() {
+	if (isEmptyVertex()) {
+		showEmptyVertex();
+		return;
+	}
+	Button instruction;
+	instruction.init(425, 525, 40, 834, YELLOW, BLACK, 1, "Chon dinh ket thuc");
+	int remove;
+	int start = chooseVertex("Chon dinh bat dau duong di");
+	int end = start;
+	int page = 0;
+	while (end == start) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		pointBarFrame.draw();
+		drawVertices();
+		instruction.draw();
+		int x = mousex();
+		int y = mousey();
+		if (x >= W_LEFT && x <= W_RIGHT && y >= W_TOP && y <= W_BOTTOM) {
+			setlinestyle(DOTTED_LINE, 1, 2);
+			line(vertices[start].coordinates.x, vertices[start].coordinates.y, x, y);
+			setlinestyle(SOLID_LINE, 1, 1);
+		}
+		vertices[start].highLight();
+		if (ismouseclick(WM_LBUTTONDOWN)) {
+			int xL, yL;
+			getmouseclick(WM_LBUTTONDOWN, xL, yL); 
+			for (int i = 0; i < n; i++) {
+				int xV = vertices[i].coordinates.x;
+				int yV = vertices[i].coordinates.y;
+				if ((xV - xL) * (xV - xL) + (yV - yL) * (yV - yL) <= RADIUS * RADIUS) {
+					end = i;
+				}
+			}
+			clearmouseclick(WM_LBUTTONDOWN);
+		}
+		if (ismouseclick(WM_RBUTTONDOWN))
+			clearmouseclick(WM_RBUTTONDOWN);
+		if (ismouseclick(WM_LBUTTONDBLCLK))
+			clearmouseclick(WM_LBUTTONDBLCLK);
+		page = 1 - page;
+	}
+	if (!dfsToCheckKnot(start, end, -1)) {
+		char resultText[60] = "Khong co dinh that duong di tu ";
+		strcat(resultText, vertices[start].name);
+		strcat(resultText, " den ");
+		strcat(resultText, vertices[end].name);
+		strcat(resultText, " vi khong co duong di!");
+		showNoResult(resultText);
+		return;
+	}
+	int counter = 0, trace[n];
+	for (int i = 0; i < n; i++) 
+		if (i != start && i != end) 
+			if (!dfsToCheckKnot(start, end, i))
+				trace[counter++] = i;
+	showResultKnotVertices(start,end, trace, counter);
+}
+
 bool isFileText(char *fileName) {
-	char tail[5];
-	strcpy(tail, ".txt");
 	int len = strlen(fileName);
 	if (fileName[len - 1] != 't') return false;
 	if (fileName[len - 2] != 'x') return false;
@@ -323,7 +483,6 @@ void showSuccessfullyBox(char * successContent) {
 		delay(100);
 		page = 1 - page;
 	}	
-	//delay(100);
 }
 
 void saveFile() {
@@ -1397,7 +1556,6 @@ void connectedComponents() {
 		itoa(counter, counterStr, 10);
 		strcat(resultText, counterStr);
 		strcat(resultText, " thanh phan lien thong");
-//		cout << resultText << endl;
 		showResultConnectedComponents(list, counter, 1, resultText);
 	}
 	else if (isConnectedGraph()){
@@ -1410,7 +1568,6 @@ void connectedComponents() {
 			itoa(counter, counterStr, 10);
 			strcat(resultText, counterStr);
 			strcat(resultText, " thanh phan lien thong manh");
-//			cout << resultText << endl;
 		}
 		showResultConnectedComponents(list, counter, 0, resultText);
 	}
@@ -2770,7 +2927,7 @@ void drawArrow(Vertex u, Vertex v, int color, int w) {
 }
 
 void drawMatrix() {
-	if (isEmptyVertex()) return;
+	if (isEmptyVertex()) return drawEmptySymbol();
 	Point center;
 	int squareEdge = n < 12 ? 30 : n < 15 ? 25 : n < 18 ? 20 : 18;
 	Button square, vertexButton[MAX], matrxHoverFrame;
@@ -3281,7 +3438,8 @@ void taskBar() {
 				break;
 			}
 			case 6: {
-				outtextxy(340, 15, "Dinh that");
+//				outtextxy(340, 15, "Dinh that");
+				knotVertices();
 				break;
 			}
 			case 7: {
@@ -3759,6 +3917,9 @@ void Vertex::highLight() {
 	char c = getcolor();
 	setfillstyle(1, BLUE);
 	pieslice(this->coordinates.x, this->coordinates.y, 0, 0, RADIUS);
+	setcolor(BLUE);
+	line(this->coordinates.x, this->coordinates.y - 1, this->coordinates.x + RADIUS, this->coordinates.y - 1);
+	setcolor(c);
 	setcolor(YELLOW);
 	outtextxy(this->coordinates.x - textwidth(this->name) / 2, this->coordinates.y - textheight(this->name) / 2, this->name);
 	setcolor(c);
@@ -3769,6 +3930,9 @@ void Vertex::highLight(int tColor, int bColor) {
 	char c = getcolor();
 	setfillstyle(1, bColor);
 	pieslice(this->coordinates.x, this->coordinates.y, 0, 0, RADIUS);
+	setcolor(bColor);
+	line(this->coordinates.x, this->coordinates.y - 1, this->coordinates.x + RADIUS, this->coordinates.y - 1);
+	setcolor(c);
 	setcolor(tColor);
 	outtextxy(this->coordinates.x - textwidth(this->name) / 2, this->coordinates.y - textheight(this->name) / 2, this->name);
 	setcolor(c);
@@ -3967,37 +4131,83 @@ void setUserTextStyle() {
 
 void showWelcome() {
 	settextstyle(0, 0, 10);
+	
 	char c = getcolor();
 	setcolor(YELLOW);
+	if (ismouseclick(WM_LBUTTONDOWN) 
+	|| ismouseclick(WM_RBUTTONDOWN) 
+	|| ismouseclick(WM_LBUTTONDBLCLK) 
+	|| ismouseclick(WM_RBUTTONDBLCLK)
+	) return;
 	for (int i = 0; i < 200; i++) {
 		outtextxy((1280 - textwidth("WELCOME")) / 2, (720 - textheight("WELCOME")) / 2, "WELCOME");
 		delay(10);
+		if (ismouseclick(WM_LBUTTONDOWN) 
+	|| ismouseclick(WM_RBUTTONDOWN) 
+	|| ismouseclick(WM_LBUTTONDBLCLK) 
+	|| ismouseclick(WM_RBUTTONDBLCLK)
+	) return;
 	}
 	cleardevice();
 	for (int i = 0; i < 20; i++) {
 		outtextxy((1280 - textwidth("ELCOME")) / 2, (720 - textheight("ELCOME")) / 2, "ELCOME");
 		delay(10);
+		if (ismouseclick(WM_LBUTTONDOWN) 
+	|| ismouseclick(WM_RBUTTONDOWN) 
+	|| ismouseclick(WM_LBUTTONDBLCLK) 
+	|| ismouseclick(WM_RBUTTONDBLCLK)
+	) return;
 	}
 	cleardevice();
 	
 	for (int i = 0; i < 20; i++) {
 		outtextxy((1280 - textwidth("LCOME")) / 2, (720 - textheight("LCOME")) / 2, "LCOME");
 		delay(10);
+		if (ismouseclick(WM_LBUTTONDOWN) 
+	|| ismouseclick(WM_RBUTTONDOWN) 
+	|| ismouseclick(WM_LBUTTONDBLCLK) 
+	|| ismouseclick(WM_RBUTTONDBLCLK)
+	) return;
 	}
 	cleardevice();
 	for (int i = 0; i < 20; i++) {
 		outtextxy((1280 - textwidth("COME")) / 2, (720 - textheight("COME")) / 2, "COME");
 		delay(10);
+		if (ismouseclick(WM_LBUTTONDOWN) 
+	|| ismouseclick(WM_RBUTTONDOWN) 
+	|| ismouseclick(WM_LBUTTONDBLCLK) 
+	|| ismouseclick(WM_RBUTTONDBLCLK)
+	) return;
 	}
 	cleardevice();
 	for (int i = 0; i < 20; i++) {
 		outtextxy((1280 - textwidth("OME")) / 2, (720 - textheight("OME")) / 2, "OME");
 		delay(10);
+		if (ismouseclick(WM_LBUTTONDOWN) 
+	|| ismouseclick(WM_RBUTTONDOWN) 
+	|| ismouseclick(WM_LBUTTONDBLCLK) 
+	|| ismouseclick(WM_RBUTTONDBLCLK)
+	) return;
 	}
 	cleardevice();
 	for (int i = 0; i < 20; i++) {
 		outtextxy((1280 - textwidth("ME")) / 2, (720 - textheight("ME")) / 2, "ME");
 		delay(10);
+		if (ismouseclick(WM_LBUTTONDOWN) 
+	|| ismouseclick(WM_RBUTTONDOWN) 
+	|| ismouseclick(WM_LBUTTONDBLCLK) 
+	|| ismouseclick(WM_RBUTTONDBLCLK)
+	) return;
+	}
+	cleardevice();
+	for (int i = 0; i < 20; i++) {
+		outtextxy((1280 - textwidth("E")) / 2, (720 - textheight("E")) / 2, "E");
+		delay(10);
+		if (ismouseclick(WM_LBUTTONDOWN) 
+	|| ismouseclick(WM_RBUTTONDOWN) 
+	|| ismouseclick(WM_LBUTTONDBLCLK) 
+	|| ismouseclick(WM_RBUTTONDBLCLK)
+	) return;
 	}
 	cleardevice();
 	for (int i = 0; i < 20; i++) {
@@ -4006,38 +4216,63 @@ void showWelcome() {
 	}
 	cleardevice();
 	for (int i = 0; i < 20; i++) {
-		outtextxy((1280 - textwidth("E")) / 2, (720 - textheight("E")) / 2, "E");
-		delay(10);
-	}
-	cleardevice();
-	for (int i = 0; i < 20; i++) {
 		outtextxy((1280 - textwidth("ME")) / 2, (720 - textheight("ME")) / 2, "ME");
 		delay(10);
+		if (ismouseclick(WM_LBUTTONDOWN) 
+	|| ismouseclick(WM_RBUTTONDOWN) 
+	|| ismouseclick(WM_LBUTTONDBLCLK) 
+	|| ismouseclick(WM_RBUTTONDBLCLK)
+	) return;
 	}
 	cleardevice();
 	for (int i = 0; i < 20; i++) {
 		outtextxy((1280 - textwidth("OME")) / 2, (720 - textheight("OME")) / 2, "OME");
 		delay(10);
+		if (ismouseclick(WM_LBUTTONDOWN) 
+	|| ismouseclick(WM_RBUTTONDOWN) 
+	|| ismouseclick(WM_LBUTTONDBLCLK) 
+	|| ismouseclick(WM_RBUTTONDBLCLK)
+	) return;
 	}
 	cleardevice();
 	for (int i = 0; i < 20; i++) {
 		outtextxy((1280 - textwidth("COME")) / 2, (720 - textheight("COME")) / 2, "COME");
 		delay(10);
+		if (ismouseclick(WM_LBUTTONDOWN) 
+	|| ismouseclick(WM_RBUTTONDOWN) 
+	|| ismouseclick(WM_LBUTTONDBLCLK) 
+	|| ismouseclick(WM_RBUTTONDBLCLK)
+	) return;
 	}
 	cleardevice();
 	for (int i = 0; i < 20; i++) {
 		outtextxy((1280 - textwidth("OME")) / 2, (720 - textheight("OME")) / 2, "OME");
 		delay(10);
+		if (ismouseclick(WM_LBUTTONDOWN) 
+	|| ismouseclick(WM_RBUTTONDOWN) 
+	|| ismouseclick(WM_LBUTTONDBLCLK) 
+	|| ismouseclick(WM_RBUTTONDBLCLK)
+	) return;
 	}
 	cleardevice();
 	for (int i = 0; i < 20; i++) {
 		outtextxy((1280 - textwidth("ME")) / 2, (720 - textheight("ME")) / 2, "ME");
 		delay(10);
+		if (ismouseclick(WM_LBUTTONDOWN) 
+	|| ismouseclick(WM_RBUTTONDOWN) 
+	|| ismouseclick(WM_LBUTTONDBLCLK) 
+	|| ismouseclick(WM_RBUTTONDBLCLK)
+	) return;
 	}
 	cleardevice();
 	for (int i = 0; i < 20; i++) {
 		outtextxy((1280 - textwidth("E")) / 2, (720 - textheight("E")) / 2, "E");
 		delay(10);
+		if (ismouseclick(WM_LBUTTONDOWN) 
+	|| ismouseclick(WM_RBUTTONDOWN) 
+	|| ismouseclick(WM_LBUTTONDBLCLK) 
+	|| ismouseclick(WM_RBUTTONDBLCLK)
+	) return;
 	}
 	cleardevice();
 	setcolor(c);
