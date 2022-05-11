@@ -251,12 +251,6 @@ void process() {
 		taskBar();
 		editVertex();
 		drawAllEdges();
-		page = 1 - page;
-		if (ismouseclick(WM_MOUSEMOVE)) {
-			int x, y;
-			getmouseclick(WM_MOUSEMOVE, x, y);
-			cout << x << " " << y << endl;
-		}
 		if (kbhit()) {
 			char key= getch();
 			if (key == KEY_ESC) {
@@ -265,6 +259,12 @@ void process() {
 					return;
 			}
 		}
+		page = 1 - page;
+//		if (ismouseclick(WM_MOUSEMOVE)) {
+//			int x, y;
+//			getmouseclick(WM_MOUSEMOVE, x, y);
+//			cout << x << " " << y << endl;
+//		}
 	}
 	getch();
 	closegraph();
