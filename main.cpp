@@ -283,6 +283,10 @@ void enterSubjectName(char listName[MAX][31]) {
 	char name[31] = "";
 	char request[50];
 	Button subjectBox;
+	Button titleBar;
+	Button statusBar;
+	titleBar.init(15, 295, 25, 300, YELLOW, BLACK, 1, "DANH SACH DANG KI MON HOC");
+//		adjacencyMatrixFrame.init(15, 295, 409, 400, 0, 3, 1, "");
 	Button frame, finishButton, cancelButton, enterNameBar;
 	frame.init(15 + margin, 15 + 2 * margin + 40, height, width, YELLOW, DARKGRAY, 1, "");
 	finishButton.init(15 + 2 * margin, 275 - margin - 30, 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HOAN THANH");
@@ -294,6 +298,7 @@ void enterSubjectName(char listName[MAX][31]) {
 		drawFrame();
 		drawTaskBarButtons();
 //		drawMatrix();
+		titleBar.draw();
 		drawAllEdges();
 		drawVertices();
 		frame.draw();
@@ -308,7 +313,8 @@ void enterSubjectName(char listName[MAX][31]) {
 			outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);
 		if (i < 30 && strcmp(name, "") != 0)
 			outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2 + textwidth(name), 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, "_");
-			
+		subjectBox.init(vertices[index].coordinates.x - textwidth(name) / 2, vertices[index].coordinates.y - RADIUS, RADIUS * 2, textwidth(name), YELLOW, BLACK, 1, name);
+		subjectBox.draw();
 		if (kbhit()) {
 			char key = getch();
 			if (key == KEY_ENTER) {
@@ -347,6 +353,9 @@ void enterSubjectName(char listName[MAX][31]) {
 			subjectBox.init(vertices[i].coordinates.x - textwidth(listName[i]) / 2, vertices[i].coordinates.y - RADIUS, RADIUS * 2, textwidth(listName[i]), YELLOW, BLACK, 1, listName[i]);
 			subjectBox.draw();
 		}
+//		for (int i = 0; i < index; i++) {
+//			subjectBox.init()
+//		}
 		moveVertex();
 		page = 1 - page;
 	}	
