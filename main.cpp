@@ -274,7 +274,7 @@ void process() {
 	closegraph();
 }
 
-void enterSubjectName(char listName[MAX][30]) {
+void enterSubjectName(char listName[MAX][31]) {
 	int index = 0, i = 0;
 	int page = 0;
 	int margin = 5;
@@ -293,7 +293,7 @@ void enterSubjectName(char listName[MAX][30]) {
 		setvisualpage(1 - page);
 		drawFrame();
 		drawTaskBarButtons();
-		drawMatrix();
+//		drawMatrix();
 		drawAllEdges();
 		drawVertices();
 		frame.draw();
@@ -304,12 +304,15 @@ void enterSubjectName(char listName[MAX][30]) {
 		strcat(request, vertices[index].name);
 		if (strcmp(name, "") == 0)
 			outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
-		else
+		else 
 			outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);
+		if (i < 30 && strcmp(name, "") != 0)
+			outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2 + textwidth(name), 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, "_");
+			
 		if (kbhit()) {
 			char key = getch();
 			if (key == KEY_ENTER) {
-				if (strcmp(name, "") != 0) {
+				if (strcmp(name, "") != 0) {	
 					strcpy(listName[index], name);
 					listName[index][i] = '\0';
 				}
@@ -372,7 +375,7 @@ void topo() {
 			dfsTopo(i, Topo, Visited);
 	bool confirm = drawYesNoBar("Ban co muon nhap ten mon hoc tuong ung?");
 	if (confirm) {
-		char subjects[n][30] = {""};
+		char subjects[n][31] = {""};
 		enterSubjectName(subjects);
 		for (int i = 0; i < n; i++) {
 			cout << subjects[i] << endl;
