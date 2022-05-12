@@ -201,6 +201,8 @@ void hamCycle();//Hamilton
 void knotVertices();//tim dinh that
 bool dfsToCheckKnot(int start, int end, int remove);//ham nay giup kiem tra xem lieu co ton tai duong di giua hai dinh khong 
 void showResultKnotVertices(int start, int end, int trace, int counter);//show dinh that tu a toi b len man hinh
+void topo();//sap xep mon hoc topo
+void dfsTopo(int u, queue &topo, int *Visited);
 void showNoResult(char *resultStr);
 void showWelcome();
 void setUserTextStyle();
@@ -268,6 +270,30 @@ void process() {
 	}
 	getch();
 	closegraph();
+}
+
+void dfsTopo(int u, queue &topo, int *Visited) {
+	Visited[u] = 1;
+	for (int i = 0; i < n; i++) {
+		if (Visited[i] == 1 && G[u][i]) {
+			showNoResult("Loi: do thi bieu dien cac mon hoc tien quyet ton tai chu trinh");
+			return;
+		}
+		if (!Visited[i] && G[u][i])
+			dfsTopo(i, topo, Visited);
+	}
+	topo.push(u);
+	Visited[u] = 2;
+}
+
+void topo() {
+	queue Topo;
+	int Visited[n];
+	setArrayTo(Visited, n, 0);
+	for (int i = 0; i < n; i++) 
+		if (!Visited[i])
+			dfsTopo(i, Topo, Visited);
+	
 }
 
 void drawEmptySymbol() {
