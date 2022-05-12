@@ -282,6 +282,7 @@ void enterSubjectName(char listName[MAX][30]) {
 	int width = 400 - 2 * margin;
 	char name[31] = "";
 	char request[50];
+	Button subjectBox;
 	Button frame, finishButton, cancelButton, enterNameBar;
 	frame.init(15 + margin, 15 + 2 * margin + 40, height, width, YELLOW, DARKGRAY, 1, "");
 	finishButton.init(15 + 2 * margin, 275 - margin - 30, 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HOAN THANH");
@@ -308,18 +309,24 @@ void enterSubjectName(char listName[MAX][30]) {
 		if (kbhit()) {
 			char key = getch();
 			if (key == KEY_ENTER) {
-				if (strcmp(name, "") != 0)
+				if (strcmp(name, "") != 0) {
 					strcpy(listName[index], name);
+					listName[index][i] = '\0';
+				}
 				else 
 					strcpy(listName[index], vertices[index].name);
-				strcpy(name, "");
+				for (int j = 0; j < 30; j++)
+					name[j] = '\0';
+				name[0] = '\0';
 				i = 0;
 				index++;
 			}
 			if ((key >= 'A' && key <= 'Z')
 			 || (key >= 'a' && key <= 'z')
 			 || (key == KEY_SPACE)
-			 || (key >= '0' && key <= '9'))
+			 || (key >= '0' && key <= '9')
+			 || key == '+' || key == '#'
+			 || key == '&' || key == '/')
 				if (i < 30) {
 					name[i] = key;
 					i++;
@@ -333,6 +340,11 @@ void enterSubjectName(char listName[MAX][30]) {
 			if (i < 0)
 				i = 0;
 		}
+		for (int i = 0; i < index; i++) {
+			subjectBox.init(vertices[i].coordinates.x - textwidth(listName[i]) / 2, vertices[i].coordinates.y - RADIUS, RADIUS * 2, textwidth(listName[i]), YELLOW, BLACK, 1, listName[i]);
+			subjectBox.draw();
+		}
+		moveVertex();
 		page = 1 - page;
 	}	
 }
@@ -360,8 +372,11 @@ void topo() {
 			dfsTopo(i, Topo, Visited);
 	bool confirm = drawYesNoBar("Ban co muon nhap ten mon hoc tuong ung?");
 	if (confirm) {
-		char subject[n][30] = {""};
-		enterSubjectName(subject);
+		char subjects[n][30] = {""};
+		enterSubjectName(subjects);
+		for (int i = 0; i < n; i++) {
+			cout << subjects[i] << endl;
+		}
 	}
 	
 }
@@ -3429,6 +3444,8 @@ bool Button::isClickLMButton() {
 }
 
 void Button::draw() {
+	if (textwidth(this->name) + 10 > this->width)
+		this->width = textwidth(this->name) + 10;
 	//get mau cua khung hinh chung
 	int c = getcolor();
 	//tao nut
