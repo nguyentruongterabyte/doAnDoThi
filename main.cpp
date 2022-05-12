@@ -205,6 +205,8 @@ void showResultKnotVertices(int start, int end, int trace, int counter);//show d
 void topo();//sap xep mon hoc topo
 void dfsTopo(int u, queue &topo, int *Visited);
 void enterSubjectName(char listName[MAX][31], bool *passedSubject, bool *regisSubject);
+void showResultTopoSort(queue topo,char subjects[MAX][31],bool *passedSubject, bool *regisSubject);
+void drawGreenTick(int x, int y);
 void showNoResult(char *resultStr);
 void showWelcome();
 void setUserTextStyle();
@@ -274,6 +276,83 @@ void process() {
 	closegraph();
 }
 
+void drawGreenTick(int x, int y) {
+	int a[10] = {x, y + 8, x + 8, y + 12, x + 20, y, x + 8, y + 20, x, y + 8};
+	char c = getcolor();
+	setfillstyle(1, GREEN);
+	fillpoly(5, a);
+	setfillstyle(1, c);
+}
+
+void showResultTopoSort(queue topo,char subjects[MAX][31],bool *passedSubject, bool *regisSubject) {
+	int index = 0, ans[n], x0, y0, x, y;
+	Button displayBox, titleBar, statusBar1, statusBar2;
+	while (!topo.isEmpty())
+		ans[index++] = topo.pop();
+	titleBar.init(15, 295, 25, 200, YELLOW, BLACK, 1, "DANH SACH MON HOC");
+	statusBar1.init(215, 295, 25, 100, YELLOW, BLACK, 1, "Passed");
+	statusBar2.init(315, 295, 25, 100, YELLOW, BLACK, 1, "Registration");
+	int page = 0;
+	while (true) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		drawFrame();
+		drawTaskBarButtons();
+		drawAllEdges();
+		titleBar.draw();
+		statusBar1.draw();
+		statusBar2.draw();
+		moveVertex();
+		x = -1, y = -1;
+		if (ismouseclick(WM_LBUTTONDBLCLK)) {
+			getmouseclick(WM_LBUTTONDBLCLK, x, y);
+		}
+		y0 = 320;
+		x0 = 215;
+		for (int i = 0; i < n; i++) {
+			displayBox.init(vertices[i].coordinates.x - textwidth(subjects[i]) / 2, vertices[i].coordinates.y - RADIUS, RADIUS * 2, textwidth(subjects[i]), YELLOW, BLACK, 1, subjects[i]);
+			displayBox.draw();
+			displayBox.init(15, y0, 25, 200, WHITE, BLACK, 1, subjects[i]);
+			displayBox.draw();
+			displayBox.init(x0, y0, 25, 100, BLACK, BLACK, 1, "");
+			displayBox.draw();
+			displayBox.init(x0 + (100 - 20) / 2, y0 + 2, 20, 20, BLACK, WHITE, 1, "");
+			displayBox.draw();
+			if (x >= displayBox.coordinates.x && x <= displayBox.coordinates.x + displayBox.width
+			&& y >= displayBox.coordinates.y && y <= displayBox.coordinates.y + displayBox.height) {
+				if (passedSubject[i])
+					passedSubject[i] = false;
+				else 
+					passedSubject[i] = true;
+				clearmouseclick(WM_LBUTTONDOWN);
+			}
+			if (passedSubject[i])
+				drawGreenTick(displayBox.coordinates.x, displayBox.coordinates.y);
+			y0 += 25;
+		}
+		x0 += 100;
+		y0 = 320;
+		for (int i = 0; i < n; i++) {
+			displayBox.init(x0, y0, 25, 100, BLACK, BLACK, 1, "");
+			displayBox.draw();
+			displayBox.init(x0 + (100 - 20) / 2, y0 + 2, 20, 20, BLACK, WHITE, 1, "");
+			displayBox.draw();
+			if (x >= displayBox.coordinates.x && x <= displayBox.coordinates.x + displayBox.width
+			&& y >= displayBox.coordinates.y && y <= displayBox.coordinates.y + displayBox.height) {
+				if (regisSubject[i])
+					regisSubject[i] = false;
+				else
+					regisSubject[i] = true;
+				clearmouseclick(WM_LBUTTONDOWN);
+			}
+			if (regisSubject[i])
+				drawGreenTick(displayBox.coordinates.x, displayBox.coordinates.y);
+			y0 += 25;
+		}
+		page = 1 - page;
+	}
+}
+
 void enterSubjectName(char listName[MAX][31], bool *passedSubject, bool *regisSubject) {
 	int index = 0, i = 0;
 	int page = 0;
@@ -283,21 +362,18 @@ void enterSubjectName(char listName[MAX][31], bool *passedSubject, bool *regisSu
 	char name[31] = "";
 	char request[50];
 	char c = getcolor();
-	Button subjectBox;
+	Button displayBox;
 	Button titleBar;
 	Button statusBar1, statusBar2;
 	titleBar.init(15, 295, 25, 200, YELLOW, BLACK, 1, "DANH SACH MON HOC");
 	statusBar1.init(215, 295, 25, 100, YELLOW, BLACK, 1, "Passed");
 	statusBar2.init(315, 295, 25, 100, YELLOW, BLACK, 1, "Registration");
-	int x0, y0;
+	int x0, y0, x = -1, y = -1;
 //		adjacencyMatrixFrame.init(15, 295, 409, 400, 0, 3, 1, "");
-	Button frame, finishButton, cancelButton, enterNameBar;
+	Button frame, enterNameBar;
 	frame.init(15 + margin, 15 + 2 * margin + 40, height, width, YELLOW, DARKGRAY, 1, "");
-	finishButton.init(15 + 2 * margin, 275 - margin - 30, 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HOAN THANH");
-	cancelButton.init(15 + 3 * margin + (width - 3 * margin) / 2,275 - margin - 30, 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HUY");
 	enterNameBar.init(15 + 2 * margin, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50, 40, (width - 2 * margin), YELLOW, BLACK, 9, "");
 	while (index < n) {
-		y0 = 320;
 		setactivepage(page);
 		setvisualpage(1 - page);
 		drawFrame();
@@ -310,18 +386,21 @@ void enterSubjectName(char listName[MAX][31], bool *passedSubject, bool *regisSu
 		drawVertices();
 		frame.draw();
 		enterNameBar.draw();
-		finishButton.draw();
-		cancelButton.draw();
+		moveVertex();
 		strcpy(request, "Nhap ten mon hoc tuong ung voi dinh ");
+		x = -1, y = -1;
 		strcat(request, vertices[index].name);
+		if (ismouseclick(WM_LBUTTONDBLCLK)) {
+			getmouseclick(WM_LBUTTONDBLCLK, x, y);
+		}
 		if (strcmp(name, "") == 0)
 			outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
 		else 
 			outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);
 		if (i < 30 && strcmp(name, "") != 0)
 			outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2 + textwidth(name), 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, "_");
-		subjectBox.init(vertices[index].coordinates.x - textwidth(name) / 2, vertices[index].coordinates.y - RADIUS, RADIUS * 2, textwidth(name), YELLOW, BLACK, 1, name);
-		subjectBox.draw();
+		displayBox.init(vertices[index].coordinates.x - textwidth(name) / 2, vertices[index].coordinates.y - RADIUS, RADIUS * 2, textwidth(name), YELLOW, BLACK, 1, name);
+		displayBox.draw();
 		if (kbhit()) {
 			char key = getch();
 			if (key == KEY_ENTER) {
@@ -356,19 +435,48 @@ void enterSubjectName(char listName[MAX][31], bool *passedSubject, bool *regisSu
 			if (i < 0)
 				i = 0;
 		}
+		y0 = 320;
 		x0 = 215;
 		for (int i = 0; i < index; i++) {
-			subjectBox.init(vertices[i].coordinates.x - textwidth(listName[i]) / 2, vertices[i].coordinates.y - RADIUS, RADIUS * 2, textwidth(listName[i]), YELLOW, BLACK, 1, listName[i]);
-			subjectBox.draw();
-			subjectBox.init(15, y0, 25, 200, WHITE, BLACK, 1, listName[i]);
-			subjectBox.draw();
-			subjectBox.init(x0, y0, 25, 100, BLACK, BLACK, 1, "");
-			subjectBox.draw();
-			subjectBox.init(x0 + (100 - 20) / 2, y0 + 2, 20, 20, BLACK, WHITE, 1, "");
-			subjectBox.draw();
+			displayBox.init(vertices[i].coordinates.x - textwidth(listName[i]) / 2, vertices[i].coordinates.y - RADIUS, RADIUS * 2, textwidth(listName[i]), YELLOW, BLACK, 1, listName[i]);
+			displayBox.draw();
+			displayBox.init(15, y0, 25, 200, WHITE, BLACK, 1, listName[i]);
+			displayBox.draw();
+			displayBox.init(x0, y0, 25, 100, BLACK, BLACK, 1, "");
+			displayBox.draw();
+			displayBox.init(x0 + (100 - 20) / 2, y0 + 2, 20, 20, BLACK, WHITE, 1, "");
+			displayBox.draw();
+			if (x >= displayBox.coordinates.x && x <= displayBox.coordinates.x + displayBox.width
+			&& y >= displayBox.coordinates.y && y <= displayBox.coordinates.y + displayBox.height) {
+				if (passedSubject[i])
+					passedSubject[i] = false;
+				else 
+					passedSubject[i] = true;
+				clearmouseclick(WM_LBUTTONDOWN);
+			}
+			if (passedSubject[i])
+				drawGreenTick(displayBox.coordinates.x, displayBox.coordinates.y);
 			y0 += 25;
 		}
-		moveVertex();
+		x0 += 100;
+		y0 = 320;
+		for (int i = 0; i < index; i++) {
+			displayBox.init(x0, y0, 25, 100, BLACK, BLACK, 1, "");
+			displayBox.draw();
+			displayBox.init(x0 + (100 - 20) / 2, y0 + 2, 20, 20, BLACK, WHITE, 1, "");
+			displayBox.draw();
+			if (x >= displayBox.coordinates.x && x <= displayBox.coordinates.x + displayBox.width
+			&& y >= displayBox.coordinates.y && y <= displayBox.coordinates.y + displayBox.height) {
+				if (regisSubject[i])
+					regisSubject[i] = false;
+				else
+					regisSubject[i] = true;
+				clearmouseclick(WM_LBUTTONDOWN);
+			}
+			if (regisSubject[i])
+				drawGreenTick(displayBox.coordinates.x, displayBox.coordinates.y);
+			y0 += 25;
+		}
 		page = 1 - page;
 	}	
 }
@@ -388,6 +496,10 @@ void dfsTopo(int u, queue &topo, int *Visited) {
 }
 
 void topo() {
+	if (isEmptyVertex()) {
+		showEmptyVertex();
+		return;
+	}
 	bool passedSubject[n] = {false};
 	bool regisSubject[n] = {false};
 	queue Topo;
@@ -396,15 +508,9 @@ void topo() {
 	for (int i = 0; i < n; i++) 
 		if (!Visited[i])
 			dfsTopo(i, Topo, Visited);
-	bool confirm = drawYesNoBar("Ban co muon nhap ten mon hoc tuong ung?");
-	if (confirm) {
-		char subjects[n][31] = {""};
-		enterSubjectName(subjects, passedSubject, regisSubject);
-		for (int i = 0; i < n; i++) {
-			cout << subjects[i] << endl;
-		}
-	}
-	
+	char subjects[n][31] = {""};
+	enterSubjectName(subjects, passedSubject, regisSubject);
+	showResultTopoSort(Topo, subjects, passedSubject, regisSubject);
 }
 
 void drawEmptySymbol() {
