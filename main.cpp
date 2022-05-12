@@ -204,7 +204,7 @@ bool dfsToCheckKnot(int start, int end, int remove);//ham nay giup kiem tra xem 
 void showResultKnotVertices(int start, int end, int trace, int counter);//show dinh that tu a toi b len man hinh
 void topo();//sap xep mon hoc topo
 void dfsTopo(int u, queue &topo, int *Visited);
-void enterSubjectName(char listName[MAX][30]);
+void enterSubjectName(char listName[MAX][31], bool *passedSubject, bool *regisSubject);
 void showNoResult(char *resultStr);
 void showWelcome();
 void setUserTextStyle();
@@ -274,7 +274,7 @@ void process() {
 	closegraph();
 }
 
-void enterSubjectName(char listName[MAX][31]) {
+void enterSubjectName(char listName[MAX][31], bool *passedSubject, bool *regisSubject) {
 	int index = 0, i = 0;
 	int page = 0;
 	int margin = 5;
@@ -282,10 +282,14 @@ void enterSubjectName(char listName[MAX][31]) {
 	int width = 400 - 2 * margin;
 	char name[31] = "";
 	char request[50];
+	char c = getcolor();
 	Button subjectBox;
 	Button titleBar;
-	Button statusBar;
-	titleBar.init(15, 295, 25, 300, YELLOW, BLACK, 1, "DANH SACH DANG KI MON HOC");
+	Button statusBar1, statusBar2;
+	titleBar.init(15, 295, 25, 200, YELLOW, BLACK, 1, "DANH SACH MON HOC");
+	statusBar1.init(215, 295, 25, 100, YELLOW, BLACK, 1, "Passed");
+	statusBar2.init(315, 295, 25, 100, YELLOW, BLACK, 1, "Registration");
+	int x0, y0;
 //		adjacencyMatrixFrame.init(15, 295, 409, 400, 0, 3, 1, "");
 	Button frame, finishButton, cancelButton, enterNameBar;
 	frame.init(15 + margin, 15 + 2 * margin + 40, height, width, YELLOW, DARKGRAY, 1, "");
@@ -293,12 +297,15 @@ void enterSubjectName(char listName[MAX][31]) {
 	cancelButton.init(15 + 3 * margin + (width - 3 * margin) / 2,275 - margin - 30, 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HUY");
 	enterNameBar.init(15 + 2 * margin, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50, 40, (width - 2 * margin), YELLOW, BLACK, 9, "");
 	while (index < n) {
+		y0 = 320;
 		setactivepage(page);
 		setvisualpage(1 - page);
 		drawFrame();
 		drawTaskBarButtons();
 //		drawMatrix();
 		titleBar.draw();
+		statusBar1.draw();
+		statusBar2.draw();
 		drawAllEdges();
 		drawVertices();
 		frame.draw();
@@ -349,13 +356,18 @@ void enterSubjectName(char listName[MAX][31]) {
 			if (i < 0)
 				i = 0;
 		}
+		x0 = 215;
 		for (int i = 0; i < index; i++) {
 			subjectBox.init(vertices[i].coordinates.x - textwidth(listName[i]) / 2, vertices[i].coordinates.y - RADIUS, RADIUS * 2, textwidth(listName[i]), YELLOW, BLACK, 1, listName[i]);
 			subjectBox.draw();
+			subjectBox.init(15, y0, 25, 200, WHITE, BLACK, 1, listName[i]);
+			subjectBox.draw();
+			subjectBox.init(x0, y0, 25, 100, BLACK, BLACK, 1, "");
+			subjectBox.draw();
+			subjectBox.init(x0 + (100 - 20) / 2, y0 + 2, 20, 20, BLACK, WHITE, 1, "");
+			subjectBox.draw();
+			y0 += 25;
 		}
-//		for (int i = 0; i < index; i++) {
-//			subjectBox.init()
-//		}
 		moveVertex();
 		page = 1 - page;
 	}	
@@ -376,6 +388,8 @@ void dfsTopo(int u, queue &topo, int *Visited) {
 }
 
 void topo() {
+	bool passedSubject[n] = {false};
+	bool regisSubject[n] = {false};
 	queue Topo;
 	int Visited[n];
 	setArrayTo(Visited, n, 0);
@@ -385,7 +399,7 @@ void topo() {
 	bool confirm = drawYesNoBar("Ban co muon nhap ten mon hoc tuong ung?");
 	if (confirm) {
 		char subjects[n][31] = {""};
-		enterSubjectName(subjects);
+		enterSubjectName(subjects, passedSubject, regisSubject);
 		for (int i = 0; i < n; i++) {
 			cout << subjects[i] << endl;
 		}
