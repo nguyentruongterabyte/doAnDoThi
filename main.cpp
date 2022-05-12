@@ -299,7 +299,7 @@ void showResultKnotVertices(int start, int end, int * trace, int counter) {
 		strcat(resultText, vertices[start].name);
 		strcat(resultText, " va dinh ");
 		strcat(resultText, vertices[end].name);
-		strcat(resultText, " vi chung co duong di truc tiep.");
+		strcat(resultText, ".");
 	} else {
 		char counterStr[3];
 		itoa(counter, counterStr, 10);
@@ -409,9 +409,9 @@ void knotVertices() {
 		page = 1 - page;
 	}
 	if (!dfsToCheckKnot(start, end, -1)) {
-		char resultText[60] = "Khong co dinh that duong di tu ";
+		char resultText[60] = "Khong co dinh that giua dinh ";
 		strcat(resultText, vertices[start].name);
-		strcat(resultText, " den ");
+		strcat(resultText, " va dinh ");
 		strcat(resultText, vertices[end].name);
 		strcat(resultText, " vi khong co duong di!");
 		showNoResult(resultText);
@@ -1759,7 +1759,7 @@ bool isUndirectedGraph() {
 	for (int i = 0; i < n; i++) 
 		for (int j = 0; j < n; j++)
 			if (G[i][j])
-				if (G[i][j] != G[j][i] || G[i][j] != 1) 
+				if (G[i][j] != G[j][i] && G[i][j] != 1) 
 					return false;
 	return true;	
 }
@@ -2084,7 +2084,7 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 		time_t now = time(0);
 		tm *ltm = localtime(&now);
 		startTime =ltm->tm_hour * 3600 + ltm->tm_min * 60 + ltm->tm_sec;
-		while(true) {
+		while (true) {
 			now = time(0);
 			ltm = localtime(&now);
 			endTime = ltm->tm_hour * 3600 + ltm->tm_min * 60 + ltm->tm_sec;
@@ -2831,7 +2831,7 @@ void drawAllEdges() {
 		for (int i = 0; i < n; i++) 
 			for(int j = 0; j < n; j++)
 				if (G[i][j]) {
-					if (!G[j][i])
+					if (!G[j][i] || G[i][j] == G[j][i]) 
 						drawArrow(vertices[i], vertices[j], LIGHTRED, G[i][j]);
 					else 
 						drawCurvedArrow(vertices[i], vertices[j], LIGHTRED, G[i][j]);
@@ -2861,7 +2861,7 @@ void drawTriangle(int x1, int y1, int x2, int y2, int color) {
 	a[5] = y2;
 	a[6] = a[0]; 
 	a[7] = a[1];
-	setcolor(color);
+	setfillstyle(1, color);
 	fillpoly(4, a);
 	setlinestyle(SOLID_LINE, 0, 1);
 	setcolor(c);
