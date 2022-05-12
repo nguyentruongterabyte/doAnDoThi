@@ -36,7 +36,8 @@ char guideList[8][500] = {
 enum key {
 	KEY_BACKSPACE = 8,
 	KEY_ESC = 27,
-	KEY_ENTER = 13
+	KEY_ENTER = 13,
+	KEY_SPACE = 32
 };
 
 enum workingZone {
@@ -203,6 +204,7 @@ bool dfsToCheckKnot(int start, int end, int remove);//ham nay giup kiem tra xem 
 void showResultKnotVertices(int start, int end, int trace, int counter);//show dinh that tu a toi b len man hinh
 void topo();//sap xep mon hoc topo
 void dfsTopo(int u, queue &topo, int *Visited);
+void enterSubjectName(char listName[MAX][30]);
 void showNoResult(char *resultStr);
 void showWelcome();
 void setUserTextStyle();
@@ -272,12 +274,75 @@ void process() {
 	closegraph();
 }
 
+void enterSubjectName(char listName[MAX][30]) {
+	int index = 0, i = 0;
+	int page = 0;
+	int margin = 5;
+	int height = 275 - 3 * margin - 40;
+	int width = 400 - 2 * margin;
+	char name[31] = "";
+	char request[50];
+	Button frame, finishButton, cancelButton, enterNameBar;
+	frame.init(15 + margin, 15 + 2 * margin + 40, height, width, YELLOW, DARKGRAY, 1, "");
+	finishButton.init(15 + 2 * margin, 275 - margin - 30, 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HOAN THANH");
+	cancelButton.init(15 + 3 * margin + (width - 3 * margin) / 2,275 - margin - 30, 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HUY");
+	enterNameBar.init(15 + 2 * margin, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50, 40, (width - 2 * margin), YELLOW, BLACK, 9, "");
+	while (index < n) {
+		setactivepage(page);
+		setvisualpage(1 - page);
+		drawFrame();
+		drawTaskBarButtons();
+		drawMatrix();
+		drawAllEdges();
+		drawVertices();
+		frame.draw();
+		enterNameBar.draw();
+		finishButton.draw();
+		cancelButton.draw();
+		strcpy(request, "Nhap ten mon hoc tuong ung voi dinh ");
+		strcat(request, vertices[index].name);
+		if (strcmp(name, "") == 0)
+			outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+		else
+			outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);
+		if (kbhit()) {
+			char key = getch();
+			if (key == KEY_ENTER) {
+				if (strcmp(name, "") != 0)
+					strcpy(listName[index], name);
+				else 
+					strcpy(listName[index], vertices[index].name);
+				strcpy(name, "");
+				i = 0;
+				index++;
+			}
+			if ((key >= 'A' && key <= 'Z')
+			 || (key >= 'a' && key <= 'z')
+			 || (key == KEY_SPACE)
+			 || (key >= '0' && key <= '9'))
+				if (i < 30) {
+					name[i] = key;
+					i++;
+				}
+			if (i > 30)
+				i = 30;
+			if (key == KEY_BACKSPACE) {
+				strnDel(name, i - 1, 1);
+				i--;
+			}
+			if (i < 0)
+				i = 0;
+		}
+		page = 1 - page;
+	}	
+}
+
 void dfsTopo(int u, queue &topo, int *Visited) {
 	Visited[u] = 1;
 	for (int i = 0; i < n; i++) {
 		if (Visited[i] == 1 && G[u][i]) {
 			showNoResult("Loi: do thi bieu dien cac mon hoc tien quyet ton tai chu trinh");
-			return;
+			return process();
 		}
 		if (!Visited[i] && G[u][i])
 			dfsTopo(i, topo, Visited);
@@ -293,6 +358,11 @@ void topo() {
 	for (int i = 0; i < n; i++) 
 		if (!Visited[i])
 			dfsTopo(i, Topo, Visited);
+	bool confirm = drawYesNoBar("Ban co muon nhap ten mon hoc tuong ung?");
+	if (confirm) {
+		char subject[n][30] = {""};
+		enterSubjectName(subject);
+	}
 	
 }
 
@@ -1785,7 +1855,7 @@ bool isUndirectedGraph() {
 	for (int i = 0; i < n; i++) 
 		for (int j = 0; j < n; j++)
 			if (G[i][j])
-				if (G[i][j] != G[j][i] && G[i][j] != 1) 
+				if (G[i][j] != G[j][i] || G[i][j] != 1) 
 					return false;
 	return true;	
 }
@@ -3481,7 +3551,8 @@ void taskBar() {
 				break;
 			}
 			case 9: {
-				outtextxy(340, 15, "Topo sort");
+//				outtextxy(340, 15, "Topo sort");
+				topo();
 				break;
 			}
 			case 10: {
@@ -4089,7 +4160,7 @@ void clearAllVertices() {
 bool drawYesNoBar(char *question) {
 	Button frame, yesButton, noButton;
 	int height = 100;
-	int width = 200;
+	int width = 300;
 	int margin = 5;
 	int x, y;
 	frame.init(425 + (834 - width) / 2 , 20 + (500 - height) / 2, height, width, YELLOW, BLACK, 1, "");
