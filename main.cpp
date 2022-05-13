@@ -229,9 +229,9 @@ int main() {
 	loadFileStartUp();
 	char c = getcolor();
 	showWelcome();
+	drawGraphInAllFiles();
 	setcolor(c);
 	setUserTextStyle();
-
 	process();
 }
 
@@ -267,11 +267,11 @@ void process() {
 			}
 		}
 		page = 1 - page;
-		if (ismouseclick(WM_MOUSEMOVE)) {
-			int x, y;
-			getmouseclick(WM_MOUSEMOVE, x, y);
-			cout << x << " " << y << endl;
-		}
+//		if (ismouseclick(WM_MOUSEMOVE)) {
+//			int x, y;
+//			getmouseclick(WM_MOUSEMOVE, x, y);
+//			cout << x << " " << y << endl;
+//		}
 	}
 	getch();
 	closegraph();
@@ -2485,7 +2485,7 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 				for (int i = 1; i < count; i++) {
 					u = traveler[i - 1];
 					v = traveler[i];
-					if (!G[v][u])
+					if (!G[v][u] || G[u][v] == G[v][u])			
 						drawArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
 					else 
 						drawCurvedArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
@@ -3234,7 +3234,7 @@ void drawArrow(Vertex u, Vertex v, int color, int w) {
 	setcolor(color);
 	line(x11, y11, x22, y22);
 	drawTriangle(2 * x22 - (x2 + x22) / 2, 2 * y22 - (y22 + y2) / 2, x22, y22, color);
-	if (w != 0)
+	if (w != 0) 
 		printWeight((x1 + x2) / 2, (y1 + y2) / 2, w);
 	setcolor(c);
 }
@@ -3714,7 +3714,7 @@ void setTaskBarButtons() {
 	menuBar.init(xM, yM, height, width, YELLOW, LIGHTBLUE, 9, "MENU");
 	helpBar.init(xH, yH, height, width, YELLOW, LIGHTBLUE, 9, "TRO GIUP");
 	fileBar.init(xF, yF, height, width, YELLOW, LIGHTBLUE, 9, "FILE");
-	matrixButton.init(15, 295, 25, 400, YELLOW, BLACK, 1, "Ma tran trong so");
+	matrixButton.init(15, 295, 25, 400, YELLOW, BLACK, 1, "MA TRAN TRONG SO");
 }
 
 void drawTaskBarButtons() {
