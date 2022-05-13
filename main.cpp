@@ -208,6 +208,7 @@ void enterSubjectName(char listName[MAX][31], bool *passedSubject, bool *regisSu
 void showResultTopoSort(queue topo,char subjects[MAX][31],bool *passedSubject, bool *regisSubject);
 void drawGreenTick(int x, int y);
 void showNoResult(char *resultStr);
+void drawHoverMessengerBox(int x, int y, int color, char *messenger);
 void showWelcome();
 void setUserTextStyle();
 void addFile();
@@ -266,14 +267,20 @@ void process() {
 			}
 		}
 		page = 1 - page;
-//		if (ismouseclick(WM_MOUSEMOVE)) {
-//			int x, y;
-//			getmouseclick(WM_MOUSEMOVE, x, y);
-//			cout << x << " " << y << endl;
-//		}
+		if (ismouseclick(WM_MOUSEMOVE)) {
+			int x, y;
+			getmouseclick(WM_MOUSEMOVE, x, y);
+			cout << x << " " << y << endl;
+		}
 	}
 	getch();
 	closegraph();
+}
+
+void drawHoverMessengerBox(int x, int y, int color, char *messenger) {
+	Button box;
+	box.init(x, y, 40, 390, WHITE, color, 1, messenger);
+	box.draw();
 }
 
 void drawGreenTick(int x, int y) {
@@ -286,9 +293,11 @@ void drawGreenTick(int x, int y) {
 
 void showResultTopoSort(queue topo,char subjects[MAX][31],bool *passedSubject, bool *regisSubject) {
 	int index = 0, ans[n], x0, y0, x, y;
-	Button displayBox, titleBar, statusBar1, statusBar2;
+	Button displayBox, titleBar, statusBar1, statusBar2, resultBox, successTitleBox;
 	while (!topo.isEmpty())
 		ans[index++] = topo.pop();
+	resultBox.init(425, 525, 170, 834, BLACK, BLACK, 1, "");
+	successTitleBox.init(425, 525, 25, 834, YELLOW, BLACK, 1, "DANH SACH MON HOC DANG KY THANH CONG");
 	titleBar.init(15, 295, 25, 200, YELLOW, BLACK, 1, "DANH SACH MON HOC");
 	statusBar1.init(215, 295, 25, 100, YELLOW, BLACK, 1, "Passed");
 	statusBar2.init(315, 295, 25, 100, YELLOW, BLACK, 1, "Registration");
@@ -297,15 +306,31 @@ void showResultTopoSort(queue topo,char subjects[MAX][31],bool *passedSubject, b
 		setactivepage(page);
 		setvisualpage(1 - page);
 		drawFrame();
-		drawTaskBarButtons();
+		//drawTaskBarButtons();
 		drawAllEdges();
+		drawEnterToExitText();
 		titleBar.draw();
 		statusBar1.draw();
 		statusBar2.draw();
+		resultBox.draw();
+		successTitleBox.draw();
 		moveVertex();
 		x = -1, y = -1;
 		if (ismouseclick(WM_LBUTTONDBLCLK)) {
 			getmouseclick(WM_LBUTTONDBLCLK, x, y);
+		}
+		int j;
+		for (int i = 0; i < n; i++) {
+			if (!passedSubject[ans[i]]) 
+				continue;
+			for (j = i + 1; j < n; j++) {
+				if (G[ans[j]][ans[i]] && !passedSubject[ans[j]]) {
+//					passedSubject[ans[j]] = true;
+					break;
+				}
+			}
+			if (j != n)
+				break;
 		}
 		y0 = 320;
 		x0 = 215;
@@ -318,6 +343,10 @@ void showResultTopoSort(queue topo,char subjects[MAX][31],bool *passedSubject, b
 			displayBox.draw();
 			displayBox.init(x0 + (100 - 20) / 2, y0 + 2, 20, 20, BLACK, WHITE, 1, "");
 			displayBox.draw();
+			if (i == ans[j]) {
+				displayBox.highLight(BLACK, RED);
+				drawHoverMessengerBox(20, 100, RED, "Khong hop le. Phai qua mon to mau do truoc!");
+			}
 			if (x >= displayBox.coordinates.x && x <= displayBox.coordinates.x + displayBox.width
 			&& y >= displayBox.coordinates.y && y <= displayBox.coordinates.y + displayBox.height) {
 				if (passedSubject[i])
@@ -330,7 +359,38 @@ void showResultTopoSort(queue topo,char subjects[MAX][31],bool *passedSubject, b
 				drawGreenTick(displayBox.coordinates.x, displayBox.coordinates.y);
 			y0 += 25;
 		}
-		x0 += 100;
+		x0 = 580, y0 = 565;
+		for (int i = 0; i < n; i++) {
+			if (!regisSubject[ans[i]]) 
+				continue;
+			bool OK = true;
+			for (j = i + 1; j < n; j++) {
+				if (G[ans[j]][ans[i]] && !passedSubject[ans[j]]) {
+					char regisStatus[60] = "Mon ";
+					strcat(regisStatus, subjects[ans[i]]);
+					strcat(regisStatus, " dang ky KHONG THANH CONG! vi: ");
+					drawHoverMessengerBox(20, 140, BLACK, regisStatus);
+					char regisStatus2[60] = "Mon tien quyet ";
+					strcat(regisStatus2, subjects[ans[j]]);
+					strcat(regisStatus2, " CHUA HOC");
+					drawHoverMessengerBox(20, 180, BLACK, regisStatus2);
+					OK = false;
+					drawArrow(vertices[ans[j]], vertices[ans[i]], LIGHTGREEN, 0);
+					break;
+				}
+			}
+			if (OK) {
+				drawGreenTick(x0 - 20, y0);
+				outtextxy(x0, y0, subjects[ans[i]]);
+				x0 += 250;
+				if (x0 == 580 + 250 * 3) {
+					x0 = 580;
+					y0 += 25;
+				}
+			}
+		}
+		
+		x0 = 215 + 100;
 		y0 = 320;
 		for (int i = 0; i < n; i++) {
 			displayBox.init(x0, y0, 25, 100, BLACK, BLACK, 1, "");
@@ -348,6 +408,11 @@ void showResultTopoSort(queue topo,char subjects[MAX][31],bool *passedSubject, b
 			if (regisSubject[i])
 				drawGreenTick(displayBox.coordinates.x, displayBox.coordinates.y);
 			y0 += 25;
+		}
+		if (kbhit()) {
+			char key = getch();
+			if (key == KEY_ENTER)
+				break;
 		}
 		page = 1 - page;
 	}
