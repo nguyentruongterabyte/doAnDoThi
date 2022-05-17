@@ -23,7 +23,7 @@ using namespace std;
 
 char guideList[8][500] = {
 	"DOUBLE CLICK CHUOT TRAI vao vi tri ban muon tao dinh o khu vuc man hinh thao tac voi dinh -> Nhap ten dinh -> Nhan HOAN THANH (hoac nhan ENTER) -> 1 dinh moi se duoc tao.",
-	"DI CHUYEN chuot toi vi tri dinh bat dau cua canh -> CLICK CHUOT PHAI vao dinh do, mot hop thoat se hien len -> chon TAO CANH -> DI CHUYEN toi vi tri dinh thu 2 va CLICK CHUOT TRAI vao dinh do -> NHAP trong so -> nhan HOAN THANH (hoac nhan ENTER) -> 1 canh moi se duoc tao.",
+	"DI CHUYEN chuot toi vi tri dinh bat dau cua canh -> CLICK CHUOT PHAI vao dinh do, mot hop thoat se hien len -> chon TAO CANH -> DI CHUYEN toi vi tri dinh thu 2 va CLICK CHUOT TRAI vao dinh do -> NHAP trong so (Nhap ky tu * neu muon canh vo huong)-> nhan HOAN THANH (hoac nhan ENTER) -> 1 canh moi se duoc tao.",
 	"DI CHUYEN chuot toi vi tri dinh can sua -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon SUA TEN -> NHAP TEN dinh va nhan HOAN THANH (hoac nhan ENTER).",
 	"Giong nhu cach tao canh nhung o phan nhap trong so ta nhap vao trong so ta muon chinh sua va nhan HOAN THANH (hoac nhan ENTER). Neu muon huy sua canh, CLICK CHUOT PHAI.",
 	"DI CHUYEN chuot toi vi tri dinh can xoa -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon XOA DINH -> mot thanh thong bao hien len hoi ban co chac muon xoa dinh -> nhan CO (hoac nhan ENTER) de xoa dinh / KHONG de huy xoa.",
@@ -405,8 +405,6 @@ void hamilton() {
 		for (int i = 1; i < n; i++) {
 			counterPath = 0;
 			ans[0] = i;
-//			setArrayTo(visited, n, false);
-			//visited[0] = true;
 			hamPath(ans, counterPath, 1, false);
 			if (counterPath)
 				break;
@@ -422,9 +420,7 @@ void hamilton() {
 			//va chon dinh ket thuc duong di
 			int start = chooseVertex("Chon dinh bat dau duong di Hamilton");
 			ans[0] = start;
-//			//visited[start] = true;
 			counterPath = 0;
-//			setArrayTo(visited, n, false);
 			hamPath(ans, counterPath, 1, false);
 			if (!counterPath) {
 				char resultText[100] = "Khong ton tai duong di Hamilton tu dinh ";
@@ -433,7 +429,6 @@ void hamilton() {
 				return;
 			}
 			else {
-				//setArrayTo(visited, n, false);
 				hamPath(ans, counterPath, 1, true);
 			}
 		}
@@ -442,15 +437,8 @@ void hamilton() {
 		//neu co chu trinh Hamilton thi in ra ket qua hamilton
 		int start = chooseVertex("Chon dinh bat dau chu trinh Hamilton");
 		ans[0] = start;
-//		setArrayTo(visited, n, false);
 		hamCycle(ans, counterCycle, 1, true);
 	}
-	
-//	int start = chooseVertex("Chon dinh bat dau");
-//	ans[0] = start;
-//	hamPath(ans, counter2, 1, false);
-//	hamPath(ans, counter2, 1, true);
-//	cout << counterPath << endl;
 }
 
 void hamCycle(int *ans, int &counter, int index, bool showScreen) {
@@ -490,9 +478,6 @@ void hamPath(int *ans, int &counter, int index, bool showScreen) {
 }
 
 void showResultHamPath(int *ans, int counter) {
-	for (int i = 0; i < n; i++) {
-		cout << vertices[ans[i]].name << " -> ";
-	}
 	cout << endl;
 	Button resultBox, xButton;
 	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
@@ -515,6 +500,9 @@ void showResultHamPath(int *ans, int counter) {
 	drawEnterToExitText();
 	drawAllEdges();
 	for (int i = 1; i < n; i++) {
+		strcat(resultText, vertices[ans[i]].name);
+		if (i < n - 1)
+			strcat(resultText, " -> ");
 		resultBox.name = resultText;
 		resultBox.draw();
 		xButton.draw();
@@ -522,9 +510,6 @@ void showResultHamPath(int *ans, int counter) {
 		outtextxy((W_LEFT + W_RIGHT - textwidth(order)) / 2 , 600, order);
 		drawPauseButton(1135, 530, 25, WHITE, false);
 		drawNextButton(1160, 530, 25, WHITE, false);
-		strcat(resultText, vertices[ans[i]].name);
-		if (i != n - 1)
-			strcat(resultText, " -> ");
 		vertices[ans[0]].highLight(YELLOW, LIGHTBLUE);
 		drawArrow(vertices[ans[i - 1]], vertices[ans[i]], LIGHTGREEN, 0);
 		vertices[ans[i]].highLight();
@@ -556,13 +541,6 @@ void showResultHamPath(int *ans, int counter) {
 			return process();
 		delay(200);
 	}
-//	strcat(resultText, vertices[ans[0]].name);
-//	resultBox.name = resultText;
-//	resultBox.draw();
-//	xButton.draw();
-//	outtextxy((W_LEFT + W_RIGHT - textwidth("Ket qua duong di Hamiton")) / 2, 540, "Ket qua duong di Hamiton");
-//	outtextxy((W_LEFT + W_RIGHT - textwidth(order)) / 2 , 600, order);
-//	drawArrow(vertices[ans[n - 1]], vertices[ans[0]], LIGHTGREEN, 0);
 	delay(2500);
  	if (kbhit()) {
  		char key = getch();
@@ -589,9 +567,9 @@ void showResultHamPath(int *ans, int counter) {
 			return;
 		}
 	}
-	delay(2500);
 	if (xButton.isClickLMButton())
 		return process();
+	delay(2500);
 }
 
 void showResultHamCycle(int* ans, int counter) {
@@ -1557,135 +1535,135 @@ void showNoResult(char *resultStr) {
 }
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//bool isSafe(int v, int *path, int pos) {
-//	//mot chuc nang tien ich de kiem tra xem dinh v co the 
-//	//duoc them vao chi muc pos trong chu ky Hamilton duoc xay dung cho den nay
-//	//(duoc luu tru trong path[])
-//	//kiem tra xem dinh nay co ke voi dinh da them truoc do khong
-//	if (!G[path[pos - 1]][v])
-//		return false;
-//	//kiem tra xem dinh da duoc bao gom chua
-//	for (int i = 0; i < pos; i++)
-//		if (path[i] == v)
-//			return false;
-//	return true;
-//}
-
-//bool hamCycleUtil(int v, int *path, int pos) {
-//	//neu tat ca cac dinh la bao gom trong chu trinh Hamilton
-//	if (pos == n) {
-//		//va neu co mot canh tu dinh bao gom dinh cuoi cung den dinh dau tien 
-//		if (G[path[pos - 1]][path[v]])
-//			return true;
-//		else 
-//			return false;
-//	}
-//	//hay thu cac dinh khac nhau nhu mot dinh co kha nang tiep theo 
-//	//trong chu trinh Hamilton. Khong bao gom 0 vi da bao gom dinh 0 
-//	//lam diem bat dau trong hamCycle()
-//	for (int u = 0; u < n; u++) {
-//		//kiem tra xem co the them dinh nay vao chu trinh Hamilton hay khong
-//		if (isSafe(u, path, pos) && v != u) {
-//			path[pos] = u;
-//			//lap lai de xay dung phan con lai cua duong di
-//			if (hamCycleUtil(v, path, pos + 1) == true)
-//				return true;
-//			//neu dinh them v khong dan den duong di, loai bo no
-//			path[pos] = -1;
-//		}
-//	}
-//	//neu khong co dinh nao co the duoc
-//	//them vao chu ky Hamilton duoc xay dung
-//	//cho den hien tai thi tra ve false
-//	return false;
-//}
-
-//void hamCycle() {
-//	if (isEmptyVertex()) {
-//		showEmptyVertex();
-//		return;
-//	}
-//	int *path = new int[n];
-//	for (int i = 0; i < n; i++)
-//		path[i] = -1;
-//	//dat dinh 0 la dinh dau tien trong duong di
-//	//Neu co mot chu trinh Hamilton
-//	//thi duong di co the la bat dau tu diem bat ky 
-//	//diem nao cua chu ky vi do thi la vo huong
-//	path[0] = 0;
-//	if (hamCycleUtil(0, path, 1) == false) {
-//		showNoResult("Do thi khong ton tai chu trinh Hamilton.");
-//		return;
-//	}
-//	int v = chooseVertex("Chon dinh bat dau chu trinh Hamilton");
-//	int index;
-//	for (index = 0; index < n; index++)
-//		if (path[index] == v) {
-//			break;
-//		}
-//	int *subPath = new int[index];
-//	for (int i = 0; i < index; i++) 
-//		subPath[i] = path[i];
-//	for (int i = index; i < n; i++)
-//		path[i - index] = path[i];
-//	for (int i = n - index; i < n; i++)
-//		path[i] = subPath[i - n + index];
-//	showResultHamiltonCycle(path);
-//}
-
-//void showResultHamiltonCycle(int *path) {
-//	
-//	char resultStr[200] = "";
-//	Button resultBox, xButton;
-//	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
-//	for (int i = 0; i < n; i++) {
-//		strcat(resultStr, vertices[path[i]].name);
-//		strcat(resultStr, " -> ");
-//	}
-//	strcat(resultStr, vertices[path[0]].name);
-//	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, resultStr);	
-//	int page = 0;
-//	while (true) {
-//		setactivepage(page);
-//		setvisualpage(1 - page);
-//		drawFrame();
-//		drawTaskBarButtons();
-//		drawMatrix();
-//		drawVertices();
-//		drawAllEdges();
-//		resultBox.draw();
-//		drawEnterToExitText();
-//		xButton.draw();
-//		setactivepage(1);
-//		setvisualpage(1);
-//		vertices[path[0]].highLight();
-//		for (int i = 1; i < n; i++) {
-//			drawArrow(vertices[path[i - 1]], vertices[path[i]], LIGHTGREEN, 0);
-//			delay(200);
-//			vertices[path[i]].highLight();
-//			if (xButton.isClickLMButton())
-//				return;
-//			if (kbhit()) {
-//				char key = getch();
-//				if (key == KEY_ENTER)
-//					return;
-//			}
-//		} 
-//		drawArrow(vertices[path[n - 1]], vertices[path[0]], LIGHTGREEN, 0);
-//		setactivepage(page);
-//		setvisualpage(1 - page);
-//		if (xButton.isClickLMButton())
-//			break;
-//		if (kbhit()) {
-//			char key = getch();
-//			if (key == KEY_ENTER)
-//				break;
-//		}
-//		page = 1 - page;
-//	}
-//}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//bool isSafe(int v, int *path, int pos) {																													//
+//	//mot chuc nang tien ich de kiem tra xem dinh v co the 																									//
+//	//duoc them vao chi muc pos trong chu ky Hamilton duoc xay dung cho den nay																				//
+//	//(duoc luu tru trong path[])																															//
+//	//kiem tra xem dinh nay co ke voi dinh da them truoc do khong																							//
+//	if (!G[path[pos - 1]][v])																																//
+//		return false;            																															//
+//	//kiem tra xem dinh da duoc bao gom chua																												//
+//	for (int i = 0; i < pos; i++)                                                                                                     						//
+//		if (path[i] == v)                                                                                                                                 	//
+//			return false;                                                                                                                                 	//
+//	return true;																																		  	//
+//}																																							//
+//																																							//																																					       //
+//bool hamCycleUtil(int v, int *path, int pos) {																											//
+//	//neu tat ca cac dinh la bao gom trong chu trinh Hamilton																								//
+//	if (pos == n) {																																			//
+//		//va neu co mot canh tu dinh bao gom dinh cuoi cung den dinh dau tien 																				//
+//		if (G[path[pos - 1]][path[v]])																														//
+//			return true;																																	//
+//		else 																																				//
+//			return false;																																	//
+//	}																																						//
+//	//hay thu cac dinh khac nhau nhu mot dinh co kha nang tiep theo 																						//
+//	//trong chu trinh Hamilton. Khong bao gom 0 vi da bao gom dinh 0 																						//
+//	//lam diem bat dau trong hamCycle()																														//
+//	for (int u = 0; u < n; u++) {																															//
+//		//kiem tra xem co the them dinh nay vao chu trinh Hamilton hay khong																				//
+//		if (isSafe(u, path, pos) && v != u) {																												//
+//			path[pos] = u;																																	//
+//			//lap lai de xay dung phan con lai cua duong di																									//
+//			if (hamCycleUtil(v, path, pos + 1) == true)																										//
+//				return true;																																//
+//			//neu dinh them v khong dan den duong di, loai bo no																							//
+//			path[pos] = -1;																																	//
+//		}																																					//
+//	}																																						//
+//	//neu khong co dinh nao co the duoc																														//
+//	//them vao chu ky Hamilton duoc xay dung																												//
+//	//cho den hien tai thi tra ve false																														//
+//	return false;																																			//
+//}																																							//
+//																																							//
+//void hamCycle() {																																			//
+//	if (isEmptyVertex()) {																																	//
+//		showEmptyVertex();																																	//
+//		return;																																				//
+//	}																																						//
+//	int *path = new int[n];																																	//
+//	for (int i = 0; i < n; i++)																																//
+//		path[i] = -1;																																		//
+//	//dat dinh 0 la dinh dau tien trong duong di																											//
+//	//Neu co mot chu trinh Hamilton																															//
+//	//thi duong di co the la bat dau tu diem bat ky 																										//
+//	//diem nao cua chu ky vi do thi la vo huong																												//
+//	path[0] = 0;																																			//
+//	if (hamCycleUtil(0, path, 1) == false) {																												//
+//		showNoResult("Do thi khong ton tai chu trinh Hamilton.");																							//
+//		return;																																				//
+//	}																																						//			
+//	int v = chooseVertex("Chon dinh bat dau chu trinh Hamilton");																							//
+//	int index;																																				//
+//	for (index = 0; index < n; index++)																														//
+//		if (path[index] == v) {																																//
+//			break;																																			//
+//		}																																					//
+//	int *subPath = new int[index];																															//
+//	for (int i = 0; i < index; i++) 																														//
+//		subPath[i] = path[i];																																//
+//	for (int i = index; i < n; i++)																															//
+//		path[i - index] = path[i];																															//
+//	for (int i = n - index; i < n; i++)																														//
+//		path[i] = subPath[i - n + index];																													//
+//	showResultHamiltonCycle(path);																															//
+//}																																							//
+//																																							//
+//void showResultHamiltonCycle(int *path) {																													//
+//																																							//
+//	char resultStr[200] = "";																																//
+//	Button resultBox, xButton;																																//
+//	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");																									//
+//	for (int i = 0; i < n; i++) {																															//
+//		strcat(resultStr, vertices[path[i]].name);																											//
+//		strcat(resultStr, " -> ");																															//
+//	}																																						//
+//	strcat(resultStr, vertices[path[0]].name);																												//
+//	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, resultStr);																						//
+//	int page = 0;																																			//
+//	while (true) {																																			//
+//		setactivepage(page);																																//
+//		setvisualpage(1 - page);																															//
+//		drawFrame();																																		//
+//		drawTaskBarButtons();																																//
+//		drawMatrix();																																		//
+//		drawVertices();																																		//
+//		drawAllEdges();																																		//
+//		resultBox.draw();																																	//
+//		drawEnterToExitText();																																//
+//		xButton.draw();																																		//
+//		setactivepage(1);																																	//
+//		setvisualpage(1);																																	//
+//		vertices[path[0]].highLight();																														//
+//		for (int i = 1; i < n; i++) {																														//
+//			drawArrow(vertices[path[i - 1]], vertices[path[i]], LIGHTGREEN, 0);																				//
+//			delay(200);																																		//
+//			vertices[path[i]].highLight();																													//
+//			if (xButton.isClickLMButton())																													//
+//				return;																																		//
+//			if (kbhit()) {																																	//
+//				char key = getch();																															//
+//				if (key == KEY_ENTER)																														//
+//					return;																																	//
+//			}																																				//
+//		} 																																					//
+//		drawArrow(vertices[path[n - 1]], vertices[path[0]], LIGHTGREEN, 0);																					//
+//		setactivepage(page);																																//
+//		setvisualpage(1 - page);																															//
+//		if (xButton.isClickLMButton())																														//
+//			break;																																			//
+//		if (kbhit()) {																																		//
+//			char key = getch();																																//
+//			if (key == KEY_ENTER)																															//
+//				break;																																		//
+//		}																																					//
+//		page = 1 - page;																																	//
+//	}																																						//
+//}																																							//																
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -1998,8 +1976,7 @@ void showResultBridgeEdge(int *trace, int counter) {
 	}
 	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, resultText);
 //	cout << resultText << endl;
-	int page = 0;
-	bool isUDGr = isUndirectedGraph(); 
+	int page = 0; 
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
@@ -2014,13 +1991,21 @@ void showResultBridgeEdge(int *trace, int counter) {
 		for (int i = 0; i < counter * 2; i += 2) {
 			int u = trace[i];
 			int v = trace[i + 1];
-			if (isUDGr) {
+			if (G[u][v] == -1) 
 				drawLine(vertices[u], vertices[v], LIGHTGREEN, 0);
-			} else {
-				if (!G[v][u])
+			else if (!G[v][u] && G[u][v])
+				drawArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
+			else if (G[v][u] && !G[u][v])
+				drawArrow(vertices[v], vertices[u], LIGHTGREEN, G[v][u]);
+			else {
+				if (u < v) {
 					drawArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
-				else 
-					drawCurvedArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
+					drawCurvedArrow(vertices[v], vertices[u], LIGHTGREEN, G[v][u]);
+				}
+				else {
+					drawArrow(vertices[v], vertices[u], LIGHTGREEN, G[v][u]);
+					drawCurvedArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);		
+				}
 			}
 		}
 		if (kbhit()) {
@@ -2391,8 +2376,16 @@ void showResultConnectedComponents(int **connectedComponents, int count, bool is
 							if (h != -1 && G[v][h]) {
 								if (!G[h][v])
 									drawArrow(vertices[v], vertices[h], i + 1, G[v][h]);
-								else
-									drawCurvedArrow(vertices[v], vertices[h], i + 1, G[v][h]);	
+								else {
+									if (v < h) {
+										drawCurvedArrow(vertices[h], vertices[v], i + 1, G[h][v]);	
+										drawArrow(vertices[v], vertices[h], i + 1, G[v][h]);
+									}
+									else {
+										drawCurvedArrow(vertices[v], vertices[h], i + 1, G[v][h]);	
+										drawArrow(vertices[h], vertices[v], i + 1, G[h][v]);
+									}
+								}
 							}
 						}
 					}
@@ -2473,10 +2466,9 @@ int DFS(int u) {
 bool isUndirectedGraph() {
 	for (int i = 0; i < n; i++) 
 		for (int j = 0; j < n; j++)
-			if (G[i][j])
-				if (G[i][j] != G[j][i] || G[i][j] != 1) 
-					return false;
-	return true;	
+			if (G[i][j] == -1)
+				return true;
+	return false;	
 }
 
 bool isConnectedGraph() {
@@ -4740,11 +4732,6 @@ void loadFileStartUp() {
 		for (int i = 0; i < n; i++) 
 			for (int j = 0; j < n; j++) {
 				input >> G[i][j];
-				if (G[i][j] == -1) {
-					n = 0;
-					input.close();
-					return;
-				}
 			}
 	} else {
 		n = 0;
