@@ -37,7 +37,7 @@ enum key {
 	KEY_BACKSPACE = 8,
 	KEY_ESC = 27,
 	KEY_ENTER = 13,
-	KEY_SPACE = 32
+	KEY_SPACE = 32,
 };
 
 enum workingZone {
@@ -51,8 +51,6 @@ struct Point/*cau truc diem*/ {
 	int x;
 	int y;
 };
-
-
 
 struct Vertex /*cau truc dinh*/{
 	Point coordinates;
@@ -88,12 +86,14 @@ struct Button /*cau truc nut*/{
 	void changeColor(int tColor, int bColor);//doi mau nut
 };
 
+
+/*-------------------------------------GLOBAL VALUE------------------------------------------------------------------------------------------------------------------------*/
 int Time;
-int n = MAX;
+int n = 0;
 Vertex vertices[MAX];
 int G[MAX][MAX];
 bool visited[MAX];
-
+/**/
 Button menuBar/*thanh menu*/, 
 		helpBar/*thanh help*/,
 		fileBar/*thanh file*/,
@@ -107,117 +107,167 @@ Button menuBar/*thanh menu*/,
 		addEdgeButton/*Nut tao canh*/, 
 		matrixButton;
 
-void process();
-void helpBox(char *helpStr);
+
+/*-----------------------------MENU & SETTING-------------------------------------------------------------------------------------------------------------------------------*/
 void setTaskBarButtons();
-void drawTaskBarButtons();
 void taskBar();//ham thao tac thanh tac vu 
 int menuTools();//ham hien thi bang cong cu menu
 int helpTools();//ham hien thi bang cong cu huong dan
 int fileTools();//ham hien thi bang cong cu file
 void setFrame();//cai dat khung hien thi
-void drawFrame();//
-void drawVertices();
-void initDefaultVertices();//khi goi ham nay toa do cua cac dinh se tu dong la x = -1, y = -1
+void setUserTextStyle();
+void process();
+
+
+
+/*--------------------------------------FILE---------------------------------------------------------------------------------------------------------------------------------*/
 void loadFileStartUp();//khi tat chuong trinh, 
 					  //file nay se co chuc nang luu lai thong tin dinh canh cho lan chay tiep theo
 void saveFileStartUp();//khi tao hay x oa dinh, file nay se co tac dung cap nhat lai nhung gi chung ta thao tac
+void drawGraphInAllFiles();
+bool isFileText(char *fileName);
+void openFile();
+void loadFile(char *fileName);
+void addFile();
+void deleteFile();
+void saveFile();
+
+
+/*-----------------------------------VERTEX & EDGE----------------------------------------------------------------------------------------------------------------------------*/
 void addVertexToList(Vertex vtex);//ham nay giup chung ta them mot dinh vua tao vao danh sach dinh
+void addEdge(int startPos);//tao canh
 void clearAllVertices();//ham nay cho phep xoa tat ca cac dinh va cung dang hien thi tren man hinh
-bool drawYesNoBar(char *question);//ham nay dung de xac nhan truoc khi lam gi do
-bool isClickOtherVertex(Vertex vtexs);//kiem tra xem chuot trai co click vao dinh hay khong.
-									  // Ham nay su dung de tranh tao dinh de len dinh khac
+int chooseVertex(char * request);//chon dinh
+void deleteVertex(int pos);//xoa dinh trong danh sach tai mot vi tri cho truoc
+void editVertex();//xoa dinh tren do thi hoac doi ten dinh
+int enterWeight();//ham nhap trong so
+void helpBox(char *helpStr);
 bool isEmptyVertex();//Kiem tra dinh tren man hinh da co hay chua
+bool isClickOtherVertex(Vertex vtex);//kiem tra xem chuot trai co click vao dinh hay khong.
+void initDefaultVertices();//khi goi ham nay toa do cua cac dinh se tu dong la x = -1, y = -1
+void moveVertex();//ham di chuyen dinh
+void printWeight(int x, int y, int w);//xuat trong so 
+bool isUndirectedGraph();//ham kiem tra do thi co vo huong khong
+bool isConnectedGraph();//ham kiem tra do thi co lien thong hay khong
+
+
+/*--------------------------------------STRING & ARRAY--------------------------------------------------------------------------------------------------------------------------*/
 void strnDel(char *s, int pos, int count);//ham xoa ki tu trong chuoi
 void upper(char *s);//Doi day s thanh chu in hoa
-bool isNamesake(char *s);//Ham de kiem tra xem ten cua dinh vua tao co cung ten voi cac dinh khac khong
-void drawAddVertex(int x, int y);//ve mot vong tron khi tao dinh
-void editVertex();//xoa dinh tren do thi hoac doi ten dinh
+bool drawYesNoBar(char *question);//ham nay dung de xac nhan truoc khi lam gi do
+									  // Ham nay su dung de tranh tao dinh de len dinh khac
 void initEditTools();//Khoi tao hop thoai chinh sua dinh
+bool isNamesake(char *s);//Ham de kiem tra xem ten cua dinh vua tao co cung ten voi cac dinh khac khong
+template <typename Type>
+void set2DArrayTo(Type **arr, unsigned height, unsigned width, int value);//cho tat ca cac gia tri cua ma tran ve mot gia tri nao do
+template <typename Type>
+void setArrayTo(Type *arr, int num, int value);//ham de cho tat ca cac gia tri cua mang ve mot gia tri nao do
+int** create2DArray(unsigned height, unsigned width);//tao ma tran
+char** create2DStrArray(unsigned height, unsigned width);
+void delete2DArray(int **arr, unsigned height, unsigned width);//xoa ma tran
+void delete2DStrArray(char **arr, unsigned height, unsigned width);
+void enterSubjectName(char listName[MAX][31], bool *passedSubject, bool *regisSubject);
+int min(int a, int b);
+
+
+/*------------------------------------------DRAW---------------------------------------------------------------------------------------------------------------------------------*/
+void clearmouseclick();//xoa tat ca cac click chuot
+void drawTaskBarButtons();
+void drawFrame();//
 void drawEditTools(int x, int y);//Ve hop thoai edit dinh
-void deleteVertex(int pos);//xoa dinh trong danh sach tai mot vi tri cho truoc
-void moveVertex();//ham di chuyen dinh
 void drawMatrix();//ve ma tran trong so
 void drawArrow(Vertex u, Vertex v, int color, int w);//ve mui ten
 void drawTriangle(int x1, int y1, int x2, int y2, int color);//ve hinh tam giac dung cho mui ten
 void drawLine(Vertex u, Vertex v, int color, int w);//ve duong noi hai dinh, ap dung cho do thi vo huong
-void printWeight(int x, int y, int w);//xuat trong so 
+void drawAddVertex(int x, int y);//ve mot vong tron khi tao dinh
 void drawAllEdges();//ham ve tat ca cac canh
 void drawAllEdges(int color);//ham ve tat ca cac canh voi mau do nguoi dung chon
 void drawCurvedArrow(Vertex u, Vertex v, int color, int w);//ve mui ten dang cong
 void drawCurvedArrow2(Vertex u, Vertex v, int color, int w);
-void addEdge(int startPos);//tao canh
-int enterWeight();//ham nhap trong so
-void bfsTraveler(int u);
+void drawEnterToExitText();//in ra dong "press ENTER to exit" o goc phai duoi man hinh lam viec
+void drawVertices();
+void drawKeyToExitText();//in ra dong "press KEY to exit" o goc phai duoi man hinh lam viec
+						//ham nay thuong duoc dung cho cac ham khong co ket qua 
+void drawUserManualBox(char *guideStr, char *title);//ve bang huong dan su dung
+void drawHoverMessengerBox(int x, int y, int color, char *messenger);
+void drawGreenTick(int x, int y);
+void drawEmptySymbol();
+void drawPauseButton(int x, int y, int height, int color, bool border);
+void drawPlayButton(int x, int y, int height, int color, bool border);
+void drawNextButton(int x, int y, int height, int color, bool border);
+void showWelcome();
+void showSuccessfullyBox(char * successContent);
+void showNoResult(char *resultStr);
+void showEmptyVertex();//show man hinh khong co canh nao ca
+
+
+/*--------------------------------BFS-------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 void BFS();
+void bfsTraveler(int u);
 void showResultBFS(int *trace, char *resultText, int count);//show ket qua thuat toan duyet BFS ra man hinh
-void dfsTraveler(int u);
+/*--------------------------------DFS-------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 void DFS();
+void dfsTraveler(int u);
 void showResultDFS(int *trace, char *resultText, int count);//show ket qua thuat toan duyet DFS ra man hinh
-int chooseVertex(char * request);//chon dinh
-template <typename Type>
-void setArrayTo(Type *arr, int num, int value);//ham de cho tat ca cac gia tri cua mang ve mot gia tri nao do
-void clearmouseclick();//xoa tat ca cac click chuot
+/*--------------------------------PATHXY----------------------------------------------------------------------------------------------------------------------------------------------------------*/
 void pathXY();//tim duong di ngan nhat tu x toi y
 void dijkstra(int start, int end);//thuat toan tim duong di ngan nhat
 int minDistance(int *dist, bool *sptSet);// mot ham tien ich de tim dinh voi gia tri khoang cach toi thieu, 
-										 //tu tap hop cac dinh chua duoc bao gom trong cay duong dan ngan nhat
 void showResultPathXY(int *trace, int *dist, int start, int end);//show ra man hinh duong di ngan nhat tu x toi y
+										 						//tu tap hop cac dinh chua duoc bao gom trong cay duong dan ngan nhat
+
+
+/*--------------------------------EULER------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 void eulerCycle(int u);//ham tim chu trinh euler
 void showResultEulerCycle(stack CE, char * resultText);//show ket qua chu trinh euler ra man hinh
-bool isUndirectedGraph();//ham kiem tra do thi co vo huong khong
-bool isConnectedGraph();//ham kiem tra do thi co lien thong hay khong
+
+
+/*--------------------------------CONNECTED COMPONENT----------------------------------------------------------------------------------------------------------------------------------------------*/
 int DFS(int u);//duyet theo chieu sau
 void connectedComponents();//thanh phan lien thong
 int countConnectedComponents();//tinh thanh phan lien thong cua do thi
 int countConnectedComponents(int **connectedComponents);//tinh thanh phan lien thong cua do thi 
 														//va tra ve mang cac thanh phan lien thong cua do thi
-void showResultConnectedComponents(int **connectedComponents, int count, bool isUndirectedGraph, char *resultText);//show ra man hinh thanh phan lien thong cua do thi
-int** create2DArray(unsigned height, unsigned width);//tao ma tran
-char** create2DStrArray(unsigned height, unsigned width);
-void delete2DArray(int **arr, unsigned height, unsigned width);//xoa ma tran
-void delete2DStrArray(char **arr, unsigned height, unsigned width);
-template <typename Type>
-void set2DArrayTo(Type **arr, unsigned height, unsigned width, int value);//cho tat ca cac gia tri cua ma tran ve mot gia tri nao do
-void drawEnterToExitText();//in ra dong "press ENTER to exit" o goc phai duoi man hinh lam viec
-void drawKeyToExitText();//in ra dong "press KEY to exit" o goc phai duoi man hinh lam viec
-						//ham nay thuong duoc dung cho cac ham khong co ket qua 
-int min(int a, int b);
-void tarjanAlgo(int u, int *disc, int *lowLink, stack &stk, bool *stkItem, int **componentsList, int &counter);//thuat toan tim thanh phan lien thong manh trong do thi co huong
-void bridgeUtil(int u, int *disc, int *lowLink, int *parent, int &counter, int *trace, int &index);//thuat toan tim canh cau
 int countStrongConComponent(int **compnentsList);//dem thanh phan lien thong manh va tim thanh phan lien thong manh
-void drawUserManualBox(char *guideStr, char *title);//ve bang huong dan su dung
+void tarjanAlgo(int u, int *disc, int *lowLink, stack &stk, bool *stkItem, int **componentsList, int &counter);//thuat toan tim thanh phan lien thong manh trong do thi co huong
+void showResultConnectedComponents(int **connectedComponents, int count, bool isUndirectedGraph, char *resultText);//show ra man hinh thanh phan lien thong cua do thi
+
+
+/*--------------------------------BRIDGE EDGE------------------------------------------------------------------------------------------------------------------------------------------------------*/
 void bridgeEdges();//duyet canh cau
+void bridgeUtil(int u, int *disc, int *lowLink, int *parent, int &counter, int *trace, int &index);//thuat toan tim canh cau
 void showResultBridgeEdge(int *trace, int counter);//show ket qua tim canh cau ra man hinh
-void showEmptyVertex();//show man hinh khong co canh nao ca
+
+
+/*-------------------------------CUT VERTEX---------------------------------------------------------------------------------------------------------------------------------------------------------*/
 void cutVertices();//dinh tru
 void cutVerticesUtil(int u, int *disc,int *lowLink, int parent, bool *isCutVertex);//thuat toan tim dinh tru
 void showResultCutVertices(bool *isCutVertex, int counter);//show ra man hinh ket qua dinh tru
-void openFile();
-void loadFile(char *fileName);
-void showResultHamiltonCycle(int *path);//show ket qua chu trinh hamilton ra man hinh
-bool isSafe(int v, int *path, int pos);
-bool hamCycleUtil(int v, int *path, int pos);//mot chuc nang tien ich de quy de giai quyet van de chu trinh Hamilton
-void hamCycle();//Hamilton
+
+
+/*-------------------------------HAMILTON-----------------------------------------------------------------------------------------------------------------------------------------------------------*/
+//void showResultHamiltonCycle(int *path);//show ket qua chu trinh hamilton ra man hinh
+//bool isSafe(int v, int *path, int pos);
+//bool hamCycleUtil(int v, int *path, int pos);//mot chuc nang tien ich de quy de giai quyet van de chu trinh Hamilton
+//void hamCycle();//Hamilton
+void hamilton();
+void hamCycle(int *ans, int &counter, int index, bool showScreen);
+void hamPath(int *ans, int &counter, bool showScreen);
+void showResultHamCycle(int *ans, int counter);
+void showResultHamPath(int *ans, int counter);
+
+/*-------------------------------KNOT VERTEX--------------------------------------------------------------------------------------------------------------------------------------------------------*/
 void knotVertices();//tim dinh that
 bool dfsToCheckKnot(int start, int end, int remove);//ham nay giup kiem tra xem lieu co ton tai duong di giua hai dinh khong 
 void showResultKnotVertices(int start, int end, int trace, int counter);//show dinh that tu a toi b len man hinh
+
+
+/*---------------------------------TOPO SORT---------------------------------------------------------------------------------------------------------------------------------------------------------*/
 void topo();//sap xep mon hoc topo
 void dfsTopo(int u, queue &topo, int *Visited);
-void enterSubjectName(char listName[MAX][31], bool *passedSubject, bool *regisSubject);
 void showResultTopoSort(queue topo,char subjects[MAX][31],bool *passedSubject, bool *regisSubject);
-void drawGreenTick(int x, int y);
-void showNoResult(char *resultStr);
-void drawHoverMessengerBox(int x, int y, int color, char *messenger);
-void showWelcome();
-void setUserTextStyle();
-void addFile();
-void deleteFile();
-void saveFile();
-void showSuccessfullyBox(char * successContent);
-void drawGraphInAllFiles();
-bool isFileText(char *fileName);
-void drawEmptySymbol();
+/*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
 
 int main() {
 	initwindow(1280, 720, "Do an do thi", 50, 20);
@@ -227,11 +277,10 @@ int main() {
 	initDefaultVertices();
 	initEditTools();
 	loadFileStartUp();
-	char c = getcolor();
-	showWelcome();
-	drawGraphInAllFiles();
-	setcolor(c);
-	setUserTextStyle();
+//	char c = getcolor();
+//	showWelcome();
+//	setcolor(c);
+setUserTextStyle();
 	process();
 }
 
@@ -267,14 +316,63 @@ void process() {
 			}
 		}
 		page = 1 - page;
-//		if (ismouseclick(WM_MOUSEMOVE)) {
-//			int x, y;
-//			getmouseclick(WM_MOUSEMOVE, x, y);
-//			cout << x << " " << y << endl;
-//		}
+		if (ismouseclick(WM_MOUSEMOVE)) {
+			int x, y;
+			getmouseclick(WM_MOUSEMOVE, x, y);
+			cout << x << " " << y << endl;
+		}
 	}
 	getch();
 	closegraph();
+}
+
+void drawNextButton(int x, int y, int height, int color, bool border) {
+	if (border) 
+		rectangle(x, y, x + height, y + height);
+	int a[8] = {x + height / 4, y + height / 4, 
+			    x + height / 2, y + height / 2, 
+				x + height / 4, y + 3 * height / 4,
+				x + height / 4, y + height / 4};
+	int b[10] = {x + height / 2    , y + height / 4,
+				 x + 3 * height / 4, y + height / 4,
+				 x + 3 * height / 4, y + 3 * height / 4,
+				 x + height / 2    , y + 3 * height / 4, 
+				 x + height / 2    , y + height / 4};
+	char c = getcolor();
+	setfillstyle(1, color);
+	fillpoly(4, a);
+	fillpoly(5, b);
+	setfillstyle(1, c);
+}
+
+void drawPlayButton(int x, int y, int height, int color, bool border) {
+	if (border) 
+		rectangle(x, y, x + height, y + height);
+	int a[8] = {x + height / 4    , y + height / 4, 
+			    x + 3 * height / 4, y + height / 2, 
+				x + height / 4    , y + 3 * height / 4,
+				x + height / 4    , y + height / 4};
+	char c = getcolor();
+	setfillstyle(1, color);
+	fillpoly(4, a);
+	setfillstyle(1, c);
+}
+void drawPauseButton(int x, int y, int height, int color, bool border) {
+	if (border)
+		rectangle(x, y, x + height, y + height);
+	int a[10]  = { x + height / 5    , y + height / 6, 
+				   x + 2 * height / 5, y + height / 6,
+				   x + 2 * height / 5, y + 5 * height / 6,
+				   x + height / 5    , y + 5 * height / 6, 
+				   x + height / 5    , y + height / 6 };
+	char c = getcolor();
+	setfillstyle(1, color);
+	fillpoly(5, a);
+	for (int i = 0; i < 10; i++)
+		if (!(i % 2))
+			a[i] += (2 * height / 5);
+	fillpoly(5, a);	
+	setfillstyle(1, c);
 }
 
 void drawHoverMessengerBox(int x, int y, int color, char *messenger) {
@@ -291,7 +389,156 @@ void drawGreenTick(int x, int y) {
 	setfillstyle(1, c);
 }
 
-void showResultTopoSort(queue topo,char subjects[MAX][31],bool *passedSubject, bool *regisSubject) {
+void hamilton() {
+	Time = 1;
+	setArrayTo(visited, n, false);
+	int ans[n + 1], counter = 0, counter2 = 0;
+	ans[0] = 0;
+	hamCycle(ans, counter, 1, false);
+	
+	int start = chooseVertex("Chon dinh bat dau");
+	ans[0] = start;
+	hamCycle(ans, counter, 1, true);
+	
+}
+
+
+
+void hamPath(int *ans, int counter) {
+	visited[counter - 1] = true;
+	for (int i = 0; i < n; i++) {
+		if (G[ans[counter - 1]][i] && !visited[i]) {
+			ans[counter] = i;
+			visited[i] = true;
+			if (counter < n)
+				hamPath(ans, counter + 1);	
+		visited[i] = false;
+		}
+	}
+}
+
+void showResultHamCycle(int* ans, int counter) {
+	Button resultBox, xButton;
+	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
+	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
+	char resultText[100] = "";
+	char order[12] = "", indexStr[5], counterStr[5];
+	itoa(Time, indexStr, 10);
+	Time++;
+	itoa(counter, counterStr, 10);
+	strcat(order, indexStr);
+	strcat(order, "/");
+	strcat(order, counterStr);
+	strcat(resultText, vertices[ans[0]].name);
+	strcat(resultText, " -> ");
+	setactivepage(1);
+	setvisualpage(1);
+	drawFrame();
+	drawVertices();
+	drawTaskBarButtons();
+	drawEnterToExitText();
+	drawAllEdges();
+	for (int i = 1; i < n; i++) {
+		
+		resultBox.name = resultText;
+		resultBox.draw();
+		xButton.draw();
+		outtextxy((W_LEFT + W_RIGHT - textwidth("Ket qua chu trinh Hamiton")) / 2, 540, "Ket qua chu trinh Hamiton");
+		outtextxy((W_LEFT + W_RIGHT - textwidth(order)) / 2 , 600, order);
+		drawPauseButton(1135, 530, 25, WHITE, false);
+		drawNextButton(1160, 530, 25, WHITE, false);
+		strcat(resultText, vertices[ans[i]].name);
+		strcat(resultText, " -> ");
+		vertices[ans[0]].highLight(YELLOW, LIGHTBLUE);
+		drawArrow(vertices[ans[i - 1]], vertices[ans[i]], LIGHTGREEN, 0);
+		vertices[ans[i]].highLight();
+		if (kbhit()) {
+			char key = getch();
+			if (key == KEY_ENTER)
+				return process();
+			else if (key == KEY_SPACE) {
+				resultBox.draw();
+				xButton.draw();
+				outtextxy((W_LEFT + W_RIGHT - textwidth("Ket qua chu trinh Hamiton")) / 2, 540, "Ket qua chu trinh Hamiton");
+				outtextxy((W_LEFT + W_RIGHT - textwidth(order)) / 2 , 600, order);
+				drawPlayButton(1135, 530, 25, WHITE, true);
+				drawNextButton(1160, 530, 25, WHITE, false);
+ 				getch();
+			}
+			else if (key == KEY_RIGHT) {
+				resultBox.draw();
+				xButton.draw();
+				outtextxy((W_LEFT + W_RIGHT - textwidth("Ket qua chu trinh Hamiton")) / 2, 540, "Ket qua chu trinh Hamiton");
+				outtextxy((W_LEFT + W_RIGHT - textwidth(order)) / 2 , 600, order);
+				drawPauseButton(1135, 530, 25, WHITE, false);
+				drawNextButton(1160, 530, 25, WHITE, true);
+				delay(200);
+				return;
+			}
+		}
+		if (xButton.isClickLMButton())
+			return process();
+		delay(200);
+	}
+	strcat(resultText, vertices[ans[0]].name);
+	resultBox.name = resultText;
+	resultBox.draw();
+	xButton.draw();
+	outtextxy((W_LEFT + W_RIGHT - textwidth("Ket qua chu trinh Hamiton")) / 2, 540, "Ket qua chu trinh Hamiton");
+	outtextxy((W_LEFT + W_RIGHT - textwidth(order)) / 2 , 600, order);
+	drawArrow(vertices[ans[n - 1]], vertices[ans[0]], LIGHTGREEN, 0);
+	delay(2500);
+ 	if (kbhit()) {
+ 		char key = getch();
+ 		if (key == KEY_ENTER)
+ 			return process();
+ 		else if (key == KEY_SPACE) {
+			resultBox.draw();
+			xButton.draw();
+			outtextxy((W_LEFT + W_RIGHT - textwidth("Ket qua chu trinh Hamiton")) / 2, 540, "Ket qua chu trinh Hamiton");
+			outtextxy((W_LEFT + W_RIGHT - textwidth(order)) / 2 , 600, order);
+			drawPlayButton(1135, 530, 25, WHITE, true);
+			drawNextButton(1160, 530, 25, WHITE, false);
+ 			getch();
+		}
+		else if (key == KEY_RIGHT) {
+			resultBox.draw();
+			xButton.draw();
+			outtextxy((W_LEFT + W_RIGHT - textwidth("Ket qua chu trinh Hamiton")) / 2, 540, "Ket qua chu trinh Hamiton");
+			outtextxy((W_LEFT + W_RIGHT - textwidth(order)) / 2 , 600, order);
+			drawPauseButton(1135, 530, 25, WHITE, false);
+			drawNextButton(1160, 530, 25, WHITE, true);
+			delay(200);
+			return;
+		}
+	}
+	delay(2500);
+	if (xButton.isClickLMButton())
+		return process();
+	//delay(2500);
+//	setactivepage(0);
+//	setvisualpage(0);
+}
+
+void hamCycle(int *ans, int &counter, int index, bool showScreen) {
+	for (int i = 0; i < n; i++) {
+		if (G[ans[index - 1]][i] && !visited[i]) {
+			ans[index] = i;
+			visited[i] = true;
+			if (index < n)
+				hamCycle(ans, counter, index + 1, showScreen);
+			else if (ans[index] == ans[0]) {
+				if (showScreen)
+					showResultHamCycle(ans, counter);
+				else
+					counter++;
+			} 
+			visited[i] = false;
+		}
+	}
+}
+
+void showResultTopoSort(queue topo, char subjects[MAX][31],bool *passedSubject, bool *regisSubject) {
 	int index = 0, ans[n], x0, y0, x, y;
 	Button displayBox, titleBar, statusBar1, statusBar2, resultBox, successTitleBox;
 	while (!topo.isEmpty())
@@ -1148,133 +1395,138 @@ void showNoResult(char *resultStr) {
 	}
 }
 
-bool isSafe(int v, int *path, int pos) {
-	//mot chuc nang tien ich de kiem tra xem dinh v co the 
-	//duoc them vao chi muc pos trong chu ky Hamilton duoc xay dung cho den nay
-	//(duoc luu tru trong path[])
-	//kiem tra xem dinh nay co ke voi dinh da them truoc do khong
-	if (!G[path[pos - 1]][v])
-		return false;
-	//kiem tra xem dinh da duoc bao gom chua
-	for (int i = 0; i < pos; i++)
-		if (path[i] == v)
-			return false;
-	return true;
-}
 
-bool hamCycleUtil(int v, int *path, int pos) {
-	//neu tat ca cac dinh la bao gom trong chu trinh Hamilton
-	if (pos == n) {
-		//va neu co mot canh tu dinh bao gom dinh cuoi cung den dinh dau tien 
-		if (G[path[pos - 1]][path[v]])
-			return true;
-		else 
-			return false;
-	}
-	//hay thu cac dinh khac nhau nhu mot dinh co kha nang tiep theo 
-	//trong chu trinh Hamilton. Khong bao gom 0 vi da bao gom dinh 0 
-	//lam diem bat dau trong hamCycle()
-	for (int u = 0; u < n; u++) {
-		//kiem tra xem co the them dinh nay vao chu trinh Hamilton hay khong
-		if (isSafe(u, path, pos) && v != u) {
-			path[pos] = u;
-			//lap lai de xay dung phan con lai cua duong di
-			if (hamCycleUtil(v, path, pos + 1) == true)
-				return true;
-			//neu dinh them v khong dan den duong di, loai bo no
-			path[pos] = -1;
-		}
-	}
-	//neu khong co dinh nao co the duoc
-	//them vao chu ky Hamilton duoc xay dung
-	//cho den hien tai thi tra ve false
-	return false;
-}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//bool isSafe(int v, int *path, int pos) {
+//	//mot chuc nang tien ich de kiem tra xem dinh v co the 
+//	//duoc them vao chi muc pos trong chu ky Hamilton duoc xay dung cho den nay
+//	//(duoc luu tru trong path[])
+//	//kiem tra xem dinh nay co ke voi dinh da them truoc do khong
+//	if (!G[path[pos - 1]][v])
+//		return false;
+//	//kiem tra xem dinh da duoc bao gom chua
+//	for (int i = 0; i < pos; i++)
+//		if (path[i] == v)
+//			return false;
+//	return true;
+//}
 
-void hamCycle() {
-	if (isEmptyVertex()) {
-		showEmptyVertex();
-		return;
-	}
-	int *path = new int[n];
-	for (int i = 0; i < n; i++)
-		path[i] = -1;
-	//dat dinh 0 la dinh dau tien trong duong di
-	//Neu co mot chu trinh Hamilton
-	//thi duong di co the la bat dau tu diem bat ky 
-	//diem nao cua chu ky vi do thi la vo huong
-	path[0] = 0;
-	if (hamCycleUtil(0, path, 1) == false) {
-		showNoResult("Do thi khong ton tai chu trinh Hamilton.");
-		return;
-	}
-	int v = chooseVertex("Chon dinh bat dau chu trinh Hamilton");
-	int index;
-	for (index = 0; index < n; index++)
-		if (path[index] == v) {
-			break;
-		}
-	int *subPath = new int[index];
-	for (int i = 0; i < index; i++) 
-		subPath[i] = path[i];
-	for (int i = index; i < n; i++)
-		path[i - index] = path[i];
-	for (int i = n - index; i < n; i++)
-		path[i] = subPath[i - n + index];
-	showResultHamiltonCycle(path);
-}
+//bool hamCycleUtil(int v, int *path, int pos) {
+//	//neu tat ca cac dinh la bao gom trong chu trinh Hamilton
+//	if (pos == n) {
+//		//va neu co mot canh tu dinh bao gom dinh cuoi cung den dinh dau tien 
+//		if (G[path[pos - 1]][path[v]])
+//			return true;
+//		else 
+//			return false;
+//	}
+//	//hay thu cac dinh khac nhau nhu mot dinh co kha nang tiep theo 
+//	//trong chu trinh Hamilton. Khong bao gom 0 vi da bao gom dinh 0 
+//	//lam diem bat dau trong hamCycle()
+//	for (int u = 0; u < n; u++) {
+//		//kiem tra xem co the them dinh nay vao chu trinh Hamilton hay khong
+//		if (isSafe(u, path, pos) && v != u) {
+//			path[pos] = u;
+//			//lap lai de xay dung phan con lai cua duong di
+//			if (hamCycleUtil(v, path, pos + 1) == true)
+//				return true;
+//			//neu dinh them v khong dan den duong di, loai bo no
+//			path[pos] = -1;
+//		}
+//	}
+//	//neu khong co dinh nao co the duoc
+//	//them vao chu ky Hamilton duoc xay dung
+//	//cho den hien tai thi tra ve false
+//	return false;
+//}
 
-void showResultHamiltonCycle(int *path) {
-	
-	char resultStr[200] = "";
-	Button resultBox, xButton;
-	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
-	for (int i = 0; i < n; i++) {
-		strcat(resultStr, vertices[path[i]].name);
-		strcat(resultStr, " -> ");
-	}
-	strcat(resultStr, vertices[path[0]].name);
-	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, resultStr);	
-	int page = 0;
-	while (true) {
-		setactivepage(page);
-		setvisualpage(1 - page);
-		drawFrame();
-		drawTaskBarButtons();
-		drawMatrix();
-		drawVertices();
-		drawAllEdges();
-		resultBox.draw();
-		drawEnterToExitText();
-		xButton.draw();
-		setactivepage(1);
-		setvisualpage(1);
-		vertices[path[0]].highLight();
-		for (int i = 1; i < n; i++) {
-			drawArrow(vertices[path[i - 1]], vertices[path[i]], LIGHTGREEN, 0);
-			delay(200);
-			vertices[path[i]].highLight();
-			if (xButton.isClickLMButton())
-				return;
-			if (kbhit()) {
-				char key = getch();
-				if (key == KEY_ENTER)
-					return;
-			}
-		} 
-		drawArrow(vertices[path[n - 1]], vertices[path[0]], LIGHTGREEN, 0);
-		setactivepage(page);
-		setvisualpage(1 - page);
-		if (xButton.isClickLMButton())
-			break;
-		if (kbhit()) {
-			char key = getch();
-			if (key == KEY_ENTER)
-				break;
-		}
-		page = 1 - page;
-	}
-}
+//void hamCycle() {
+//	if (isEmptyVertex()) {
+//		showEmptyVertex();
+//		return;
+//	}
+//	int *path = new int[n];
+//	for (int i = 0; i < n; i++)
+//		path[i] = -1;
+//	//dat dinh 0 la dinh dau tien trong duong di
+//	//Neu co mot chu trinh Hamilton
+//	//thi duong di co the la bat dau tu diem bat ky 
+//	//diem nao cua chu ky vi do thi la vo huong
+//	path[0] = 0;
+//	if (hamCycleUtil(0, path, 1) == false) {
+//		showNoResult("Do thi khong ton tai chu trinh Hamilton.");
+//		return;
+//	}
+//	int v = chooseVertex("Chon dinh bat dau chu trinh Hamilton");
+//	int index;
+//	for (index = 0; index < n; index++)
+//		if (path[index] == v) {
+//			break;
+//		}
+//	int *subPath = new int[index];
+//	for (int i = 0; i < index; i++) 
+//		subPath[i] = path[i];
+//	for (int i = index; i < n; i++)
+//		path[i - index] = path[i];
+//	for (int i = n - index; i < n; i++)
+//		path[i] = subPath[i - n + index];
+//	showResultHamiltonCycle(path);
+//}
+
+//void showResultHamiltonCycle(int *path) {
+//	
+//	char resultStr[200] = "";
+//	Button resultBox, xButton;
+//	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
+//	for (int i = 0; i < n; i++) {
+//		strcat(resultStr, vertices[path[i]].name);
+//		strcat(resultStr, " -> ");
+//	}
+//	strcat(resultStr, vertices[path[0]].name);
+//	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, resultStr);	
+//	int page = 0;
+//	while (true) {
+//		setactivepage(page);
+//		setvisualpage(1 - page);
+//		drawFrame();
+//		drawTaskBarButtons();
+//		drawMatrix();
+//		drawVertices();
+//		drawAllEdges();
+//		resultBox.draw();
+//		drawEnterToExitText();
+//		xButton.draw();
+//		setactivepage(1);
+//		setvisualpage(1);
+//		vertices[path[0]].highLight();
+//		for (int i = 1; i < n; i++) {
+//			drawArrow(vertices[path[i - 1]], vertices[path[i]], LIGHTGREEN, 0);
+//			delay(200);
+//			vertices[path[i]].highLight();
+//			if (xButton.isClickLMButton())
+//				return;
+//			if (kbhit()) {
+//				char key = getch();
+//				if (key == KEY_ENTER)
+//					return;
+//			}
+//		} 
+//		drawArrow(vertices[path[n - 1]], vertices[path[0]], LIGHTGREEN, 0);
+//		setactivepage(page);
+//		setvisualpage(1 - page);
+//		if (xButton.isClickLMButton())
+//			break;
+//		if (kbhit()) {
+//			char key = getch();
+//			if (key == KEY_ENTER)
+//				break;
+//		}
+//		page = 1 - page;
+//	}
+//}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 void loadFile(char *fileName) {
 	char path[100] = "filesInProgram//";
@@ -1371,9 +1623,9 @@ void openFile() {
 			&& y >= xButton.coordinates.y && y <= xButton.coordinates.y + xButton.height)
 				break;
 			if (index < 40) {
-				settextstyle(1, 0, 4);
+				//settextstyle(1, 0, 4);
 				addFileButton.draw();
-				setUserTextStyle();
+				//setUserTextStyle();
 				char tmpAddName[2] = "+";
 				if (addFileButton.isHover()) {
 					addFileButton.name = "Tao file moi";
@@ -1873,7 +2125,7 @@ void connectedComponents() {
 		strcat(resultText, " thanh phan lien thong");
 		showResultConnectedComponents(list, counter, 1, resultText);
 	}
-	else if (isConnectedGraph()){
+	else if (isConnectedGraph()) {
 		counter = countStrongConComponent(list);
 		if (counter == 1)
 			//neu counter == 1 thi suy ra day la do thi lien thong manh
@@ -2485,7 +2737,7 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 				for (int i = 1; i < count; i++) {
 					u = traveler[i - 1];
 					v = traveler[i];
-					if (!G[v][u] || G[u][v] == G[v][u])			
+					if (!G[v][u])
 						drawArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
 					else 
 						drawCurvedArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
@@ -3234,7 +3486,7 @@ void drawArrow(Vertex u, Vertex v, int color, int w) {
 	setcolor(color);
 	line(x11, y11, x22, y22);
 	drawTriangle(2 * x22 - (x2 + x22) / 2, 2 * y22 - (y22 + y2) / 2, x22, y22, color);
-	if (w != 0) 
+	if (w != 0)
 		printWeight((x1 + x2) / 2, (y1 + y2) / 2, w);
 	setcolor(c);
 }
@@ -3714,7 +3966,7 @@ void setTaskBarButtons() {
 	menuBar.init(xM, yM, height, width, YELLOW, LIGHTBLUE, 9, "MENU");
 	helpBar.init(xH, yH, height, width, YELLOW, LIGHTBLUE, 9, "TRO GIUP");
 	fileBar.init(xF, yF, height, width, YELLOW, LIGHTBLUE, 9, "FILE");
-	matrixButton.init(15, 295, 25, 400, YELLOW, BLACK, 1, "MA TRAN TRONG SO");
+	matrixButton.init(15, 295, 25, 400, YELLOW, BLACK, 1, "Ma tran trong so");
 }
 
 void drawTaskBarButtons() {
@@ -3770,7 +4022,8 @@ void taskBar() {
 				break;
 			}
 			case 10: {
-				hamCycle();
+				//hamCycle();
+				hamilton();
 				break;
 			}
 			default:
@@ -4445,8 +4698,7 @@ void setUserTextStyle() {
 }
 
 void showWelcome() {
-	settextstyle(0, 0, 10);
-	
+	settextstyle(0, 0, 10);	
 	char c = getcolor();
 	setcolor(YELLOW);
 	if (ismouseclick(WM_LBUTTONDOWN) 
