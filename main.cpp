@@ -252,7 +252,7 @@ void showResultCutVertices(bool *isCutVertex, int counter);//show ra man hinh ke
 //void hamCycle();//Hamilton
 void hamilton();
 void hamCycle(int *ans, int &counter, int index, bool showScreen);
-void hamPath(int *ans, int &counter, bool showScreen);
+void hamPath(int *ans, int &counter, int index, bool showScreen);
 void showResultHamCycle(int *ans, int counter);
 void showResultHamPath(int *ans, int counter);
 
@@ -316,11 +316,11 @@ void process() {
 			}
 		}
 		page = 1 - page;
-		if (ismouseclick(WM_MOUSEMOVE)) {
-			int x, y;
-			getmouseclick(WM_MOUSEMOVE, x, y);
-			cout << x << " " << y << endl;
-		}
+//		if (ismouseclick(WM_MOUSEMOVE)) {
+//			int x, y;
+//			getmouseclick(WM_MOUSEMOVE, x, y);
+//			cout << x << " " << y << endl;
+//		}
 	}
 	getch();
 	closegraph();
@@ -393,28 +393,35 @@ void hamilton() {
 	Time = 1;
 	setArrayTo(visited, n, false);
 	int ans[n + 1], counter = 0, counter2 = 0;
-	ans[0] = 0;
-	hamCycle(ans, counter, 1, false);
+//	ans[0] = 0;
+//	hamCycle(ans, counter, 1, false);
+//	hamPath(ans, counter2, 1, false);
 	
 	int start = chooseVertex("Chon dinh bat dau");
 	ans[0] = start;
-	hamCycle(ans, counter, 1, true);
-	
+	hamPath(ans, counter2, 1, false);
+//	hamPath(ans, counter2, 1, true);
+	cout << counter2;
 }
 
-
-
-void hamPath(int *ans, int counter) {
-	visited[counter - 1] = true;
+void hamPath(int *ans, int &counter, int index, bool showScreen) {
 	for (int i = 0; i < n; i++) {
-		if (G[ans[counter - 1]][i] && !visited[i]) {
-			ans[counter] = i;
+		if (G[ans[index - 1]][i] && !visited[i]) {
+			ans[index] = i;
 			visited[i] = true;
-			if (counter < n)
-				hamPath(ans, counter + 1);	
-		visited[i] = false;
+			if (index < n - 1)
+				hamPath(ans, counter, index + 1, showScreen);
+			else if (showScreen) 
+				showResultHamPath(ans, counter);
+			else 
+				counter++; 
+			visited[i] = false;
 		}
 	}
+}
+
+void showResultHamPath(int *ans, int counter) {
+	cout << counter << endl;
 }
 
 void showResultHamCycle(int* ans, int counter) {
@@ -1110,12 +1117,13 @@ void saveFile() {
 					if (confirm) {
 						confirm = drawYesNoBar("Du lieu file cu se bi mat. Tiep tuc");
 						if (confirm) {
-							char fileSaveName[60];
-							strcpy(fileSaveName, "fileInProgram//");
+							char fileSaveName[60] = "";
+							strcat(fileSaveName, "filesInProgram//");
 							strcat(fileSaveName, fileButton[i].name);
+							//strcat(fileSaveName, ".txt");
 							fstream output;
 							output.open(fileSaveName, ios::out);
-							output << n;
+							output << n << endl;
 							for (int k = 0; k < n; k++) 
 								output << vertices[k].coordinates.x << " " 
 									<< vertices[k].coordinates.y << " "
