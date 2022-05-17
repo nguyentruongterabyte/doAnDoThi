@@ -390,18 +390,85 @@ void drawGreenTick(int x, int y) {
 }
 
 void hamilton() {
+	if (isEmptyVertex()) {
+		showEmptyVertex();
+		return;
+	}
 	Time = 1;
 	setArrayTo(visited, n, false);
-	int ans[n + 1], counter = 0, counter2 = 0;
-//	ans[0] = 0;
-//	hamCycle(ans, counter, 1, false);
-//	hamPath(ans, counter2, 1, false);
+	int ans[n + 1], counterCycle = 0, counterPath = 0;
+	ans[0] = 0;
+	hamCycle(ans, counterCycle, 1, false);
+	if (!counterCycle) {
+		//neu do thi khong co chu trinh hamilton
+		//test xem co duong di hamilton hay khong
+		for (int i = 1; i < n; i++) {
+			counterPath = 0;
+			ans[0] = i;
+//			setArrayTo(visited, n, false);
+			//visited[0] = true;
+			hamPath(ans, counterPath, 1, false);
+			if (counterPath)
+				break;
+		}
+		if (!counterPath) {
+			//neu khong co thi in ra ket qua khong co
+			showNoResult("Do thi nay khong co chu trinh hay duong di Hamilton nao.");
+			return;
+			//ket thuc ham
+		}
+		else {
+			//neu co duong di hamilton thi chon dinh bat dau duong di
+			//va chon dinh ket thuc duong di
+			int start = chooseVertex("Chon dinh bat dau duong di Hamilton");
+			ans[0] = start;
+//			//visited[start] = true;
+			counterPath = 0;
+//			setArrayTo(visited, n, false);
+			hamPath(ans, counterPath, 1, false);
+			if (!counterPath) {
+				char resultText[100] = "Khong ton tai duong di Hamilton tu dinh ";
+				strcat(resultText, vertices[start].name);
+				showNoResult(resultText);
+				return;
+			}
+			else {
+				//setArrayTo(visited, n, false);
+				hamPath(ans, counterPath, 1, true);
+			}
+		}
+	}
+	else {
+		//neu co chu trinh Hamilton thi in ra ket qua hamilton
+		int start = chooseVertex("Chon dinh bat dau chu trinh Hamilton");
+		ans[0] = start;
+//		setArrayTo(visited, n, false);
+		hamCycle(ans, counterCycle, 1, true);
+	}
 	
-	int start = chooseVertex("Chon dinh bat dau");
-	ans[0] = start;
-	hamPath(ans, counter2, 1, false);
+//	int start = chooseVertex("Chon dinh bat dau");
+//	ans[0] = start;
+//	hamPath(ans, counter2, 1, false);
 //	hamPath(ans, counter2, 1, true);
-	cout << counter2;
+//	cout << counterPath << endl;
+}
+
+void hamCycle(int *ans, int &counter, int index, bool showScreen) {
+	for (int i = 0; i < n; i++) {
+		if (G[ans[index - 1]][i] && !visited[i]) {
+			ans[index] = i;
+			visited[i] = true;
+			if (index < n)
+				hamCycle(ans, counter, index + 1, showScreen);
+			else if (ans[index] == ans[0]) {
+				if (showScreen)
+					showResultHamCycle(ans, counter);
+				else
+					counter++;
+			} 
+			visited[i] = false;
+		}
+	}
 }
 
 void hamPath(int *ans, int &counter, int index, bool showScreen) {
@@ -411,17 +478,120 @@ void hamPath(int *ans, int &counter, int index, bool showScreen) {
 			visited[i] = true;
 			if (index < n - 1)
 				hamPath(ans, counter, index + 1, showScreen);
-			else if (showScreen) 
-				showResultHamPath(ans, counter);
-			else 
-				counter++; 
+			else if (/*ans[index] == end && */!visited[ans[0]]){
+				if (showScreen) 
+					showResultHamPath(ans, counter);
+				else 
+					counter++;
+			} 
 			visited[i] = false;
 		}
 	}
 }
 
 void showResultHamPath(int *ans, int counter) {
-	cout << counter << endl;
+	for (int i = 0; i < n; i++) {
+		cout << vertices[ans[i]].name << " -> ";
+	}
+	cout << endl;
+	Button resultBox, xButton;
+	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
+	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
+	char resultText[100] = "";
+	char order[12] = "", indexStr[5], counterStr[5];
+	itoa(Time, indexStr, 10);
+	Time++;
+	itoa(counter, counterStr, 10);
+	strcat(order, indexStr);
+	strcat(order, "/");
+	strcat(order, counterStr);
+	strcat(resultText, vertices[ans[0]].name);
+	strcat(resultText, " -> ");
+	setactivepage(1);
+	setvisualpage(1);
+	drawFrame();
+	drawVertices();
+	drawTaskBarButtons();
+	drawEnterToExitText();
+	drawAllEdges();
+	for (int i = 1; i < n; i++) {
+		resultBox.name = resultText;
+		resultBox.draw();
+		xButton.draw();
+		outtextxy((W_LEFT + W_RIGHT - textwidth("Ket qua chu trinh Hamiton")) / 2, 540, "Ket qua chu trinh Hamiton");
+		outtextxy((W_LEFT + W_RIGHT - textwidth(order)) / 2 , 600, order);
+		drawPauseButton(1135, 530, 25, WHITE, false);
+		drawNextButton(1160, 530, 25, WHITE, false);
+		strcat(resultText, vertices[ans[i]].name);
+		if (i != n - 1)
+			strcat(resultText, " -> ");
+		vertices[ans[0]].highLight(YELLOW, LIGHTBLUE);
+		drawArrow(vertices[ans[i - 1]], vertices[ans[i]], LIGHTGREEN, 0);
+		vertices[ans[i]].highLight();
+		if (kbhit()) {
+			char key = getch();
+			if (key == KEY_ENTER)
+				return process();
+			else if (key == KEY_SPACE) {
+				resultBox.draw();
+				xButton.draw();
+				outtextxy((W_LEFT + W_RIGHT - textwidth("Ket qua duong di Hamiton")) / 2, 540, "Ket qua duong di Hamiton");
+				outtextxy((W_LEFT + W_RIGHT - textwidth(order)) / 2 , 600, order);
+				drawPlayButton(1135, 530, 25, WHITE, true);
+				drawNextButton(1160, 530, 25, WHITE, false);
+ 				getch();
+			}
+			else if (key == KEY_RIGHT) {
+				resultBox.draw();
+				xButton.draw();
+				outtextxy((W_LEFT + W_RIGHT - textwidth("Ket qua duong di Hamiton")) / 2, 540, "Ket qua duong di Hamiton");
+				outtextxy((W_LEFT + W_RIGHT - textwidth(order)) / 2 , 600, order);
+				drawPauseButton(1135, 530, 25, WHITE, false);
+				drawNextButton(1160, 530, 25, WHITE, true);
+				delay(200);
+				return;
+			}
+		}
+		if (xButton.isClickLMButton())
+			return process();
+		delay(200);
+	}
+//	strcat(resultText, vertices[ans[0]].name);
+//	resultBox.name = resultText;
+//	resultBox.draw();
+//	xButton.draw();
+//	outtextxy((W_LEFT + W_RIGHT - textwidth("Ket qua duong di Hamiton")) / 2, 540, "Ket qua duong di Hamiton");
+//	outtextxy((W_LEFT + W_RIGHT - textwidth(order)) / 2 , 600, order);
+//	drawArrow(vertices[ans[n - 1]], vertices[ans[0]], LIGHTGREEN, 0);
+	delay(2500);
+ 	if (kbhit()) {
+ 		char key = getch();
+ 		if (key == KEY_ENTER)
+ 			return process();
+ 		else if (key == KEY_SPACE) {
+			resultBox.draw();
+			xButton.draw();
+			outtextxy((W_LEFT + W_RIGHT - textwidth("Ket qua duong di Hamiton")) / 2, 540, "Ket qua duong di Hamiton");
+			outtextxy((W_LEFT + W_RIGHT - textwidth(order)) / 2 , 600, order);
+			drawPlayButton(1135, 530, 25, WHITE, true);
+			drawNextButton(1160, 530, 25, WHITE, false);
+ 			getch();
+ 			return;
+		}
+		else if (key == KEY_RIGHT) {
+			resultBox.draw();
+			xButton.draw();
+			outtextxy((W_LEFT + W_RIGHT - textwidth("Ket qua duong di Hamiton")) / 2, 540, "Ket qua duong di Hamiton");
+			outtextxy((W_LEFT + W_RIGHT - textwidth(order)) / 2 , 600, order);
+			drawPauseButton(1135, 530, 25, WHITE, false);
+			drawNextButton(1160, 530, 25, WHITE, true);
+			delay(200);
+			return;
+		}
+	}
+	delay(2500);
+	if (xButton.isClickLMButton())
+		return process();
 }
 
 void showResultHamCycle(int* ans, int counter) {
@@ -527,23 +697,6 @@ void showResultHamCycle(int* ans, int counter) {
 //	setvisualpage(0);
 }
 
-void hamCycle(int *ans, int &counter, int index, bool showScreen) {
-	for (int i = 0; i < n; i++) {
-		if (G[ans[index - 1]][i] && !visited[i]) {
-			ans[index] = i;
-			visited[i] = true;
-			if (index < n)
-				hamCycle(ans, counter, index + 1, showScreen);
-			else if (ans[index] == ans[0]) {
-				if (showScreen)
-					showResultHamCycle(ans, counter);
-				else
-					counter++;
-			} 
-			visited[i] = false;
-		}
-	}
-}
 
 void showResultTopoSort(queue topo, char subjects[MAX][31],bool *passedSubject, bool *regisSubject) {
 	int index = 0, ans[n], x0, y0, x, y;
@@ -1554,14 +1707,8 @@ void loadFile(char *fileName) {
 			
 		}
 		for (int i = 0; i < n; i++) 
-			for (int j = 0; j < n; j++) {
+			for (int j = 0; j < n; j++) 
 				input >> G[i][j];
-				if (G[i][j] == -1) {
-					n = 0;
-					input.close();
-					return;
-				}
-			}
 	} else {
 		n = 0;
 		FILE * newFile = fopen("filesInProgram//startUpFile.txt", "a");
@@ -3174,7 +3321,7 @@ int enterWeight() {
 		}
 		if (kbhit()) {
 			char key = getch();
-			if (key >= '0' && key <= '9')
+			if ((key >= '0' && key <= '9') || key == '*')
 				if (i < 3) {
 					weightStr[i] = key;
 					i++;
@@ -3202,6 +3349,10 @@ int enterWeight() {
 			outtextxy(15 + (400 - width) / 2 + (width - textwidth(weightStr)) / 2 + textwidth(weightStr), 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(weightStr)) / 2, "_");
 		
 		page = 1 - page;
+	}
+	for (int j = 0; j < i; j++) {
+		if (weightStr[j] == '*')
+			return -1;
 	}
 	return atoi(weightStr);//itoa
 }
@@ -3266,6 +3417,8 @@ void addEdge(int startPos) {
 				if ((x0 - xL) * (x0 - xL) + (y0 - yL) * (y0 - yL) > RADIUS * RADIUS &&
 				(xV - xL) * (xV - xL) + (yV - yL) * (yV - yL) <= RADIUS * RADIUS) {
 					G[i][j] = enterWeight();
+					if (G[i][j] == -1) 
+						G[j][i] = -1;
 					checked = true;
 				}
 			}
@@ -3358,7 +3511,7 @@ void drawCurvedArrow(Vertex u, Vertex v, int color, int w) {
 	float theta = atan2((y1 + y2) / 2 - yO, (x1 + x2) / 2 - xO);
 	float xT = xO + r * cos(theta);
 	float yT = yO + r * sin(theta);
-	if (xT < 425 || xT > 1259 || yT < 20 || yT > 520)
+	if (xT < W_LEFT || xT > W_RIGHT || yT < W_TOP || yT > W_BOTTOM)
 		return drawCurvedArrow2(u, v, color, w);
 	setcolor(color);
 	setlinestyle(SOLID_LINE, 1, 2);
@@ -3389,22 +3542,26 @@ void drawAllEdges(int color) {
 }
 
 void drawAllEdges() {
-	if (isUndirectedGraph()) {
-		for (int i = 0; i < n; i++) 
-			for(int j = 0; j < n; j++)
-				if (G[i][j]) 
+	
+
+	for (int i = 0; i < n; i++) 
+		for(int j = 0; j < n; j++)
+			if (G[i][j]) {
+				if (!G[j][i]) 
+					drawArrow(vertices[i], vertices[j], LIGHTRED, G[i][j]);
+				else if (G[i][j] == -1)
 					drawLine(vertices[i], vertices[j], LIGHTRED, 0);
-	}
-	else {
-		for (int i = 0; i < n; i++) 
-			for(int j = 0; j < n; j++)
-				if (G[i][j]) {
-					if (!G[j][i] || G[i][j] == G[j][i]) 
+				else  {
+					if (i < j) {
 						drawArrow(vertices[i], vertices[j], LIGHTRED, G[i][j]);
-					else 
-						drawCurvedArrow(vertices[i], vertices[j], LIGHTRED, G[i][j]);
-				} 
-	}
+					}
+					else
+						drawCurvedArrow(vertices[i], vertices[j], LIGHTRED, G[i][j]);//duong cong
+				}
+				//G[0][2] duong cong
+						//G[2][0]
+						
+			} 
 }
 
 void printWeight(int x, int y, int w) {
@@ -3523,7 +3680,10 @@ void drawMatrix() {
 		//khoi tao gia tri cua cac nut dinh trong ma tran trong so
 		for (int j = 0; j < n; j++) {
 			char numText[3];
-			itoa(G[i][j], numText, 10);//chuyen trong so canh sang dang text
+			if (G[i][j] != -1)
+				itoa(G[i][j], numText, 10);//chuyen trong so canh sang dang text
+			else 
+				strcpy(numText, "1");
 			square.init(x0, y0, squareEdge, squareEdge, WHITE, BLACK, 1, numText);
 			//square.highLight();
 			square.draw();
@@ -3539,6 +3699,8 @@ void drawMatrix() {
 				G[i][j] = enterWeight();
 				if (!G[i][j])
 					G[i][j] = tmpGij;
+				else if (G[i][j] == -1)
+					G[j][i] = -1;
 			}
 			
  			x0 += squareEdge;
