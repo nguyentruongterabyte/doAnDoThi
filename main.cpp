@@ -1,16 +1,8 @@
-#include <iostream>
 #include <graphics.h>
-#include <windows.h>
-#include <stdio.h>
-#include <conio.h>
-#include <stdlib.h>
 #include <fstream>
-#include <string.h>
 #include <math.h>
 #include <time.h>
-#include <Windows.h>
 #include <dirent.h>
-#include <sys/stat.h>
 #include "include/stack.hpp"
 #include "include/queue.hpp"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
@@ -25,7 +17,7 @@ char guideList[8][500] = {
 	"DOUBLE CLICK CHUOT TRAI vao vi tri ban muon tao dinh o khu vuc man hinh thao tac voi dinh -> Nhap ten dinh -> Nhan HOAN THANH (hoac nhan ENTER) -> 1 dinh moi se duoc tao.",
 	"DI CHUYEN chuot toi vi tri dinh bat dau cua canh -> CLICK CHUOT PHAI vao dinh do, mot hop thoat se hien len -> chon TAO CANH -> DI CHUYEN toi vi tri dinh thu 2 va CLICK CHUOT TRAI vao dinh do -> NHAP trong so (Nhap ky tu * neu muon canh vo huong)-> nhan HOAN THANH (hoac nhan ENTER) -> 1 canh moi se duoc tao.",
 	"DI CHUYEN chuot toi vi tri dinh can sua -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon SUA TEN -> NHAP TEN dinh va nhan HOAN THANH (hoac nhan ENTER).",
-	"Giong nhu cach tao canh nhung o phan nhap trong so ta nhap vao trong so ta muon chinh sua va nhan HOAN THANH (hoac nhan ENTER). Neu muon huy sua canh, CLICK CHUOT PHAI.",
+	"Giong nhu cach tao canh nhung o phan nhap trong so ta nhap vao trong so ta muon chinh sua va nhan HOAN THANH (hoac nhan ENTER). Neu muon huy sua canh, CLICK CHUOT PHAI. Co the DOUBLE CLICK CHUOT PHAI vao bang ma tran trong so vi tri tuong ung voi canh do de sua trong so",
 	"DI CHUYEN chuot toi vi tri dinh can xoa -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon XOA DINH -> mot thanh thong bao hien len hoi ban co chac muon xoa dinh -> nhan CO (hoac nhan ENTER) de xoa dinh / KHONG de huy xoa.",
 	"DI CHUYEN chuot toi vi tri bat dau cua canh do -> CLICK CHUOT PHAI vao dinh do, mot hop thoai se hien len -> chon TAO CANH -> DI CHUYEN chuot toi vi tri cua dinh thu 2 cua canh do -> CLICK CHUOT TRAI vao dinh do -> trong phan tao trong so NHAP SO 0 -> nhan HOAN THANH (hoac nhan ENTER).",
 	"DI CHUYEN chuot toi vi tri cua dinh muon di chuyen -> NHAN GIU dinh do va KEO THA CHUOT toi vi tri can dat.",
@@ -55,6 +47,7 @@ struct Point/*cau truc diem*/ {
 struct Vertex /*cau truc dinh*/{
 	Point coordinates;
 	char *name;
+	
 	void create();
 	void draw();
 	void createName();
@@ -128,7 +121,7 @@ void drawGraphInAllFiles();
 bool isFileText(char *fileName);
 void openFile();
 void loadFile(char *fileName);
-void addFile();
+bool addFile();
 void deleteFile();
 void saveFile();
 
@@ -270,17 +263,17 @@ void showResultTopoSort(queue topo,char subjects[MAX][31],bool *passedSubject, b
 
 
 int main() {
-	initwindow(1280, 720, "Do an do thi", 50, 20);
+	initwindow(1280, 720, "Do an do thi");
 	setUserTextStyle();
 	setTaskBarButtons();
 	setFrame();
 	initDefaultVertices();
 	initEditTools();
 	loadFileStartUp();
-//	char c = getcolor();
-//	showWelcome();
-//	setcolor(c);
-setUserTextStyle();
+	char c = getcolor();
+	showWelcome();
+	setcolor(c);
+	setUserTextStyle();
 	process();
 }
 
@@ -291,7 +284,7 @@ void process() {
 		setactivepage(page);
 		setvisualpage(1 - page);
 		cleardevice();
-		//delay(10);
+		delay(100);
 		vtex.defaultVtex();
 		setfillstyle(10, GREEN);
 		bar(1, 1, 1279, 719);
@@ -322,7 +315,7 @@ void process() {
 //			cout << x << " " << y << endl;
 //		}
 	}
-	getch();
+//	getch();
 	closegraph();
 }
 
@@ -357,6 +350,7 @@ void drawPlayButton(int x, int y, int height, int color, bool border) {
 	fillpoly(4, a);
 	setfillstyle(1, c);
 }
+
 void drawPauseButton(int x, int y, int height, int color, bool border) {
 	if (border)
 		rectangle(x, y, x + height, y + height);
@@ -478,7 +472,6 @@ void hamPath(int *ans, int &counter, int index, bool showScreen) {
 }
 
 void showResultHamPath(int *ans, int counter) {
-	cout << endl;
 	Button resultBox, xButton;
 	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
 	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
@@ -506,7 +499,7 @@ void showResultHamPath(int *ans, int counter) {
 		resultBox.name = resultText;
 		resultBox.draw();
 		xButton.draw();
-		outtextxy((W_LEFT + W_RIGHT - textwidth("Ket qua chu trinh Hamiton")) / 2, 540, "Ket qua chu trinh Hamiton");
+		outtextxy((W_LEFT + W_RIGHT - textwidth("Ket qua duong di Hamiton")) / 2, 540, "Ket qua duong di Hamiton");
 		outtextxy((W_LEFT + W_RIGHT - textwidth(order)) / 2 , 600, order);
 		drawPauseButton(1135, 530, 25, WHITE, false);
 		drawNextButton(1160, 530, 25, WHITE, false);
@@ -799,6 +792,7 @@ void showResultTopoSort(queue topo, char subjects[MAX][31],bool *passedSubject, 
 			if (key == KEY_ENTER)
 				break;
 		}
+		delay(100);
 		page = 1 - page;
 	}
 }
@@ -1015,6 +1009,7 @@ void showResultKnotVertices(int start, int end, int * trace, int counter) {
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
+		delay(100);
 		drawFrame();
 		drawTaskBarButtons();
 		drawMatrix();
@@ -1189,7 +1184,6 @@ void saveFile() {
 	char fileName[41][100] = {""};
 	int index = 0;
 	struct dirent *d;
-	struct stat dst;
 	DIR *dr;
 	char path[30] = "filesInProgram";
 	dr = opendir(path);
@@ -1265,6 +1259,7 @@ void saveFile() {
 								output << endl; 
 							} 
 							output.close();
+							showSuccessfullyBox("Luu file thanh cong!");
 							return saveFile();
 						}
 						else 
@@ -1367,7 +1362,7 @@ void deleteFile() {
 	}
 }
 
-void addFile() {
+bool addFile() {
 	clearmouseclick();
 	int margin = 5;
 	int height = 275 - 3 * margin - 40;
@@ -1438,7 +1433,7 @@ void addFile() {
 			break;
 		if (x >= cancelButton.coordinates.x && x <= cancelButton.coordinates.x + cancelButton.width
 		&& y >= cancelButton.coordinates.y && y <= cancelButton.coordinates.y + cancelButton.height) 
-			return openFile();
+			return false;
 		if (ismouseclick(WM_LBUTTONDOWN)) {
 			int x, y;
 			getmouseclick(WM_LBUTTONDOWN, x, y);
@@ -1506,6 +1501,7 @@ void addFile() {
 			output.close();	
 		}
 	}
+	return true;
 }
 
 void showNoResult(char *resultStr) {
@@ -1516,6 +1512,7 @@ void showNoResult(char *resultStr) {
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
+		delay(100);
 		drawFrame();
 		drawTaskBarButtons();
 		drawMatrix();
@@ -1702,7 +1699,7 @@ void openFile() {
 	char fileName[41][100] = {""};
 	int index = 0;
 	struct dirent *d;
-	struct stat dst;
+//	struct stat dst;
 	DIR *dr;
 	char path[60] = "filesInProgram";
 	dr = opendir(path);
@@ -1738,6 +1735,7 @@ void openFile() {
 		while (true) {
 			setactivepage(page);
 			setvisualpage(1 - page);
+			delay(100);
 			drawFrame();
 			drawTaskBarButtons();
 			drawMatrix();
@@ -1745,7 +1743,6 @@ void openFile() {
 			drawAllEdges();
 			displayBox.draw();
 			xButton.draw();
-			delay(10);
 			if (xButton.isHover())
 				xButton.highLight(WHITE, LIGHTRED);
 			if (ismouseclick(WM_LBUTTONDOWN)) {
@@ -1769,8 +1766,9 @@ void openFile() {
 				&& y >= addFileButton.coordinates.y && y <= addFileButton.coordinates.y + addFileButton.height) {
 					bool confirm = drawYesNoBar("Ban muon tao 1 file moi?");
 					if (confirm) {
-						addFile();
-						showSuccessfullyBox("Them file thanh cong!");
+						bool success = addFile();
+						if (success)
+							showSuccessfullyBox("Them file thanh cong!");
 						return openFile();
 					}
 					else 
@@ -1844,6 +1842,7 @@ void showResultCutVertices(bool *isCutVertex, int counter) {
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
+		delay(100);
 		drawFrame();
 		drawTaskBarButtons();
 		drawVertices();
@@ -1980,6 +1979,7 @@ void showResultBridgeEdge(int *trace, int counter) {
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
+		delay(100);
 		drawFrame();
 		drawTaskBarButtons();
 		drawMatrix();
@@ -2104,6 +2104,7 @@ void drawUserManualBox(char *guideStr, char *title) {
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
+		delay(100);
 		drawFrame();
 		drawTaskBarButtons();
 		drawMatrix();
@@ -2114,12 +2115,27 @@ void drawUserManualBox(char *guideStr, char *title) {
 		for (int i = 0; i < index; i++) {
 			outtextxy(20 + (390 - textwidth(rowSentences[i])) / 2, 65 + 45 + i * 30, rowSentences[i]);
 		}
-		if (ismouseclick(WM_LBUTTONDBLCLK))
-			break;
-		if (ismouseclick(WM_RBUTTONDOWN))
-			break;	
-		if (ismouseclick(WM_LBUTTONDOWN))
-			break;
+		if (ismouseclick(WM_LBUTTONDBLCLK)) {
+			int x, y;
+			getmouseclick(WM_LBUTTONDBLCLK, x, y);
+			if (x < helpBoxFrame.coordinates.x || x > helpBoxFrame.coordinates.x +  helpBoxFrame.width
+			|| y < helpBoxFrame.coordinates.y || y > helpBoxFrame.coordinates.y +  helpBoxFrame.height)
+				break;
+		}
+		if (ismouseclick(WM_RBUTTONDOWN)) {
+			int x, y;
+			getmouseclick(WM_RBUTTONDOWN, x, y);
+			if (x < helpBoxFrame.coordinates.x || x > helpBoxFrame.coordinates.x +  helpBoxFrame.width
+			|| y < helpBoxFrame.coordinates.y || y > helpBoxFrame.coordinates.y +  helpBoxFrame.height)
+				break;
+		}	
+		if (ismouseclick(WM_LBUTTONDOWN)) {
+			int x, y;
+			getmouseclick(WM_LBUTTONDOWN, x, y);
+			if (x < helpBoxFrame.coordinates.x || x > helpBoxFrame.coordinates.x +  helpBoxFrame.width
+			|| y < helpBoxFrame.coordinates.y || y > helpBoxFrame.coordinates.y +  helpBoxFrame.height)
+				break;
+		}
 		if (kbhit()) {
 			char key = getch();
 			if (key == KEY_ENTER)
@@ -2182,16 +2198,20 @@ int countStrongConComponent(int **componentsList) {
 
 void drawKeyToExitText() {
 	char c = getcolor();
-	setcolor(YELLOW);
+	setcolor(BLACK);
+	setbkcolor(LIGHTGRAY);
 	outtextxy(1259 - textwidth("press KEY to exit"), 520 - textheight("press KEY to exit"), "press KEY to exit");
 	setcolor(c);
+	setbkcolor(BLACK);	
 }
 
 void drawEnterToExitText() {
 	char c = getcolor();
-	setcolor(YELLOW);
+	setcolor(BLACK);
+	setbkcolor(LIGHTGRAY);
 	outtextxy(1259 - textwidth("press ENTER to exit"), 520 - textheight("press ENTER to exit"), "press ENTER to exit");
 	setcolor(c);
+	setbkcolor(BLACK);
 }
 
 template <typename Type>
@@ -2344,6 +2364,7 @@ void showResultConnectedComponents(int **connectedComponents, int count, bool is
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
+		delay(100);
 		drawFrame();
 		drawTaskBarButtons();
 		drawMatrix();
@@ -2500,6 +2521,7 @@ void showResultEulerCycle(stack CE, char *resultText) {
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
+		delay(10);
 		drawFrame();
 		drawTaskBarButtons();
 		drawVertices();
@@ -2517,7 +2539,7 @@ void showResultEulerCycle(stack CE, char *resultText) {
 				int u = trace[i - 1];
 				int v = trace[i];
 				drawArrow(vertices[u], vertices[v], LIGHTGREEN, 0);
-				delay(500);
+				delay(200);
 				vertices[v].highLight();
 				if (kbhit()) {
 					char key = getch();
@@ -2849,6 +2871,7 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 		bool isUGr = isUndirectedGraph();
 		//show ra man hinh
 		while (true) {
+			delay(10);
 			setactivepage(page);
 			setvisualpage(1 - page);
 			drawFrame();
@@ -3033,7 +3056,7 @@ void showResultDFS(int *trace, char *resultText, int count) {
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
-		delay(100);
+		delay(10);
 		drawFrame();
 		drawVertices();
 		drawAllEdges();
@@ -3141,7 +3164,7 @@ void showResultBFS(int *trace, char *resultText, int count) {
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
-		delay(100);
+		delay(10);
 		drawFrame();
 		drawVertices();
 		drawAllEdges();
@@ -3558,11 +3581,14 @@ void drawAllEdges() {
 
 void printWeight(int x, int y, int w) {
 	char c = getcolor();
-	setcolor(YELLOW);
+	setcolor(BLACK);
+	setbkcolor(LIGHTGRAY);
 	char str[10];
 	itoa(w, str, 10);
+//	setusercharsize(10, 10, 10, 15);
 	outtextxy(x, y, str);
 	setcolor(c);
+	setbkcolor(BLACK);
 }
 
 void drawTriangle(int x1, int y1, int x2, int y2, int color) {
@@ -3672,6 +3698,8 @@ void drawMatrix() {
 		//khoi tao gia tri cua cac nut dinh trong ma tran trong so
 		for (int j = 0; j < n; j++) {
 			char numText[3];
+			if (G[i][j] == -1 && G[j][i] != -1)
+				G[i][j] = 0;
 			if (G[i][j] != -1)
 				itoa(G[i][j], numText, 10);//chuyen trong so canh sang dang text
 			else 
@@ -3745,6 +3773,7 @@ void moveVertex() {
 				while (true) {
 					setactivepage(page);
 					setvisualpage(1 - page);
+					delay(1);
 					if (ismouseclick(WM_MOUSEMOVE)) {
 						getmouseclick(WM_MOUSEMOVE, x, y);
 						bool check = 0;//check trung dinh
@@ -3905,6 +3934,8 @@ void Vertex::changeName() {
 }
 
 void deleteVertex(int pos) {
+	//0 1 2 3 4 5 6 7 8
+	//0 1 3 4 5 6 7 8
 	for (int i = pos; i < n - 1; i++)
 		vertices[i] = vertices[i + 1];//Cap nhat lai danh sach dinh
 	for (int i = pos; i < n - 1; i++) 
@@ -4066,11 +4097,13 @@ void Button::draw() {
 	rectangle(this->coordinates.x, this->coordinates.y, this->coordinates.x + this->width, this->coordinates.y + this->height);
 	//tao mau chu
 	setcolor(this->tColor);
+	setbkcolor(this->bColor);
 	//in noi dung cua nut ra nut
 	//settextstyle(3, 0, 1);
 	outtextxy(this->coordinates.x + (this->width - textwidth(this->name)) / 2, this->coordinates.y + (this->height - textheight(this->name)) / 2, this->name);
 	//khoi phuc lai mau ban dau khi thoat tao nut
 	setcolor(c);
+	setbkcolor(BLACK);
 	setfillstyle(0, c);
 }
 
@@ -4125,9 +4158,9 @@ void setTaskBarButtons() {
 	xM = 15 + margin, yM = 15 + margin;
 	xH = xM + margin + width, yH = yM;
 	xF = xH + margin + width, yF = yH;
-	menuBar.init(xM, yM, height, width, YELLOW, LIGHTBLUE, 9, "MENU");
-	helpBar.init(xH, yH, height, width, YELLOW, LIGHTBLUE, 9, "TRO GIUP");
-	fileBar.init(xF, yF, height, width, YELLOW, LIGHTBLUE, 9, "FILE");
+	menuBar.init(xM, yM, height, width, WHITE, BLACK, 1, "MENU");
+	helpBar.init(xH, yH, height, width, WHITE, BLACK, 1, "TRO GIUP");
+	fileBar.init(xF, yF, height, width, WHITE, BLACK, 1, "FILE");
 	matrixButton.init(15, 295, 25, 400, YELLOW, BLACK, 1, "Ma tran trong so");
 }
 
@@ -4140,7 +4173,6 @@ void drawTaskBarButtons() {
 void taskBar() {
 	int option, ad;
 	drawTaskBarButtons();
-	
 	if (menuBar.isHover()) {//thanh menu bar thi se hien thi ra danh sach cac cong cu o duoi
 		//menuBar.highLight();
 		option = menuTools();
@@ -4393,7 +4425,6 @@ int menuTools() {
 		taskBarFrame.draw();
 		drawAllEdges();
 		drawTaskBarButtons();
-//		drawAllEdges();
 		menuBar.highLight();
 		//Neu con tro chuot dang nam trong pham vi cua thanh menu 
 		//hoac no dang nam trong pham vi o chua cac cong cu cua thanh menu thi moi thao tac
@@ -4485,7 +4516,7 @@ void setFrame() {
 	//Khoi tai khung cua ma tran ke
 	adjacencyMatrixFrame.init(15, 295, 409, 400, 0, 3, 1, "");
 	//Khoi tao khung hien thi dinh va canh
-	pointBarFrame.init(425, 20, 500, 834, 0, BLACK , 1, ""); 
+	pointBarFrame.init(425, 20, 500, 834, 0, LIGHTGRAY , 1, ""); 
 }
 
 void drawFrame() {
@@ -4595,12 +4626,14 @@ void Vertex::createName() {
 			}
 			if (i < 0)
 				i = 0;
-			if (strcmp(name, "") != 0 && key == 13 && !isNamesake(name)) {
+			if (strcmp(name, "") != 0 && key == KEY_ENTER && !isNamesake(name)) {
 				break;
 			}
-			if ((strcmp(name, "") == 0 && key == 13)) {
+			if (strcmp(name, "") == 0 && key == KEY_ENTER) {
+				putchar(7);
 				frame.highLight(WHITE, RED);
 				enterNameBar.draw();
+				outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
 				finishButton.draw();
 				cancelButton.draw();
 				delay(50);
@@ -4615,7 +4648,9 @@ void Vertex::createName() {
 		}
 		upper(name);
 		outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);
+		setbkcolor(LIGHTGRAY);
 		outtextxy(this->coordinates.x - textwidth(name) / 2, this->coordinates.y - textheight(name) / 2, name);
+		setbkcolor(BLACK);
 		if (strcmp(name, "") != 0 && i < 2)
 			outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2 + textwidth(name), 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, "_");
 		if (finishButton.isHover())
@@ -4632,15 +4667,19 @@ void Vertex::draw() {
 	if (this->coordinates.x == -1 && this->coordinates.y == -1)
 		return;
 	char c = getcolor();
-	setfillstyle(1, BLACK);
 	circle(this->coordinates.x, this->coordinates.y, RADIUS);
+	setfillstyle(1, BLACK);
+	pieslice(this->coordinates.x, this->coordinates.y, 0, 360, RADIUS);
+	setcolor(BLACK);
+	line(this->coordinates.x, this->coordinates.y - 1, this->coordinates.x + RADIUS, this->coordinates.y - 1);
 	setcolor(YELLOW);
+	setbkcolor(BLACK);
 	outtextxy(this->coordinates.x - textwidth(this->name) / 2, this->coordinates.y - textheight(this->name) / 2, this->name);
 	if (this->isHover())
 		this->highLight();
 	setcolor(c);
 	setfillstyle(1, c);
-	
+	setbkcolor(BLACK);
 }
 
 void Vertex::highLight() {
@@ -4648,11 +4687,13 @@ void Vertex::highLight() {
 	setfillstyle(1, BLUE);
 	pieslice(this->coordinates.x, this->coordinates.y, 0, 0, RADIUS);
 	setcolor(BLUE);
+	setbkcolor(BLUE);
 	line(this->coordinates.x, this->coordinates.y - 1, this->coordinates.x + RADIUS, this->coordinates.y - 1);
 	setcolor(c);
 	setcolor(YELLOW);
 	outtextxy(this->coordinates.x - textwidth(this->name) / 2, this->coordinates.y - textheight(this->name) / 2, this->name);
 	setcolor(c);
+	setbkcolor(BLACK);
 	setfillstyle(1, c);
 }
 
@@ -4661,11 +4702,13 @@ void Vertex::highLight(int tColor, int bColor) {
 	setfillstyle(1, bColor);
 	pieslice(this->coordinates.x, this->coordinates.y, 0, 0, RADIUS);
 	setcolor(bColor);
+	setbkcolor(bColor);
 	line(this->coordinates.x, this->coordinates.y - 1, this->coordinates.x + RADIUS, this->coordinates.y - 1);
 	setcolor(c);
 	setcolor(tColor);
 	outtextxy(this->coordinates.x - textwidth(this->name) / 2, this->coordinates.y - textheight(this->name) / 2, this->name);
 	setcolor(c);
+	setbkcolor(BLACK);
 	setfillstyle(1, c);	
 }
 
@@ -4762,7 +4805,7 @@ void saveFileStartUp() {
 }
 
 void addVertexToList(Vertex vtex) {
-	if (n < MAX && vertices[n].isDefaultVtex() && !vtex.isDefaultVtex()) {
+	if (n < MAX && !vtex.isDefaultVtex()) {
 		vertices[n] = vtex;
 		for (int i = 0; i <= n; i++) {
 			G[n][i] = 0;
@@ -4796,7 +4839,7 @@ bool drawYesNoBar(char *question) {
 		setvisualpage(1 - page);
 		setfillstyle(10, GREEN);
 		bar(1, 1, 1279, 719);
-		delay(10);
+		delay(100);
 		drawFrame();
 		drawTaskBarButtons();
 		drawVertices();
