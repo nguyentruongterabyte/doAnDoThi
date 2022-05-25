@@ -8,8 +8,10 @@
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wconversion-null"
 #pragma GCC diagnostic ignored "-Wpointer-arith"
-#define RADIUS 20
+#define RADIUS 15
 #define MAX 20 
+
+#include <iostream>
 
 using namespace std;
 
@@ -177,6 +179,7 @@ void drawAllEdges();//ham ve tat ca cac canh
 void drawAllEdges(int color);//ham ve tat ca cac canh voi mau do nguoi dung chon
 void drawCurvedArrow(Vertex u, Vertex v, int color, int w);//ve mui ten dang cong
 void drawCurvedArrow2(Vertex u, Vertex v, int color, int w);
+void drawLoading(char * loadingContent);
 void drawEnterToExitText();//in ra dong "press ENTER to exit" o goc phai duoi man hinh lam viec
 void drawVertices();
 void drawKeyToExitText();//in ra dong "press KEY to exit" o goc phai duoi man hinh lam viec
@@ -284,7 +287,7 @@ void process() {
 		setactivepage(page);
 		setvisualpage(1 - page);
 		cleardevice();
-		delay(100);
+		delay(20);
 		vtex.defaultVtex();
 		setfillstyle(10, GREEN);
 		bar(1, 1, 1279, 719);
@@ -309,14 +312,43 @@ void process() {
 			}
 		}
 		page = 1 - page;
-//		if (ismouseclick(WM_MOUSEMOVE)) {
-//			int x, y;
-//			getmouseclick(WM_MOUSEMOVE, x, y);
-//			cout << x << " " << y << endl;
-//		}
+		if (ismouseclick(WM_MOUSEMOVE)) {
+			int x, y;
+			getmouseclick(WM_MOUSEMOVE, x, y);
+			cout << x << " " << y << endl;
+		}
 	}
 //	getch();
 	closegraph();
+}
+
+void drawLoading(char * loadingContent) {
+	Button frame;
+	int height = 100;
+	int width = 300;
+	int margin = 5;
+	frame.init(425 + (834 - width) / 2 , 20 + (500 - height) / 2, height, width, YELLOW, BLACK, 1, "");
+	int x = frame.coordinates.x + 18,
+		y = frame.coordinates.y + (frame.height - textheight("A")) / 2 + 25;
+	char color = getcolor();
+	int page = getactivepage();
+	setactivepage(1 - page);
+	setvisualpage(1 - page);
+	frame.draw();
+	rectangle(x - 2, y - 3, x + 254, y + 16);
+	outtextxy(x, y - 25, loadingContent);
+	for (int i = 1; i < 24; i++) {
+		
+		setfillstyle(1, LIGHTBLUE);
+		bar(x, y, x + 10, y + 12);
+		setfillstyle(1, color);
+		x += 11;
+		if (i == 10)
+			delay(300);
+		if (i == 20)
+			delay(500);
+		delay(30);
+	}
 }
 
 void drawNextButton(int x, int y, int height, int color, bool border) {
@@ -423,6 +455,7 @@ void hamilton() {
 				return;
 			}
 			else {
+				drawLoading("Dang tai ket qua duong di Hamilton..");
 				hamPath(ans, counterPath, 1, true);
 			}
 		}
@@ -431,6 +464,7 @@ void hamilton() {
 		//neu co chu trinh Hamilton thi in ra ket qua hamilton
 		int start = chooseVertex("Chon dinh bat dau chu trinh Hamilton");
 		ans[0] = start;
+		drawLoading("Dang tai ket qua chu trinh Hamilton..");
 		hamCycle(ans, counterCycle, 1, true);
 	}
 }
@@ -460,7 +494,7 @@ void hamPath(int *ans, int &counter, int index, bool showScreen) {
 			visited[i] = true;
 			if (index < n - 1)
 				hamPath(ans, counter, index + 1, showScreen);
-			else if (/*ans[index] == end && */!visited[ans[0]]){
+			else if (!visited[ans[0]]) {
 				if (showScreen) 
 					showResultHamPath(ans, counter);
 				else 
@@ -988,6 +1022,7 @@ void showResultKnotVertices(int start, int end, int * trace, int counter) {
 		strcat(resultText, vertices[end].name);
 		strcat(resultText, ".");
 	} else {
+		drawLoading("Dang tai ket qua dinh that...");
 		char counterStr[3];
 		itoa(counter, counterStr, 10);
 		strcat(resultText, "Co ");
@@ -1110,6 +1145,7 @@ void knotVertices() {
 		if (i != start && i != end) 
 			if (!dfsToCheckKnot(start, end, i))
 				trace[counter++] = i;
+	
 	showResultKnotVertices(start,end, trace, counter);
 }
 
@@ -1395,7 +1431,7 @@ bool addFile() {
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
-		delay(10);
+		delay(100);
 		drawFrame();
 		drawVertices();
 		//drawMatrix();
@@ -1419,8 +1455,58 @@ bool addFile() {
 			strcpy(existFileText, "Ten file da ton tai!");
 			outtextxy(frame.coordinates.x + (frame.width - textwidth(existFileText)) / 2, frame.coordinates.y + 25, existFileText);
 		}
-		if (ismouseclick(WM_LBUTTONDOWN))
+		if (ismouseclick(WM_LBUTTONDOWN)) {
 			getmouseclick(WM_LBUTTONDOWN, x, y);
+			if (x < frame.coordinates.x || x > frame.coordinates.x + frame.width
+			|| y < frame.coordinates.y || y > frame.coordinates.y + frame.height) {
+				putchar(7);
+				frame.highLight(BLACK, RED);
+				enterNameBar.draw();
+				if (strcmp(name, "") == 0)
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+				else 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);		
+				finishButton.draw();
+				cancelButton.draw();
+			}
+			clearmouseclick(WM_LBUTTONDOWN);
+		}
+		if (ismouseclick(WM_RBUTTONDOWN)) {
+			int xR, yR;
+			getmouseclick(WM_RBUTTONDOWN, xR, yR);
+			if (xR < frame.coordinates.x || xR > frame.coordinates.x + frame.width
+			|| yR < frame.coordinates.y || yR > frame.coordinates.y + frame.height) {
+				putchar(7);
+				frame.highLight(BLACK, RED);
+				enterNameBar.draw();
+				if (strcmp(name, "") == 0)
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+				else 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);		
+				finishButton.draw();
+				cancelButton.draw();
+			}
+			clearmouseclick(WM_RBUTTONDOWN);
+		}
+		if (ismouseclick(WM_RBUTTONDBLCLK)) {
+			int xR, yR;
+			getmouseclick(WM_RBUTTONDBLCLK, xR, yR);
+			if (xR < frame.coordinates.x || xR > frame.coordinates.x + frame.width
+			|| yR < frame.coordinates.y || yR > frame.coordinates.y + frame.height) {
+				putchar(7);
+				frame.highLight(BLACK, RED);
+				enterNameBar.draw();
+				if (strcmp(name, "") == 0)
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+				else 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);		
+				finishButton.draw();
+				cancelButton.draw();
+			}
+			clearmouseclick(WM_RBUTTONDBLCLK);
+		}
+		if (ismouseclick(WM_LBUTTONDBLCLK))
+			clearmouseclick(WM_LBUTTONDBLCLK);
 		if (strcmp(name, "") == 0) 
 			outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
 		if (finishButton.isHover())
@@ -1460,11 +1546,23 @@ bool addFile() {
 			if (strcmp(name, "") != 0 && key == KEY_ENTER && !isNamesake)
 				break;
 			if (strcmp(name, "") == 0 && key == KEY_ENTER) {
+				putchar(7);
 				frame.highLight(WHITE, RED);
 				enterNameBar.draw();
+				outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
 				finishButton.draw();
 				cancelButton.draw();
-				delay(50);
+				delay(300);
+			}
+			if (isNamesake && key == KEY_ENTER) {
+				char existFileText[25];
+				strcpy(existFileText, "Ten file da ton tai!");
+				putchar(7);
+				char c = getcolor();
+				setcolor(RED);
+				outtextxy(frame.coordinates.x + (frame.width - textwidth(existFileText)) / 2, frame.coordinates.y + 25, existFileText);
+				delay(300);
+				setcolor(c);			
 			}
 		}
 		outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);
@@ -1853,7 +1951,7 @@ void showResultCutVertices(bool *isCutVertex, int counter) {
 		drawEnterToExitText();
 		for (int i = 0; i < n; i++)
 			if (isCutVertex[i])
-				vertices[i].highLight(YELLOW, LIGHTBLUE);
+				vertices[i].highLight(BLACK, GREEN);
 		if (kbhit()) {
 			char key = getch();
 			if (key == KEY_ENTER)
@@ -1883,6 +1981,7 @@ void cutVertices() {
 	for (int i = 0; i < n; i++)
 		if (isCutVertex[i])
 			counter++;
+	drawLoading("Dang tim dinh tru...");
 	showResultCutVertices(isCutVertex, counter);
 }
 
@@ -2061,6 +2160,7 @@ void bridgeEdges() {
 	for (int i = 0; i < n; i++)
 		if (!visited[i])
 			bridgeUtil(i, disc, low, parent, counter, trace, index);
+	drawLoading("Dang tim canh cau...");
 	showResultBridgeEdge(trace, counter);	
 }
 
@@ -2296,6 +2396,7 @@ void connectedComponents() {
 			strcat(resultText, counterStr);
 			strcat(resultText, " thanh phan lien thong manh");
 		}
+		drawLoading("Dang tim thanh phan lien thong...");
 		showResultConnectedComponents(list, counter, 0, resultText);
 	}
 	else {
@@ -2304,6 +2405,7 @@ void connectedComponents() {
 		itoa(counter, counterStr, 10);
 		strcat(resultText, counterStr);
 		strcat(resultText, " thanh phan lien thong");
+		drawLoading("Dang tim thanh phan lien thong...");
 		showResultConnectedComponents(list, counter, 1, resultText);
 	}
 	delete2DArray(list, n, n);
@@ -2389,22 +2491,22 @@ void showResultConnectedComponents(int **connectedComponents, int count, bool is
 						//cac duong thang khong co trong so w = 0;
 						for (int k = 0; k < n; k++)
 							if (G[v][k])
-								drawLine(vertices[v], vertices[k], i + 1, 0);
+								drawLine(vertices[v], vertices[k], i, 0);
 						}
 					else {
 						for (int k = 0; k < n; k++) {
 							int h = connectedComponents[i][k];
 							if (h != -1 && G[v][h]) {
 								if (!G[h][v])
-									drawArrow(vertices[v], vertices[h], i + 1, G[v][h]);
+									drawArrow(vertices[v], vertices[h], i, G[v][h]);
 								else {
 									if (v < h) {
-										drawCurvedArrow(vertices[h], vertices[v], i + 1, G[h][v]);	
-										drawArrow(vertices[v], vertices[h], i + 1, G[v][h]);
+										drawCurvedArrow(vertices[h], vertices[v], i, G[h][v]);	
+										drawArrow(vertices[v], vertices[h], i, G[v][h]);
 									}
 									else {
-										drawCurvedArrow(vertices[v], vertices[h], i + 1, G[v][h]);	
-										drawArrow(vertices[h], vertices[v], i + 1, G[h][v]);
+										drawCurvedArrow(vertices[v], vertices[h], i, G[v][h]);	
+										drawArrow(vertices[h], vertices[v], i, G[h][v]);
 									}
 								}
 							}
@@ -2485,11 +2587,22 @@ int DFS(int u) {
 }
 
 bool isUndirectedGraph() {
-	for (int i = 0; i < n; i++) 
+	bool check = false;
+	for (int i = 0; i < n; i++) {
 		for (int j = 0; j < n; j++)
-			if (G[i][j] == -1)
-				return true;
-	return false;	
+			if (G[i][j] == -1) {
+				check = true;
+				break;
+			}
+		if (check)
+			break;	
+	} 
+	if (check) 
+		for (int i = 0; i < n; i++)
+			for (int j = 0; j < n; j++)
+				if (G[i][j]) 
+					G[i][j] = G[j][i] = -1;
+	return check;	
 }
 
 bool isConnectedGraph() {
@@ -2517,7 +2630,7 @@ void showResultEulerCycle(stack CE, char *resultText) {
 	strnDel(eulerResultStr, strlen(eulerResultStr) - 3, 3);
 	resultBox.name = eulerResultStr;
 	int page = 0;
-	bool isUGr = isUndirectedGraph();
+	drawLoading("Dang tai ket qua chu trinh Euler...");
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
@@ -2534,47 +2647,28 @@ void showResultEulerCycle(stack CE, char *resultText) {
 		vertices[trace[0]].highLight();
 		setactivepage(1);
 		setvisualpage(1);
-		if (isUGr) {
-			for (int i = 1; i < counter; i++) {
-				int u = trace[i - 1];
-				int v = trace[i];
+		for (int i = 1; i < counter; i++) {
+			int u = trace[i - 1];
+			int v = trace[i];
+			if (!G[v][u] || G[u][v] == -1)
 				drawArrow(vertices[u], vertices[v], LIGHTGREEN, 0);
-				delay(200);
-				vertices[v].highLight();
-				if (kbhit()) {
-					char key = getch();
-					if (key == KEY_ENTER)
-						return;
-				}
-				if (xButton.isClickLMButton())
+			else {
+				if (v > u) 
+					drawArrow(vertices[u], vertices[v], LIGHTGREEN, 0);
+				else
+					drawCurvedArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
+			}
+			delay(200);
+			vertices[v].highLight();
+			if (kbhit()) {
+				char key = getch();
+				if (key == KEY_ENTER)
 					return;
 			}
+			if (xButton.isClickLMButton())
+				return;
 		}
-		else {
-			for (int i = 1; i < counter; i++) {
-				int u = trace[i - 1];
-				int v = trace[i];
-				if (G[u][v]) {
-					if (!G[v][u]) {
-						drawArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
-						delay(500);
-						vertices[v].highLight();
-					}
-					else {
-						drawCurvedArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
-						delay(500);
-						vertices[v].highLight();						
-					}
-				}
-				if (kbhit()) {
-					char key = getch();
-					if (key == KEY_ENTER)
-						return;
-				}
-				if (xButton.isClickLMButton())
-					return;
-			}
-		}
+
 
 		if (kbhit()) {
 			char key = getch();
@@ -2597,7 +2691,6 @@ void eulerCycle() {
 	resultBox.init(425, 525, 100, 834, YELLOW, BLACK, 1, "");
 	xButton.init(1219, 525, 100, 40, WHITE, RED, 1, "x");
 	stack st, CE;
-	
 	if (!isConnectedGraph()) {
 		char resultStr[100] = "Do thi nay khong co chu trinh Euler vi khong lien thong";
 		resultBox.name = resultStr;
@@ -2869,6 +2962,7 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 		resultBox.name = resultText;
 		int page = 0;
 		bool isUGr = isUndirectedGraph();
+		drawLoading("Dang tai ket qua duong di...");
 		//show ra man hinh
 		while (true) {
 			delay(10);
@@ -2909,8 +3003,12 @@ void showResultPathXY(int *trace, int *dist, int start, int end) {
 					v = traveler[i];
 					if (!G[v][u])
 						drawArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
-					else 
-						drawCurvedArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
+					else {
+						if (u > v)
+							drawCurvedArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
+						else 
+							drawArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
+					}
 					delay(200);
 					vertices[v].highLight();
 					if (kbhit()) {
@@ -2963,8 +3061,8 @@ void dijkstra(int start, int end) {
 			// u den v va tong trong luong cua duong dan tu src den v qua u la 
 			// nho hon gia tri hien tai cua dist [v]
 			if (!sptSet[v] && G[u][v] && dist[u] != INT_MAX
-                && dist[u] + G[u][v] < dist[v]) {
-                	dist[v] = dist[u] + G[u][v];
+                && abs(dist[u]) + abs(G[u][v]) < dist[v]) {
+                	dist[v] = abs(dist[u]) + abs(G[u][v]);
                 	trace[v] = u;
 				}
 	}
@@ -3072,7 +3170,15 @@ void showResultDFS(int *trace, char *resultText, int count) {
 			int u = trace[i - 1];
 			int v = trace[i];
 			vertices[u].highLight();
-			drawArrow(vertices[u], vertices[v], LIGHTGREEN, 0);
+			if (G[u][v] == -1 || !G[v][u]) {
+				drawArrow(vertices[u], vertices[v], LIGHTGREEN, 0);
+			} 
+			else {
+				if (u < v) 
+					drawArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
+				else 
+					drawCurvedArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
+			}
 			delay(200);
 			vertices[v].highLight();
 			if (xButton.isClickLMButton())
@@ -3128,7 +3234,14 @@ void dfsTraveler(int u) {
 			k = edgeStart.pop();
 		}	
 		if (k != -1 && j != -1 && j != k && !visited[j]) {
-			drawArrow(vertices[k], vertices[j], LIGHTGREEN, 0);
+			if (G[k][j] == -1 || !G[j][k])
+				drawArrow(vertices[k], vertices[j], LIGHTGREEN, 0);
+			else {
+				if (k < j)
+					drawArrow(vertices[k], vertices[j], LIGHTGREEN, G[k][j]);
+				else
+					drawCurvedArrow(vertices[k], vertices[j], LIGHTGREEN, G[k][j]);
+			}
 			trace[count - 1] = k;
 			trace[count] = j;
 			count += 2;
@@ -3141,6 +3254,7 @@ void dfsTraveler(int u) {
 		}
 	}
 	strnDel(resultText, strlen(resultText) - 3, 3);
+	drawLoading("Dang tai ket qua DFS...");
 	showResultDFS(trace, resultText, count);
 }
 
@@ -3180,7 +3294,14 @@ void showResultBFS(int *trace, char *resultText, int count) {
 			int u = trace[i - 1];
 			int v = trace[i];
 			vertices[u].highLight();
-			drawArrow(vertices[u], vertices[v], LIGHTGREEN, 0);
+			if (G[u][v] == -1 || !G[v][u])
+				drawArrow(vertices[u], vertices[v], LIGHTGREEN, 0);
+			else {
+				if (u < v)
+					drawArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
+				else 
+					drawCurvedArrow(vertices[u], vertices[v], LIGHTGREEN, G[u][v]);
+			}
 			delay(200);
 			vertices[v].highLight();
 			if (xButton.isClickLMButton())
@@ -3235,7 +3356,14 @@ void bfsTraveler(int u) {
 			k = edgeStart.pop();
 		}	
 		if (k != -1 && j != -1 && j != k && !visited[j]) {
-			drawArrow(vertices[k], vertices[j], LIGHTGREEN, 0);
+			if (G[k][j] == -1 || !G[j][k])
+				drawArrow(vertices[k], vertices[j], LIGHTGREEN, 0);
+			else {
+				if (k < j) 
+					drawArrow(vertices[k], vertices[j], LIGHTGREEN, G[k][j]);
+				else 
+					drawCurvedArrow(vertices[k], vertices[j], LIGHTGREEN, G[k][j]);
+			}
 			trace[count - 1] = k;
 			trace[count] = j;
 			count += 2;
@@ -3248,6 +3376,7 @@ void bfsTraveler(int u) {
 		}
 	}
 	strnDel(resultText, strlen(resultText) - 3, 3);
+	drawLoading("Dang tai ket qua BFS...");
 	showResultBFS(trace, resultText, count);
 }
 
@@ -3290,7 +3419,10 @@ int enterWeight() {
 	int height = 275 - 3 * margin - 40;
 	int width = 400 - 2 * margin;
 	char weightStr[4] = "";
-	char request[] = "Nhap trong so";
+	char request[20] = "Nhap trong so";
+	char note[30] = "Nhap * de tao canh vo huong";
+	char note2[20] = "Nhap 0 de xoa canh";
+	char c = getcolor();
 	int i = 0, x, y;
 	int page = 0;
 	Button frame, finishButton, cancelButton, enterWeightBar;
@@ -3311,8 +3443,69 @@ int enterWeight() {
 		finishButton.draw();
 		cancelButton.draw();
 		enterWeightBar.draw();
-		if (ismouseclick(WM_LBUTTONDOWN))
+		setcolor(BLUE);
+		setbkcolor(DARKGRAY);
+		outtextxy(frame.coordinates.x + (frame.width - textwidth(note)) / 2, 180, note);
+		outtextxy(frame.coordinates.x + (frame.width - textwidth(note2)) / 2, 200, note2);
+		setcolor(c);
+		setbkcolor(BLACK);
+		if (ismouseclick(WM_LBUTTONDOWN)) {
 			getmouseclick(WM_LBUTTONDOWN, x, y);
+			if (x < frame.coordinates.x || x > frame.coordinates.x + frame.width
+			|| y < frame.coordinates.y || y > frame.coordinates.y + frame.height) {
+				putchar(7);
+				frame.highLight(BLACK, RED);
+				enterWeightBar.draw();
+				if (strcmp(weightStr, "") == 0) 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+				else 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(weightStr)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(weightStr)) / 2, weightStr);		
+				finishButton.draw();
+				cancelButton.draw();
+				delay(150);
+			}
+			clearmouseclick(WM_LBUTTONDOWN);
+		}
+		if (ismouseclick(WM_LBUTTONDBLCLK)) {// neu co double click chuot trai khi dang tao ten thi phai xoa di
+											//de tranh truong hop sau khi tao ten thi tao luon dinh moi
+			int xL, yL;
+			getmouseclick(WM_LBUTTONDBLCLK, xL, yL);
+			if (xL < frame.coordinates.x || xL > frame.coordinates.x + frame.width
+			|| yL < frame.coordinates.y || yL > frame.coordinates.y + frame.height) {
+				putchar(7);
+				frame.highLight(BLACK, RED);
+				enterWeightBar.draw();
+				if (strcmp(weightStr, "") == 0) 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+				else 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(weightStr)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(weightStr)) / 2, weightStr);		
+				finishButton.draw();
+				cancelButton.draw();
+				delay(150);
+			}		
+			clearmouseclick(WM_LBUTTONDBLCLK);
+		}
+		if (ismouseclick(WM_RBUTTONDOWN)) {//neu co click chuot phai khi dang tao ten thi phai xoa di 
+										//de tranh truong hop sau khi tao ten thi mo thanh edit dinh
+			int xR, yR;
+			getmouseclick(WM_RBUTTONDOWN, xR, yR);
+			if (xR < frame.coordinates.x || xR > frame.coordinates.x + frame.width
+			|| yR < frame.coordinates.y || yR > frame.coordinates.y + frame.height) {
+				putchar(7);
+				frame.highLight(BLACK, RED);
+				enterWeightBar.draw();
+				if (strcmp(weightStr, "") == 0) 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+				else 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(weightStr)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(weightStr)) / 2, weightStr);		
+				finishButton.draw();
+				cancelButton.draw();
+				delay(150);
+			}			
+			clearmouseclick(WM_RBUTTONDOWN);
+		}
+		if (ismouseclick(WM_RBUTTONDBLCLK))
+			clearmouseclick(WM_RBUTTONDBLCLK);
 		if (strcmp(weightStr, "") == 0) 
 			outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
 		if (finishButton.isHover())
@@ -3325,7 +3518,7 @@ int enterWeight() {
 			break;
 		if (x >= cancelButton.coordinates.x && x <= cancelButton.coordinates.x + cancelButton.width
 		&& y >= cancelButton.coordinates.y && y <= cancelButton.coordinates.y + cancelButton.height) 
-			return 0;
+			return -2;
 		if (ismouseclick(WM_LBUTTONDOWN)) {
 			int x, y;
 			getmouseclick(WM_LBUTTONDOWN, x, y);
@@ -3431,10 +3624,13 @@ void addEdge(int startPos) {
 				yV = vertices[j].coordinates.y;
 				if ((x0 - xL) * (x0 - xL) + (y0 - yL) * (y0 - yL) > RADIUS * RADIUS &&
 				(xV - xL) * (xV - xL) + (yV - yL) * (yV - yL) <= RADIUS * RADIUS) {
+					int tmp = G[i][j];
 					G[i][j] = enterWeight();
 					if (G[i][j] == -1) 
 						G[j][i] = -1;
 					checked = true;
+					if (G[i][j] == -2)
+						G[i][j] = tmp;
 				}
 			}
 			clearmouseclick(WM_LBUTTONDOWN);
@@ -3538,22 +3734,21 @@ void drawCurvedArrow(Vertex u, Vertex v, int color, int w) {
 }
 
 void drawAllEdges(int color) {
-	if (isUndirectedGraph()) {
-		for (int i = 0; i < n; i++) 
-			for(int j = 0; j < n; j++)
-				if (G[i][j]) 
+	for (int i = 0; i < n; i++) 
+		for(int j = 0; j < n; j++)
+			if (G[i][j]) {
+				if (!G[j][i]) 
+					drawArrow(vertices[i], vertices[j], color, G[i][j]);
+				else if (G[i][j] == -1)
 					drawLine(vertices[i], vertices[j], color, 0);
-	}
-	else {
-		for (int i = 0; i < n; i++) 
-			for(int j = 0; j < n; j++)
-				if (G[i][j]) {
-					if (!G[j][i])
+				else  {
+					if (i < j) {
 						drawArrow(vertices[i], vertices[j], color, G[i][j]);
-					else 
-						drawCurvedArrow(vertices[i], vertices[j], color, G[i][j]);
-				} 
-	}
+					}
+					else
+						drawCurvedArrow(vertices[i], vertices[j], color, G[i][j]);//duong cong
+				}			
+			} 
 }
 
 void drawAllEdges() {
@@ -3563,32 +3758,31 @@ void drawAllEdges() {
 		for(int j = 0; j < n; j++)
 			if (G[i][j]) {
 				if (!G[j][i]) 
-					drawArrow(vertices[i], vertices[j], LIGHTRED, G[i][j]);
+					drawArrow(vertices[i], vertices[j], RED, G[i][j]);
 				else if (G[i][j] == -1)
-					drawLine(vertices[i], vertices[j], LIGHTRED, 0);
+					drawLine(vertices[i], vertices[j], RED, 0);
 				else  {
 					if (i < j) {
-						drawArrow(vertices[i], vertices[j], LIGHTRED, G[i][j]);
+						drawArrow(vertices[i], vertices[j], RED, G[i][j]);
 					}
 					else
-						drawCurvedArrow(vertices[i], vertices[j], LIGHTRED, G[i][j]);//duong cong
-				}
-				//G[0][2] duong cong
-						//G[2][0]
-						
+						drawCurvedArrow(vertices[i], vertices[j], RED, G[i][j]);//duong cong
+				}			
 			} 
 }
 
 void printWeight(int x, int y, int w) {
 	char c = getcolor();
-	setcolor(BLACK);
+	setcolor(BLUE);
 	setbkcolor(LIGHTGRAY);
 	char str[10];
-	itoa(w, str, 10);
-//	setusercharsize(10, 10, 10, 15);
+	itoa(abs(w), str, 10);
+//	settextstyle(1, 0, 2);
+//	setusercharsize(100, 100, 100, 100);
 	outtextxy(x, y, str);
 	setcolor(c);
 	setbkcolor(BLACK);
+	return;
 }
 
 void drawTriangle(int x1, int y1, int x2, int y2, int color) {
@@ -3678,7 +3872,7 @@ void drawMatrix() {
 	if (isEmptyVertex()) return drawEmptySymbol();
 	Point center;
 	int squareEdge = n < 12 ? 30 : n < 15 ? 25 : n < 18 ? 20 : 18;
-	Button square, vertexButton[MAX], matrxHoverFrame;
+	Button square, vertexButton[n], matrxHoverFrame;
 	square.init(0, 0, squareEdge, squareEdge, BLACK, BLACK, 1, "");
 	matrixButton.draw();
 	//bien center de ghi toa do can giua cua khung ma tran
@@ -3704,13 +3898,14 @@ void drawMatrix() {
 				itoa(G[i][j], numText, 10);//chuyen trong so canh sang dang text
 			else 
 				strcpy(numText, "1");
-			square.init(x0, y0, squareEdge, squareEdge, WHITE, BLACK, 1, numText);
+			square.init(x0, y0, squareEdge, squareEdge, BLACK, CYAN, 1, numText);
 			//square.highLight();
 			square.draw();
 			if (square.isHover()) {
 				square.highLight(YELLOW, LIGHTBLUE);
 				vertices[i].highLight(YELLOW, LIGHTBLUE);
 				vertices[j].highLight(YELLOW, LIGHTBLUE);
+
 			} 
 			if (i != j && 
 			xDL >= square.coordinates.x && xDL <= square.coordinates.x + square.width
@@ -3834,7 +4029,7 @@ void Vertex::changeName() {
 	int width = 400 - 2 * margin;
 	int x, y;
 	char name[3] = ""; 
-	char request[] = "Nhap ten dinh";
+	char request[20] = "Nhap ten dinh";
 	frame.init(15 + margin, 15 + 2 * margin + 40, height, width, YELLOW, DARKGRAY, 1, "");
 	finishButton.init(15 + 2 * margin, 275 - margin - 30, 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HOAN THANH");
 	cancelButton.init(15 + 3 * margin + (width - 3 * margin) / 2,275 - margin - 30, 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "HUY");
@@ -3845,28 +4040,76 @@ void Vertex::changeName() {
 		setactivepage(page);
 		setvisualpage(1 - page);
 		delay(50);
-		if (ismouseclick(WM_LBUTTONDOWN))
-			getmouseclick(WM_LBUTTONDOWN, x, y);
-		setfillstyle(10, GREEN);
-		bar (1, 1, 1279, 719);
 		drawFrame();
 		drawTaskBarButtons();
 		drawVertices();
 		drawMatrix();
+		drawAllEdges();
 		frame.draw();
 		finishButton.draw();
 		cancelButton.draw();
 		enterNameBar.draw();
-		drawAddVertex(this->coordinates.x, this->coordinates.y);
-	
-		if (strcmp(name, "") == 0) {
-			outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
-			int x0 = this->coordinates.x, y0 = this->coordinates.y;
-			line(x0, y0, x0 - RADIUS + 5, y0);
-			line(x0, y0, x0 + RADIUS - 5, y0);
-			line(x0, y0, x0, y0 + RADIUS - 5);
-			line(x0, y0, x0, y0 - RADIUS + 5);
+		this->highLight();
+		if (ismouseclick(WM_LBUTTONDOWN)) {
+			getmouseclick(WM_LBUTTONDOWN, x, y);
+			if (x < frame.coordinates.x || x > frame.coordinates.x + frame.width
+			|| y < frame.coordinates.y || y > frame.coordinates.y + frame.height) {
+				putchar(7);
+				frame.highLight(BLACK, RED);
+				enterNameBar.draw();
+				if (strcmp(name, "") == 0) 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+				else 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);		
+				finishButton.draw();
+				cancelButton.draw();
+				delay(150);
+			}
+			clearmouseclick(WM_LBUTTONDOWN);
 		}
+		if (ismouseclick(WM_LBUTTONDBLCLK)) {// neu co double click chuot trai khi dang tao ten thi phai xoa di
+											//de tranh truong hop sau khi tao ten thi tao luon dinh moi
+			int xL, yL;
+			getmouseclick(WM_LBUTTONDBLCLK, xL, yL);
+			if (xL < frame.coordinates.x || xL > frame.coordinates.x + frame.width
+			|| yL < frame.coordinates.y || yL > frame.coordinates.y + frame.height) {
+				putchar(7);
+				frame.highLight(BLACK, RED);
+				enterNameBar.draw();
+				if (strcmp(name, "") == 0) 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+				else 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);		
+				finishButton.draw();
+				cancelButton.draw();
+				delay(150);
+			}		
+			clearmouseclick(WM_LBUTTONDBLCLK);
+		}
+		if (ismouseclick(WM_RBUTTONDOWN)) {//neu co click chuot phai khi dang tao ten thi phai xoa di 
+										//de tranh truong hop sau khi tao ten thi mo thanh edit dinh
+			int xR, yR;
+			getmouseclick(WM_RBUTTONDOWN, xR, yR);
+			if (xR < frame.coordinates.x || xR > frame.coordinates.x + frame.width
+			|| yR < frame.coordinates.y || yR > frame.coordinates.y + frame.height) {
+				putchar(7);
+				frame.highLight(BLACK, RED);
+				enterNameBar.draw();
+				if (strcmp(name, "") == 0) 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+				else 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);		
+				finishButton.draw();
+				cancelButton.draw();
+				delay(150);
+			}			
+			clearmouseclick(WM_RBUTTONDOWN);
+		}
+		if (ismouseclick(WM_RBUTTONDBLCLK))
+			clearmouseclick(WM_RBUTTONDBLCLK);		
+		drawAddVertex(this->coordinates.x, this->coordinates.y);
+		if (strcmp(name, "") == 0) 
+			outtextxy(enterNameBar.coordinates.x + (enterNameBar.width - textwidth(request)) / 2, enterNameBar.coordinates.y + (enterNameBar.height - textheight(request)) / 2, request);
 		if (kbhit()) {
 			char key = getch();
 			if ((key >= 'A' && key <= 'Z') || (key >= 'a' && key <= 'z')) {
@@ -3885,21 +4128,21 @@ void Vertex::changeName() {
 			}
 			if (i < 0)
 				i = 0;
-			if (strcmp(name, "") != 0 && key == 13 && !isNamesake(name)) {
+			if (strcmp(name, "") != 0 && key == KEY_ENTER && (!isNamesake(name) || strcmp(name, this->name) == 0)) {
 				break;
 			}
-			if ((strcmp(name, "") == 0 && key == 13)) {
+			if ((strcmp(name, "") == 0 && key == KEY_ENTER)) {
 				frame.highLight(WHITE, RED);
 				enterNameBar.draw();
 				finishButton.draw();
 				cancelButton.draw();
 				delay(50);
 			}
-			if (isNamesake(name)) {
+			if (isNamesake(name) && strcmp(name, this->name) != 0) {
 				for (int i = 0; i < n; i++)
-					if (stricmp(name, vertices[i].name) == 0) {
-						vertices[i].highLight();
-						delay(50);
+					if (strcmp(name, vertices[i].name) == 0 && strcmp(name, this->name) != 0) {
+						vertices[i].highLight(YELLOW, LIGHTRED);
+						delay(100);
 					}
 			}
 		}
@@ -3916,7 +4159,7 @@ void Vertex::changeName() {
 		if (ismouseclick(WM_RBUTTONDOWN))//neu co click chuot phai khi dang tao ten thi phai xoa di 
 										//de tranh truong hop sau khi tao ten thi mo thanh edit dinh
 			clearmouseclick(WM_RBUTTONDOWN);
-		if (strcmp(name, "") != 0 && !isNamesake(name)
+		if (strcmp(name, "") != 0 && (!isNamesake(name) || strcmp(name, this->name) == 0)
 		&& x >= finishButton.coordinates.x && x <= finishButton.coordinates.x + finishButton.width
 		&& y >= finishButton.coordinates.y && y <= finishButton.coordinates.y + finishButton.height)
 			break;
@@ -4093,6 +4336,7 @@ void Button::draw() {
 	//tao nut
 	//tao mau cho nut
 	setfillstyle(this->pattern, this->bColor);
+	//bar3d(this->coordinates.x, this->coordinates.y, this->coordinates.x + this->width, this->coordinates.y + this->height, 2, 10);
 	bar(this->coordinates.x, this->coordinates.y, this->coordinates.x + this->width, this->coordinates.y + this->height);
 	rectangle(this->coordinates.x, this->coordinates.y, this->coordinates.x + this->width, this->coordinates.y + this->height);
 	//tao mau chu
@@ -4158,10 +4402,10 @@ void setTaskBarButtons() {
 	xM = 15 + margin, yM = 15 + margin;
 	xH = xM + margin + width, yH = yM;
 	xF = xH + margin + width, yF = yH;
-	menuBar.init(xM, yM, height, width, WHITE, BLACK, 1, "MENU");
-	helpBar.init(xH, yH, height, width, WHITE, BLACK, 1, "TRO GIUP");
-	fileBar.init(xF, yF, height, width, WHITE, BLACK, 1, "FILE");
-	matrixButton.init(15, 295, 25, 400, YELLOW, BLACK, 1, "Ma tran trong so");
+	menuBar.init(xM, yM, height, width, YELLOW, DARKGRAY, 1, "MENU");
+	helpBar.init(xH, yH, height, width, YELLOW, DARKGRAY, 1, "TRO GIUP");
+	fileBar.init(xF, yF, height, width, YELLOW, DARKGRAY, 1, "FILE");
+	matrixButton.init(15, 295, 25, 400, BLACK, CYAN, 1, "MA TRAN TRONG SO");
 }
 
 void drawTaskBarButtons() {
@@ -4174,7 +4418,6 @@ void taskBar() {
 	int option, ad;
 	drawTaskBarButtons();
 	if (menuBar.isHover()) {//thanh menu bar thi se hien thi ra danh sach cac cong cu o duoi
-		//menuBar.highLight();
 		option = menuTools();
 		switch (option) {
 			case 1: {
@@ -4198,7 +4441,6 @@ void taskBar() {
 				break;
 			}
 			case 6: {
-//				outtextxy(340, 15, "Dinh that");
 				knotVertices();
 				break;
 			}
@@ -4211,12 +4453,10 @@ void taskBar() {
 				break;
 			}
 			case 9: {
-//				outtextxy(340, 15, "Topo sort");
 				topo();
 				break;
 			}
 			case 10: {
-				//hamCycle();
 				hamilton();
 				break;
 			}
@@ -4225,7 +4465,6 @@ void taskBar() {
 			}
 		}
 	else if (helpBar.isHover()) {
-		helpBar.highLight();
 		option = helpTools();
 		switch (option) {
 			case 1: {
@@ -4265,7 +4504,6 @@ void taskBar() {
 		}
 	}
 	else if (fileBar.isHover()) {
-		fileBar.highLight();
 		option = fileTools();
 		switch(option) {
 			case 1: {
@@ -4273,7 +4511,6 @@ void taskBar() {
 				break;
 			}
 			case 2: {
-//				outtextxy(340, 15, "Luu file");
 				saveFile();
 				break;
 			}
@@ -4339,13 +4576,12 @@ int helpTools() {
 			int x, y;
 			getmouseclick(WM_LBUTTONDOWN, x, y);
 			for (int i = 0; i < itemsAmount; i++) {
+				helpTools[i].draw();
+				if (helpTools[i].isHover())
+					helpTools[i].highLight();
 				if (x >= helpTools[i].coordinates.x && x <= helpTools[i].coordinates.x + helpTools[i].width 
 				&& y >= helpTools[i].coordinates.y && y <= helpTools[i].coordinates.y + helpTools[i].height)
 					return i + 1;
-				if (helpTools[i].isHover())
-					helpTools[i].highLight();
-				else
-					helpTools[i].normal();
 			}
 		}
 		else
@@ -4434,11 +4670,10 @@ int menuTools() {
 			//xu ly su kien chuot trai
 			getmouseclick(WM_LBUTTONDOWN, x, y);
 			for (i = 0; i < itemsAmount; i++) {
+				menuTools[i].draw();
 				if (menuTools[i].isHover())
 					//neu di chuot vao mot trong cac menu tools thi se high light dong do
 					menuTools[i].highLight();
-				else
-					menuTools[i].normal();
 				//neu click chuot trai vao mot trong so cac cong cu cua o chua menu tools 
 				//thi se tra ve gia tri de xu ly cac ham sau nay (DFS, BFS,...)
 				if (x >= menuTools[i].coordinates.x && x <= menuTools[i].coordinates.x + menuTools[i].width
@@ -4447,7 +4682,10 @@ int menuTools() {
 			}
 		}
 		else 
-			break;	
+			break;
+//		if (ismouseclick(WM_LBUTTONDOWN)) {
+//			getmouseclick(WM_LBUTTONDOWN) 
+//		}
 		page = 1 - page;
 	}
 	return -1;
@@ -4491,11 +4729,10 @@ int fileTools() {
 			int x, y;
 			getmouseclick(WM_LBUTTONDOWN, x, y);
 			for (int i = 0; i < itemsAmount; i++) {
+				fileTools[i].draw();
 				if (fileTools[i].isHover())
 				//neu thanh file tools nao duoc chuot do nguoi dung di chuyen toi thi se duoc to sang
 					fileTools[i].highLight();
-				else 
-					fileTools[i].normal();
 				if (x >= fileTools[i].coordinates.x && x <= fileTools[i].coordinates.x + fileTools[i].width 
 				&& y >= fileTools[i].coordinates.x && y <= fileTools[i].coordinates.y + fileTools[i].height)
 					return i + 1;
@@ -4581,14 +4818,62 @@ void Vertex::createName() {
 		cancelButton.draw();
 		enterNameBar.draw();
 		drawAddVertex(this->coordinates.x, this->coordinates.y);//ve dau vong tron co dau cong
-		if (ismouseclick(WM_LBUTTONDOWN))
+		if (ismouseclick(WM_LBUTTONDOWN)) {
 			getmouseclick(WM_LBUTTONDOWN, x, y);
-		if (ismouseclick(WM_LBUTTONDBLCLK))// neu co double click chuot trai khi dang tao ten thi phai xoa di
+			if (x < frame.coordinates.x || x > frame.coordinates.x + frame.width
+			|| y < frame.coordinates.y || y > frame.coordinates.y + frame.height) {
+				putchar(7);
+				frame.highLight(BLACK, RED);
+				enterNameBar.draw();
+				if (strcmp(name, "") == 0) 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+				else 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);		
+				finishButton.draw();
+				cancelButton.draw();
+				delay(150);
+			}
+			clearmouseclick(WM_LBUTTONDOWN);
+		}
+		
+		if (ismouseclick(WM_LBUTTONDBLCLK)) {// neu co double click chuot trai khi dang tao ten thi phai xoa di
 											//de tranh truong hop sau khi tao ten thi tao luon dinh moi
+			int xL, yL;
+			getmouseclick(WM_LBUTTONDBLCLK, xL, yL);
+			if (xL < frame.coordinates.x || xL > frame.coordinates.x + frame.width
+			|| yL < frame.coordinates.y || yL > frame.coordinates.y + frame.height) {
+				putchar(7);
+				frame.highLight(BLACK, RED);
+				enterNameBar.draw();
+				if (strcmp(name, "") == 0) 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+				else 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);		
+				finishButton.draw();
+				cancelButton.draw();
+				delay(150);
+			}		
 			clearmouseclick(WM_LBUTTONDBLCLK);
-		if (ismouseclick(WM_RBUTTONDOWN))//neu co click chuot phai khi dang tao ten thi phai xoa di 
+		}
+		if (ismouseclick(WM_RBUTTONDOWN)) {//neu co click chuot phai khi dang tao ten thi phai xoa di 
 										//de tranh truong hop sau khi tao ten thi mo thanh edit dinh
+			int xR, yR;
+			getmouseclick(WM_RBUTTONDOWN, xR, yR);
+			if (xR < frame.coordinates.x || xR > frame.coordinates.x + frame.width
+			|| yR < frame.coordinates.y || yR > frame.coordinates.y + frame.height) {
+				putchar(7);
+				frame.highLight(BLACK, RED);
+				enterNameBar.draw();
+				if (strcmp(name, "") == 0) 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(request)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(request)) / 2, request);
+				else 
+					outtextxy(15 + (400 - width) / 2 + (width - textwidth(name)) / 2, 20 + (275 - height) / 2 + (height - 40 - margin) + margin - 40 - 2 * margin - 50 + (40 - textheight(name)) / 2, name);		
+				finishButton.draw();
+				cancelButton.draw();
+				delay(150);
+			}			
 			clearmouseclick(WM_RBUTTONDOWN);
+		}
 		if (strcmp(name, "") != 0 && !isNamesake(name)//neu ten khong bi trong va ten khong bi trung voi cac dinh khac thi se duoc nhan enter
 		&& x >= finishButton.coordinates.x && x <= finishButton.coordinates.x + finishButton.width
 		&& y >= finishButton.coordinates.y && y <= finishButton.coordinates.y + finishButton.height)
@@ -4607,6 +4892,15 @@ void Vertex::createName() {
 			line(x0, y0, x0 + RADIUS - 5, y0);
 			line(x0, y0, x0, y0 + RADIUS - 5);
 			line(x0, y0, x0, y0 - RADIUS + 5);
+		}
+		if (isNamesake(name)) {
+			char c = getcolor();
+			char note[20] = "Ten dinh bi trung!";
+			setcolor(BLACK);
+			setbkcolor(DARKGRAY);
+			outtextxy(frame.coordinates.x + (frame.width - textwidth(note)) / 2, 195, note);
+			setcolor(c);
+			setbkcolor(BLACK);
 		}
 		if (kbhit()) {
 			char key = getch();
@@ -4638,6 +4932,17 @@ void Vertex::createName() {
 				cancelButton.draw();
 				delay(50);
 			}
+			if (isNamesake(name) && key == KEY_ENTER) {
+				putchar(7);
+				char c = getcolor();
+				char note[20] = "Ten dinh bi trung!";
+				setcolor(LIGHTRED);
+				setbkcolor(DARKGRAY);
+				outtextxy(frame.coordinates.x + (frame.width - textwidth(note)) / 2, 195, note);
+				setcolor(c);
+				setbkcolor(BLACK);
+				delay(500);
+			}
 			if (isNamesake(name)) {
 				for (int i = 0; i < n; i++)
 					if (stricmp(name, vertices[i].name) == 0) {
@@ -4667,13 +4972,16 @@ void Vertex::draw() {
 	if (this->coordinates.x == -1 && this->coordinates.y == -1)
 		return;
 	char c = getcolor();
-	circle(this->coordinates.x, this->coordinates.y, RADIUS);
-	setfillstyle(1, BLACK);
+	setfillstyle(1, BLUE);
 	pieslice(this->coordinates.x, this->coordinates.y, 0, 360, RADIUS);
 	setcolor(BLACK);
+	setlinestyle(0, 1, 3);
+	circle(this->coordinates.x, this->coordinates.y, RADIUS);
+	setlinestyle(0, 1, 1);
+	setcolor(BLUE);
 	line(this->coordinates.x, this->coordinates.y - 1, this->coordinates.x + RADIUS, this->coordinates.y - 1);
 	setcolor(YELLOW);
-	setbkcolor(BLACK);
+	setbkcolor(BLUE);
 	outtextxy(this->coordinates.x - textwidth(this->name) / 2, this->coordinates.y - textheight(this->name) / 2, this->name);
 	if (this->isHover())
 		this->highLight();
@@ -4684,13 +4992,14 @@ void Vertex::draw() {
 
 void Vertex::highLight() {
 	char c = getcolor();
-	setfillstyle(1, BLUE);
+	setfillstyle(1, LIGHTBLUE);
 	pieslice(this->coordinates.x, this->coordinates.y, 0, 0, RADIUS);
-	setcolor(BLUE);
-	setbkcolor(BLUE);
+	setcolor(BLACK);
+	circle(this->coordinates.x, this->coordinates.y, RADIUS);
+	setcolor(LIGHTBLUE);
 	line(this->coordinates.x, this->coordinates.y - 1, this->coordinates.x + RADIUS, this->coordinates.y - 1);
-	setcolor(c);
 	setcolor(YELLOW);
+	setbkcolor(LIGHTBLUE);
 	outtextxy(this->coordinates.x - textwidth(this->name) / 2, this->coordinates.y - textheight(this->name) / 2, this->name);
 	setcolor(c);
 	setbkcolor(BLACK);
@@ -4701,11 +5010,12 @@ void Vertex::highLight(int tColor, int bColor) {
 	char c = getcolor();
 	setfillstyle(1, bColor);
 	pieslice(this->coordinates.x, this->coordinates.y, 0, 0, RADIUS);
+	setcolor(BLACK);
+	circle(this->coordinates.x, this->coordinates.y, RADIUS);
 	setcolor(bColor);
-	setbkcolor(bColor);
 	line(this->coordinates.x, this->coordinates.y - 1, this->coordinates.x + RADIUS, this->coordinates.y - 1);
-	setcolor(c);
 	setcolor(tColor);
+	setbkcolor(bColor);
 	outtextxy(this->coordinates.x - textwidth(this->name) / 2, this->coordinates.y - textheight(this->name) / 2, this->name);
 	setcolor(c);
 	setbkcolor(BLACK);
@@ -4825,20 +5135,20 @@ void clearAllVertices() {
 }
 
 bool drawYesNoBar(char *question) {
-	Button frame, yesButton, noButton;
+	putchar(7);
+	Button frame, yesButton, noButton, xButton;
 	int height = 100;
 	int width = 300;
 	int margin = 5;
 	int x, y;
 	frame.init(425 + (834 - width) / 2 , 20 + (500 - height) / 2, height, width, YELLOW, BLACK, 1, "");
+	xButton.init(frame.coordinates.x + frame.width - 25, frame.coordinates.y, 25, 25, WHITE, RED, 1, "x");
 	yesButton.init(425 + (834 - width) / 2 + margin, 20 + (500 - height) / 2 + (height - 40 - margin), 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "CO");
 	noButton.init(425 + (834 - width) / 2 + margin * 2 + (width - 3 * margin) / 2, 20 + (500 - height) / 2 + (height - 40 - margin), 40, (width - 3 * margin) / 2, YELLOW, BLACK, 9, "KHONG");
 	int page = 0;
 	while (true) {
 		setactivepage(page);
 		setvisualpage(1 - page);
-		setfillstyle(10, GREEN);
-		bar(1, 1, 1279, 719);
 		delay(100);
 		drawFrame();
 		drawTaskBarButtons();
@@ -4846,6 +5156,7 @@ bool drawYesNoBar(char *question) {
 		drawMatrix();
 		drawAllEdges();
 		frame.draw();
+		xButton.draw();
 		noButton.draw();
 		yesButton.draw();
 		if (ismouseclick(WM_RBUTTONDOWN))//neu co click chuot phai vao man hinh thi phai xoa 
@@ -4857,10 +5168,13 @@ bool drawYesNoBar(char *question) {
 		outtextxy(425 + (834 - width) / 2 + (width - textwidth(question)) / 2, 20 + (500 - height) / 2 + 10, question);
 		if (kbhit()) {
 			char key = getch();
-			if (key == 13) {
+			if (key == KEY_ENTER || key == 'y' || key == 'Y') 
 				return 1;	
-			}
+			if (key == 'n' || key == 'N')
+				return 0;
 		}
+		if (xButton.isHover())
+			xButton.highLight(WHITE, LIGHTRED);
 		if (yesButton.isHover())//neu chuot di chuyen toi thanh yes thanh yes se sang
 			yesButton.highLight();
 		else if (noButton.isHover())//neu chuot di chuyen toi thanh no thanh no se sang
@@ -4873,6 +5187,19 @@ bool drawYesNoBar(char *question) {
 			if (x >= noButton.coordinates.x && x <= noButton.coordinates.x + noButton.width
 			&& y >= noButton.coordinates.y && y <= noButton.coordinates.y + noButton.height)
 				return 0;
+			if (x >= xButton.coordinates.x && x <= xButton.coordinates.x + xButton.width
+			&& y >= xButton.coordinates.y && y <= xButton.coordinates.y + xButton.height)
+				return 0;
+			if (x < frame.coordinates.x || x > frame.coordinates.x + frame.width
+			|| y < frame.coordinates.y || y > frame.coordinates.y + frame.height) {
+				putchar(7);
+				frame.highLight(BLACK, RED);
+				xButton.highLight(RED, WHITE);
+				yesButton.draw();
+				noButton.draw();
+				outtextxy(425 + (834 - width) / 2 + (width - textwidth(question)) / 2, 20 + (500 - height) / 2 + 10, question);
+				delay(150);
+			}
 		}
  		page = 1 - page;
 	}
